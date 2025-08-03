@@ -40,7 +40,9 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+const config = useRuntimeConfig();
 
+console.log(config.test);
 // State untuk mengontrol visibilitas popup
 const showPopup = ref(false);
 // Timestamp saat dokumen terakhir kali tidak terlihat (hidden)

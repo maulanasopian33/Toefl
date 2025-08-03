@@ -63,6 +63,11 @@
 import notifPembayaran from '@/components/DashboardUser/notifPembayaran.vue';
 import HeroSection from '@/components/DashboardUser/heroSection.vue';
 import notifSertifikat from '@/components/DashboardUser/notifSertifikat.vue';
+
+definePageMeta({
+  middleware: ['auth'] // Terapkan middleware 'auth' di sini
+});
+
 </script>
 
 <style>

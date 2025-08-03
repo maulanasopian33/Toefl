@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "firebase": "^12.0.0",
     "howler": "^2.2.4",
     "nuxt": "^3.17.7",
     "tailwindcss-rtl": "^0.9.0",
