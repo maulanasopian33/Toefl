@@ -12,9 +12,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return new Promise((resolve) => {
       // Firebase onAuthStateChanged bersifat asinkron dan berjalan di client
       const unsubscribe = auth.onAuthStateChanged((user) => {
+        console.log(user)
         if (!user) {
           // Pengguna belum login, redirect ke halaman login
-          return resolve(navigateTo('/login')); // Gunakan navigateTo dari Nuxt 3
+          return resolve(navigateTo('/auth/login')); // Gunakan navigateTo dari Nuxt 3
         }
         unsubscribe(); // Berhenti mendengarkan setelah status diketahui
         resolve();

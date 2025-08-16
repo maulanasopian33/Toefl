@@ -1,7 +1,7 @@
 <template>
   <div>
     <HeaderPrimary/>
-    <main class="min-h-screen">
+    <main class="min-h-screen h-screen m-auto">
       <NuxtPage/>
     </main>
     <FooterPrimary/>

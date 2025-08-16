@@ -9,39 +9,15 @@
 </template>
 
 <script setup>
-import { signInWithPopup } from 'firebase/auth';
-const { showAlert, showConfirm } = useNotificationPopup();
-// Dapatkan instance auth dan googleProvider dari plugin
-// Gunakan useNuxtApp() untuk mengakses provide dari plugin
-const { $auth, $googleProvider } = useNuxtApp();
-const router = useRouter(); // Nuxt 3 menggunakan useRouter()
-
-const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup($auth, $googleProvider);
-    // Autentikasi berhasil!
-    const user = result.user;
-    console.log('User logged in:', user);
-
-    // Redirect ke halaman dashboard atau beranda setelah login berhasil
-    router.push('/'); // Ganti dengan path halaman beranda kamu
-  } catch (err) {
-    if (err.code === 'auth/popup-closed-by-user') {
-      showAlert('Login dibatalkan oleh pengguna.');
-    }
-  }
-};
-
-// Mengecek apakah pengguna sudah login saat komponen dimuat
-// Gunakan onMounted untuk lifecycle hook
-onMounted(() => {
-  $auth.onAuthStateChanged(user => {
-    if (user) {
-      console.log('User already logged in:', user);
-      router.push('/');
-    }
-  });
-});
+const { signInWithGoogle, error } = useAuth()
+// onMounted(() => {
+//   $auth.onAuthStateChanged(user => {
+//     if (user) {
+//       console.log('User already logged in:', user);
+//       router.push('/');
+//     }
+//   });
+// });
 </script>
 
 <style scoped>

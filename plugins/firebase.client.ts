@@ -20,6 +20,7 @@ export default defineNuxtPlugin(nuxtApp => {
 
   return {
     provide: {
+      app,
       auth,
       googleProvider
     }
