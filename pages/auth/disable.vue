@@ -29,14 +29,14 @@
 </template>
 
 <script lang="ts" setup>
-const { setTitle, setDescription, NavLogin, NavRegister } = useLayoutStore();
-definePageMeta({
-    layout: 'auth'
-});
-setTitle('Pembuatan Akun');
-setDescription('Bergabunglah dengan komunitas ToaflArabi dan mulailah perjalanan belajar bahasa Arab Anda.');
-NavLogin(false);
-NavRegister(false);
+    const { setTitle, setDescription, NavLogin, NavRegister } = useLayoutStore();
+    definePageMeta({
+        layout: 'auth'
+    });
+    setTitle('Akun Tidak Aktif');
+    setDescription('Akun anda sementara di nonaktifkan karena alasan tertentu.');
+    NavLogin(false);
+    NavRegister(false);
 </script>
 
 <style>

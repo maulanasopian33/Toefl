@@ -23,6 +23,7 @@
 import { AppConfig } from '@/data/AppConfig';
 import { signOut } from 'firebase/auth';
 const router = useRouter();
+const { startLoading, stopLoading } = useLoading();
 // Dapatkan instance auth dari plugin
 const { $auth } = useNuxtApp();
 const config = useRuntimeConfig()
@@ -43,11 +44,13 @@ onMounted(() => {
 
 const logout = async () => {
   try {
+    startLoading();
     await signOut($auth);
-    console.log('User logged out');
     router.push('/auth/login'); // Redirect ke halaman login setelah logout
   } catch (error) {
-    console.error('Logout error:', error);
+    stopLoading();
+  } finally {
+    stopLoading();
   }
 };
 

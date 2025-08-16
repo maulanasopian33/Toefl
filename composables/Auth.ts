@@ -7,6 +7,7 @@ import {
   updatePassword,
   signInWithPopup
 } from 'firebase/auth';
+const { startLoading, stopLoading } = useLoading();
 const { showAlert, showConfirm } = useNotificationPopup();
 
 export const useAuth = () => {
@@ -20,6 +21,7 @@ export const useAuth = () => {
 
   const signInWithGoogle = async () => {
     try {
+      startLoading();
       const result = await signInWithPopup($auth, $googleProvider);
       user.value = result.user;
       
@@ -41,10 +43,11 @@ export const useAuth = () => {
       
       const backendData = await response.json();
       sessionStorage.setItem('userRole', backendData.role);
-      
+      stopLoading();
       router.push('/');
       
     } catch (err : any) {
+      stopLoading();
       errorHandler(err);
     }
   };

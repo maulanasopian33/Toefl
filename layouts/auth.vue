@@ -49,6 +49,7 @@
             </div>
         </div>
     </main>
+    <LoadingPopup/>
   </div>
 </template>
 
