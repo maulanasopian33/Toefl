@@ -12,7 +12,7 @@
         <p v-show="password.length > 0" :class="PassedPassword ? 'text-green-600 border-green-600 bg-green-200' : 'text-red-600 border-red-600 bg-red-200'" class="px-3 py-2 rounded-md border">
           {{ PassedPassword ? 'Kata sandi memenuhi syarat!' : 'Kata sandi tidak valid.' }}
         </p>
-        <a href="#" class="inline-block align-baseline font-bold text-sm text-green-600 hover:text-green-800 rounded-md mt-5">Lupa Kata Sandi?</a>
+        <nuxt-link to="/auth/forgot-password" class="inline-block align-baseline font-bold text-sm text-green-600 hover:text-green-800 rounded-md mt-5">Lupa Kata Sandi?</nuxt-link>
     </div>
 
 

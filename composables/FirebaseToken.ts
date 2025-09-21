@@ -1,18 +1,18 @@
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-export const useFirebaseToken = async () => {
+export const useFirebaseToken = async (): Promise<string | null> => {
   const auth = getAuth();
-  
-  if (!auth.currentUser) {
-    // Jika tidak ada pengguna yang login, kembalikan null atau throw error
-    return null;
-  }
-  
-  try {
-    const token = await auth.currentUser.getIdToken(true);
-    return token;
-  } catch (error) {
-    console.error('Gagal mendapatkan Firebase ID Token:', error);
-    return null;
-  }
+
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      unsubscribe(); // stop listener setelah dapat state
+
+      if (user) {
+        const token = await user.getIdToken();
+        resolve(token);
+      } else {
+        resolve(null);
+      }
+    });
+  });
 };

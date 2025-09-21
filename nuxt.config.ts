@@ -39,5 +39,5 @@ export default defineNuxtConfig({
     preset: 'static' // Ini akan memaksa Nitro untuk menghasilkan file statis
   },
 
-  modules: ['@nuxtjs/tailwindcss']
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/icon']
 })

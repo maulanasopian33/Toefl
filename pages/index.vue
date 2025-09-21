@@ -65,7 +65,8 @@ import HeroSection from '@/components/DashboardUser/heroSection.vue';
 import notifSertifikat from '@/components/DashboardUser/notifSertifikat.vue';
 
 definePageMeta({
-  middleware: ['auth', 'finish-register'] // Terapkan middleware 'auth' di sini
+  middleware: ['auth', 'finish-register','role-check'], // Terapkan middleware 'auth' di sini
+  requiredRole: 'user'
 });
 
 </script>

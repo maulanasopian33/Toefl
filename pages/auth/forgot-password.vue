@@ -38,7 +38,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useAuth } from '../../composables/Auth';
-
+const { startLoading, stopLoading } = useLoading();
 const { setTitle, setDescription, NavLogin, NavRegister } = useLayoutStore();
 const email = ref('');
 const success = ref(false);
@@ -73,10 +73,12 @@ const startCountdown = () => {
 };
 
 const handleResetPassword = async () => {
+  startLoading();
   success.value = false;
   await resetPassword(email.value);
   if (!error.value) {
     success.value = true;
+    stopLoading();
     startCountdown();
   }
 };

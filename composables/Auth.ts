@@ -22,6 +22,7 @@ export const useAuth = () => {
   const signInWithGoogle = async () => {
     try {
       startLoading();
+      
       const result = await signInWithPopup($auth, $googleProvider);
       user.value = result.user;
       
@@ -44,7 +45,7 @@ export const useAuth = () => {
       const backendData = await response.json();
       sessionStorage.setItem('userRole', backendData.role);
       stopLoading();
-      router.push('/');
+      return await redirect(backendData.role);
       
     } catch (err : any) {
       stopLoading();
@@ -78,11 +79,19 @@ export const useAuth = () => {
       const backendData = await response.json();
       sessionStorage.setItem('userRole', backendData.role);
       
-      router.push('/');
+      return await redirect(backendData.role);
     } catch (e : any) {
       errorHandler(e);
     }
   };
+
+  const redirect = async (role : string) => {
+    if (role === "admin") {
+          return navigateTo('/admin');
+      } else {
+          return navigateTo('/')
+      }
+  }
   // Fungsi untuk mengubah password pengguna
   const changePassword = async (newPassword : string) => {
       error.value = null;

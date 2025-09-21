@@ -3,9 +3,10 @@
 // tidak perlu .client.js atau .server.js di nama middleware
 // karena Nuxt akan menentukannya secara otomatis
 import { getAuth } from 'firebase/auth'; // Import getAuth langsung
-
+const { startLoading, stopLoading } = useLoading()
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Pastikan kode ini hanya dijalankan di sisi klien
+  startLoading();
   if (process.client) {
     const auth = getAuth(); // Ambil instance auth di sini
 
@@ -13,6 +14,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       // Firebase onAuthStateChanged bersifat asinkron dan berjalan di client
       const unsubscribe = auth.onAuthStateChanged((user) => {
         console.log(user)
+        stopLoading();
         if (!user) {
           // Pengguna belum login, redirect ke halaman login
           return resolve(navigateTo('/auth/login')); // Gunakan navigateTo dari Nuxt 3

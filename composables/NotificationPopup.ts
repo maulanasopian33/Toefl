@@ -78,7 +78,7 @@ function showConfirm(message: string): Promise<boolean> {
         }
       }, {
         text: 'Lanjutkan',
-        className: 'bg-blue-600 text-white hover:bg-blue-700',
+        className: 'bg-green-600 text-white hover:bg-green-700',
         action: () => {
           hide();
           resolve(true);

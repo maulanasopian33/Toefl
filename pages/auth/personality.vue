@@ -23,7 +23,6 @@
         <option :value="item.id" v-for="(item, index) in dataProdi" :key="item.id">{{ item.name }}</option>
       </select>
     </div>
-    {{ fakultas }}
     <!-- Registration Button -->
     <button @click="handleSubmit()" class="bg-green-600 text-white font-bold py-3 px-4 rounded-lg w-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">
         Registrasi
@@ -37,6 +36,7 @@ import { useUserDetailsPost } from '@/composables/UserDetails/post';
 import { DataFakultas } from '@/data/Fakultas';
 import { watch } from 'vue';
 
+const { startLoading, stopLoading } = useLoading();
 const { setTitle, setDescription, NavLogin, NavRegister } = useLayoutStore();
 definePageMeta({
     layout: 'auth'
@@ -63,6 +63,7 @@ watch(fakultas, (newFakultas) => {
 });
 
 const handleSubmit = async () => {
+    startLoading();
     // Pastikan semua field terisi sebelum mengirim
     if (!namaLengkap.value || !nim.value || !fakultas.value || !prodi.value) {
         console.error('Harap lengkapi semua data.');
@@ -77,6 +78,11 @@ const handleSubmit = async () => {
     };
 
     const { data, pending, error } = await useUserDetailsPost(userData);
+
+    if(data){
+      stopLoading()
+      navigateTo('/')
+    }
 };
 </script>
 

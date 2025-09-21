@@ -3,8 +3,8 @@
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
           <h1 class="text-3xl font-bold mb-2 md:mb-0">{{ AppConfig.appName }}</h1>
           <div v-if="user" class="flex items-center space-x-4">
-            <img id="userImage" :src="imageURL" alt="User Avatar" class="w-10 h-10 rounded-full"></img>
-              <span id="userName" class="text-lg">Selamat datang, {{ user.displayName || user.email }}!</span>
+            <img id="userImage" :src="getPhoto(userdb)" alt="User Avatar" class="w-10 h-10 rounded-full"></img>
+              <span id="userName" class="text-lg">Selamat datang, {{ getNamaLengkap(userdb) }}!</span>
               <button @click="logout()" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
                   Keluar
                 </button>
@@ -22,6 +22,7 @@
 <script lang="ts" setup>
 import { AppConfig } from '@/data/AppConfig';
 import { signOut } from 'firebase/auth';
+const { data: userdb, pending, error } = await useUserMe();
 const router = useRouter();
 const { startLoading, stopLoading } = useLoading();
 // Dapatkan instance auth dari plugin
@@ -36,9 +37,6 @@ const user = ref();
 onMounted(() => {
   $auth.onAuthStateChanged(firebaseUser => {
     user.value = firebaseUser;
-    console.log(user.value)
-    imageURL.value = API_URL + '/images/avatar/' + user.value.uid + '.png'
-
   });
 });
 
