@@ -105,7 +105,7 @@ export const DataSoal : Section[] = [
     "audioInstructions": "Simulasi audio tidak dapat diputar langsung di sini. Instruksi ini berlaku untuk file audio terpisah.",
     "groups": [
       {
-        "audioUrl": "Simulasi: \"صَبَاحُ الْخَيْرِ. كَيْفَ أَسْتَطِيعُ مُسَاعَدَتَكَ؟\"",
+        "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         "passage": "Dengarkan audio ini dan jawab pertanyaan di bawahnya.",
         "questions": [
           {
@@ -127,7 +127,7 @@ export const DataSoal : Section[] = [
         ]
       },
       {
-        "audioUrl": "Simulasi: \"أَنَا أَذْهَبُ إِلَى السُّوقِ لِشِرَاءِ الْفَوَاكِهِ وَالْخَضْرَوَاتِ.\"",
+        "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
         "passage": "Dengarkan percakapan ini dan jawab pertanyaan.",
         "questions": [
           {
@@ -157,7 +157,7 @@ export const DataSoal : Section[] = [
         ]
       },
       {
-        "audioUrl": "Simulasi: \"الْجَوُّ الْيَوْمَ جَمِيلٌ. الشَّمْسُ سَاطِعَةٌ وَلَا يُوجَدُ مَطَرٌ.\"",
+        "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
         "passage": "Dengarkan pengumuman ini dan jawab pertanyaan.",
         "questions": [
           {

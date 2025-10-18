@@ -10,19 +10,22 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/icon": "^2.0.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@nuxt/icon": "^1.15.0",
     "@types/uuid": "^10.0.0",
+    "apexcharts": "^5.3.5",
     "firebase": "^12.0.0",
     "howler": "^2.2.4",
     "nuxt": "^3.17.7",
     "tailwindcss-rtl": "^0.9.0",
     "uuid": "^11.1.0",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue3-apexcharts": "^1.8.0"
   },
   "devDependencies": {
     "@iconify-json/ic": "^1.2.4",
+    "@nuxt/image": "^1.10.0",
     "@types/howler": "^2.2.12"
   }
 }
