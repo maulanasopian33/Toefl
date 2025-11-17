@@ -1,34 +1,45 @@
+import { computed } from 'vue';
+
 interface MediaItem {
-  data : {
-    url: string;
-    filename: string;
-    createdAt: string;
-    mimeType: string;
-    size: number;
-    id: string;
-    originalName : string;
-  }
+  url: string;
+  filename: string;
+  createdAt: string;
+  mimeType: string;
+  size: number;
+  id: string;
+  originalName: string;
+}
+
+interface ApiResponse {
+  data: MediaItem[];
 }
 
 /**
  * Composable untuk mengambil daftar media dari server.
- * @returns {Promise<MediaItem[]>} Array dari objek media.
+ * @returns Objek reaktif yang berisi data, pending, error, dan fungsi refresh.
  */
-export const useMediaGet = async (): Promise<MediaItem[]> => {
-  const authToken = await useFirebaseToken();
+export const useMediaGet = async () => {
   const config = useRuntimeConfig();
+  const apiUrl = `${config.public.API_URL}/media`;
+  
+  const authToken = await useFirebaseToken();
 
   if (!authToken) {
-    // Mengembalikan array kosong jika tidak terautentikasi
-    console.warn('User not authenticated. Cannot fetch media.');
-    return [];
+    throw new Error('User not authenticated. Delete failed.');
   }
-
-  return await $fetch<MediaItem[]>(`${config.public.API_URL}/media`, {
-    method: 'GET',
+  // Gunakan useFetch untuk mendapatkan state reaktif (data, pending, error)
+  const { data, pending, error, refresh } = useFetch<ApiResponse>(apiUrl, {
+    // Lazy fetch agar tidak memblokir rendering
+    lazy: true,
+    // Sediakan nilai default untuk mencegah error saat data belum ada
+    default: () => ({ data: [] }),
     headers: {
-      'Authorization': `Bearer ${authToken}`,
-      'Content-Type': 'application/json',
-    },
+        'Authorization': `Bearer ${authToken}`,
+      },
   });
-}
+
+  // Buat computed property untuk langsung mengakses array 'data' dari respons API
+  const mediaList = computed(() => data.value?.data ?? []);
+
+  return { data: mediaList, pending, error, refresh };
+};

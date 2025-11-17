@@ -16,12 +16,13 @@
       </div>
     </main>
     <LoadingPopup/>
+    <NotificationPopup />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-
+import NotificationPopup from '@/components/NotificationPopup.vue';
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {

@@ -3,7 +3,7 @@
  * @param {FormData} formData - FormData yang berisi file dengan key 'media'.
  * @returns {Promise<{ url: string }>} Objek yang berisi URL media yang diunggah.
  */
-export const useMediaUpload = async (formData: FormData) => {
+export const useMediaUpload = async (formData: FormData, signal?: AbortSignal) => {
   const authToken = await useFirebaseToken();
   const config = useRuntimeConfig();
 
@@ -18,6 +18,7 @@ export const useMediaUpload = async (formData: FormData) => {
         'Authorization': `Bearer ${authToken}`,
       },
       body: formData,
+      signal, // Menambahkan AbortSignal ke request
     });
     return response;
   } catch (error) {
@@ -26,4 +27,3 @@ export const useMediaUpload = async (formData: FormData) => {
     throw error;
   }
 }
-

@@ -1,99 +1,53 @@
-import { reactive } from 'vue';
+import { ref, readonly } from 'vue';
 
-// Definisikan tipe untuk tombol notifikasi
-interface NotificationButton {
-  text: string;
-  className: string;
-  action: () => void;
-}
-
-// Definisikan tipe untuk state pop-up
-interface NotificationState {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  buttons: NotificationButton[];
-}
-
-// State global untuk pop-up
-const state = reactive<NotificationState>({
-  isOpen: false,
-  title: '',
+// State untuk notifikasi toast (jika diperlukan di masa depan)
+const notification = ref({
+  show: false,
   message: '',
-  buttons: [],
+  type: 'success' as 'success' | 'error',
+});
+
+// State untuk dialog konfirmasi
+const confirm = ref({
+  show: false,
+  message: '',
+  title: 'Konfirmasi Tindakan',
+  type: 'info' as 'info' | 'warning' | 'danger',
+  resolve: (value: boolean) => {},
 });
 
 /**
- * Membuka pop-up notifikasi.
- * @param {string} title - Judul pop-up.
- * @param {string} message - Pesan pop-up.
- * @param {NotificationButton[]} buttons - Konfigurasi tombol.
+ * Composable untuk mengelola notifikasi dan dialog konfirmasi global.
  */
-function show(title: string, message: string, buttons: NotificationButton[]) {
-  state.title = title;
-  state.message = message;
-  state.buttons = buttons;
-  state.isOpen = true;
-}
-
-/**
- * Menutup pop-up notifikasi.
- */
-function hide(): void {
-  state.isOpen = false;
-}
-
-/**
- * Menampilkan pop-up alert sederhana.
- * @param {string} message - Pesan yang akan ditampilkan.
- */
-function showAlert(message: string): void {
-  show(
-    'Perhatian!',
-    message,
-    [{
-      text: 'OK',
-      className: 'bg-green-600 text-white hover:bg-green-700',
-      action: () => hide()
-    }]
-  );
-}
-
-/**
- * Menampilkan pop-up konfirmasi dengan Promise.
- * @param {string} message - Pesan konfirmasi yang akan ditampilkan.
- * @returns {Promise<boolean>} - Mengembalikan true jika dikonfirmasi, false jika dibatalkan.
- */
-function showConfirm(message: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    show(
-      'Konfirmasi',
-      message,
-      [{
-        text: 'Batal',
-        className: 'bg-gray-200 text-gray-700 hover:bg-gray-300',
-        action: () => {
-          hide();
-          resolve(false);
-        }
-      }, {
-        text: 'Lanjutkan',
-        className: 'bg-green-600 text-white hover:bg-green-700',
-        action: () => {
-          hide();
-          resolve(true);
-        }
-      }]
-    );
-  });
-}
-
-// Composable untuk mengelola notifikasi pop-up
-export function useNotificationPopup() {
-  return {
-    state,
-    showAlert,
-    showConfirm,
-    hide
+export const useNotificationPopup = () => {
+  // Fungsi untuk menampilkan dialog konfirmasi
+  const showConfirm = (message: string, options?: { type?: 'info' | 'warning' | 'danger', title?: string }): Promise<boolean> => {
+    confirm.value.show = true;
+    confirm.value.message = message;
+    confirm.value.type = options?.type || 'warning';
+    confirm.value.title = options?.title || 'Anda Yakin?';
+    return new Promise((resolve) => {
+      confirm.value.resolve = resolve;
+    });
   };
-}
+
+  // Fungsi yang dipanggil saat pengguna menekan "Confirm"
+  const onConfirm = () => {
+    confirm.value.show = false;
+    confirm.value.resolve(true);
+  };
+
+  // Fungsi yang dipanggil saat pengguna menekan "Cancel"
+  const onCancel = () => {
+    confirm.value.show = false;
+    confirm.value.resolve(false);
+  };
+
+  return {
+    notification: readonly(notification),
+    confirm: readonly(confirm),
+    showConfirm,
+    onConfirm,
+    onCancel,
+  };
+};
