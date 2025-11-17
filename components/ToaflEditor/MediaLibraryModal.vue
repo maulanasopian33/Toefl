@@ -1,35 +1,42 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed, nextTick } from 'vue';
 import { useMediaGet } from '../../composables/media/get';
 import { useMediaDelete } from '../../composables/media/delete';
 import { useMediaUpload } from '../../composables/media/upload';
+import { useNotification } from '@/composables/useNotification'; // Added missing import for useNotification
+import { useNotificationPopup } from '@/composables/NotificationPopup'; // Added missing import for useNotificationPopup
 
-const { showNotification } = useNotification();
+const { showNotification } = useNotification(); // Now this is valid
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits(['update:modelValue', 'select']);
 
 const isUploading = ref(false);
 const isLoadingMedia = ref(false);
+const audioPlayer = ref<HTMLAudioElement | null>(null);
 
 const activeTab = ref('library');
 
 // Data media dari server
-const mediaItems = ref<{ name: string; url: string }[]>([]);
 
-const selectedAudioUrl = ref<string | null>(null);
-const selectedFileName = ref<string | null>(null); // New ref for selected file name
+const selectedAudioUrl = ref<string | null>(null); // Consider renaming to selectedMediaUrl for generality
+const selectedFileName = ref<string | null>(null);
+const { data: allMediaItems, refresh } = await useMediaGet(); // Removed pending, error as isLoadingMedia is used locally
+const { showConfirm } = useNotificationPopup(); // Destructure showConfirm
 
+// Computed property untuk memfilter hanya audio
+const audioItems = computed(() => {
+  if (!allMediaItems.value) return [];
+  return allMediaItems.value.filter(item => item.mimeType?.startsWith('audio/'));
+});
 // --- FUNGSI API ---
 
 async function fetchMedia() {
-  if (mediaItems.value.length > 0) return; // Jangan fetch ulang jika sudah ada
+  // Always refresh to get the latest media when the modal opens
   isLoadingMedia.value = true;
   try {
-    // Menggunakan composable baru
-    const dataApi = await useMediaGet();
-    console.log("media", dataApi.data);
-    mediaItems.value = ataApi.data;
-    
+    await refresh(); // This will update the `allMediaItems` ref
+    // No direct assignment to allMediaItems.value is needed here, as `refresh` updates the ref.
+
   } catch (error) {
     console.error('Gagal mengambil media:', error);
     showNotification('Gagal memuat pustaka media dari server.', 'error');
@@ -38,17 +45,22 @@ async function fetchMedia() {
   }
 }
 
-async function deleteMedia(url: string) {
-  if (!confirm('Apakah Anda yakin ingin menghapus file ini secara permanen? Tindakan ini tidak dapat dibatalkan.')) {
+async function deleteMedia(id: string) {
+  // Using the global confirm dialog for better UX
+  const confirmed = await showConfirm(
+    'File ini akan dihapus secara permanen dan tidak dapat dikembalikan.',
+    { type: 'danger', title: 'Hapus File Permanen?' }
+  );
+
+  if (!confirmed) {
     return;
   }
   try {
-    // Menggunakan composable baru
-    await useMediaDelete(url);
-    // Hapus dari daftar lokal
-    mediaItems.value = mediaItems.value.filter(item => item.url !== url);
+    await useMediaDelete(id); // Assuming useMediaDelete takes the URL or ID
+    await refresh(); // Refresh the list after deletion
     showNotification('File berhasil dihapus.', 'success');
   } catch (error) {
+    // @ts-ignore - error might be a custom object, so we ignore type checking for message
     console.error('Gagal menghapus media:', error);
     showNotification('Gagal menghapus file dari server.', 'error');
   }
@@ -56,8 +68,18 @@ async function deleteMedia(url: string) {
 
 // --- FUNGSI UI ---
 
-function selectAudio(url: string) {
+async function selectMedia(url: string) { // Renamed for generality
   selectedAudioUrl.value = url;
+  // Tunggu DOM update, lalu putar audio
+  await nextTick();
+  if (audioPlayer.value) {
+    audioPlayer.value.src = url;
+    try {
+      await audioPlayer.value.play();
+    } catch (error) {
+      console.error("Gagal memutar audio secara otomatis:", error);
+    }
+  }
 }
 
 function confirmSelection() {
@@ -87,12 +109,12 @@ async function handleFileUpload(event: Event) {
         try {
             // Menggunakan composable baru
             const response = await useMediaUpload(formData);
-            mediaItems.value.unshift({ name: file.name, url: response.url });
-            selectAudio(response.url);
+            await refresh(); // Refresh the list after successful upload
+            selectMedia(response.url); // Select the newly uploaded item
             activeTab.value = 'library'; // Pindah ke tab library
             showNotification('File audio berhasil diunggah.', 'success');
             selectedFileName.value = null; // Clear after successful upload
-            target.value = ''; // Clear the input field
+            target.value = null; // Clear the input field
         } catch (error) {
             console.error('Gagal mengunggah audio:', error);
             showNotification('Gagal mengunggah file audio.', 'error');
@@ -100,14 +122,14 @@ async function handleFileUpload(event: Event) {
             isUploading.value = false;
         }
     } else {
-        selectedFileName.value = null; // Clear if no file is selected (e.g., user cancels)
+        selectedFileName.value = null; // Ensure the selectedFileName is cleared when no file is selected
     }
 }
 
 // Watcher untuk membuka modal dan fetch data
 watch(() => props.modelValue, (isShowing) => {
   if (isShowing && activeTab.value === 'library') {
-    fetchMedia();
+    fetchMedia(); // Call fetchMedia to load data when modal opens
   }
 });
 </script>
@@ -115,61 +137,82 @@ watch(() => props.modelValue, (isShowing) => {
 <template>
   <Transition name="modal-fade">
     <div v-if="modelValue" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl h-[70vh] flex flex-col overflow-hidden">
-        <header class="p-4 border-b flex justify-between items-center">
-          <h2 class="text-xl font-bold text-gray-800">Pustaka Media</h2>
-          <button @click="closeModal" class="p-2 rounded-full hover:bg-gray-100">&times;</button>
+      <div class="bg-gray-50 rounded-xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+        <header class="p-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+          <h2 class="text-lg font-semibold text-gray-800">Pilih Media</h2>
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+            <Icon name="lucide:x" class="w-5 h-5" />
+          </button>
         </header>
 
-        <main class="flex-grow flex overflow-hidden">
-          <aside class="w-48 bg-gray-50 border-r p-4">
-            <nav class="space-y-2">
-              <button @click="() => { activeTab = 'library'; fetchMedia(); }" :class="{'bg-indigo-100 text-indigo-700': activeTab === 'library'}" class="w-full text-left p-2 rounded-md font-semibold">Pustaka</button>
-              <button @click="activeTab = 'upload'" :class="{'bg-indigo-100 text-indigo-700': activeTab === 'upload'}" class="w-full text-left p-2 rounded-md font-semibold">Unggah File</button>
-            </nav>
-          </aside>
+        <main class="flex-grow flex flex-col overflow-hidden">
+          <!-- Tabs -->
+          <div class="px-6 pt-4 border-b border-gray-200 flex-shrink-0">
+            <div class="flex space-x-4">
+              <button @click="() => { activeTab = 'library'; fetchMedia(); }" :class="['px-3 py-2 text-sm font-medium rounded-t-md', activeTab === 'library' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700']">
+                <Icon name="lucide:library" class="w-4 h-4 mr-1.5 inline-block" />
+                Pustaka
+              </button>
+              <button @click="activeTab = 'upload'" :class="['px-3 py-2 text-sm font-medium rounded-t-md', activeTab === 'upload' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700']">
+                <Icon name="lucide:upload-cloud" class="w-4 h-4 mr-1.5 inline-block" />
+                Unggah File
+              </button>
+            </div>
+          </div>
 
-          <div class="flex-grow p-6 overflow-y-auto">
+          <div class="flex-grow p-6 overflow-y-auto bg-white">
             <div v-if="activeTab === 'library'">
               <div v-if="isLoadingMedia" class="flex items-center justify-center h-full text-gray-500">
-                <svg class="w-8 h-8 animate-spin mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <Icon name="lucide:loader-2" class="w-8 h-8 animate-spin mr-3" />
                 <span>Memuat Pustaka...</span>
               </div>
-              <div v-else-if="mediaItems.length === 0" class="flex items-center justify-center h-full text-gray-500">
-                <span>Pustaka media kosong.</span>
+              <div v-else-if="audioItems.length === 0" class="flex flex-col items-center justify-center h-full text-center text-gray-500 p-8">
+                <Icon name="lucide:folder-search" class="w-16 h-16 text-gray-300 mb-4" />
+                <h3 class="text-lg font-semibold text-gray-700">Pustaka Audio Kosong</h3>
+                <p class="mt-1 text-sm">Belum ada file audio yang diunggah.</p>
+                <button @click="activeTab = 'upload'" class="btn-primary-small mt-6">
+                  <Icon name="lucide:upload" class="w-4 h-4 mr-2" />
+                  Unggah File Pertama Anda
+                </button>
               </div>
-              <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div v-for="audio in mediaItems" :key="audio.url" @click="selectAudio(audio.url)"
-                     class="relative group border-2 rounded-lg p-3 cursor-pointer flex flex-col items-center justify-center text-center aspect-square"
-                     :class="selectedAudioUrl === audio.url ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'">
-                  <svg class="w-10 h-10 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2zm12-3c0 1.1-1.3 2-3 2s-3-.9-3-2 1.3-2 3-2 3 .9 3 2z"></path></svg>
-                  <span class="text-xs font-medium text-gray-600 break-all">{{ audio.originalName }}</span>
-                  <button @click.stop="deleteMedia(audio.url)" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-opacity">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              <div v-else class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div v-for="item in audioItems" :key="item.url" @click="selectMedia(item.url)"
+                     class="relative group border rounded-lg cursor-pointer flex flex-col text-center aspect-square transition-all duration-200"
+                     :class="selectedAudioUrl === item.url ? 'border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50' : 'border-gray-200 hover:shadow-md hover:border-indigo-300'">
+                  <div class="flex-grow flex items-center justify-center overflow-hidden bg-gray-100">
+                    <img v-if="item.mimeType.startsWith('image/')" :src="item.url" :alt="item.originalName" class="w-full h-20 object-cover overflow-hidden">
+                    <Icon v-else name="lucide:file-audio" class="w-10 h-10 text-indigo-400" />
+                  </div>
+                  <div class="flex-shrink-0 border-t border-gray-200 p-2 w-full">
+                    <span class="text-xs font-medium text-gray-600 break-all truncate block">{{ item.originalName }}</span>
+                  </div>
+                  <button @click.stop="deleteMedia(item.id)" class="absolute top-1.5 right-1.5 p-1 bg-red-100 text-red-600 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-200 transition-opacity">
+                    <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             </div>
             <div v-if="activeTab === 'upload'" class="flex items-center justify-center h-full" :class="{'opacity-50 pointer-events-none': isUploading}">
-                <label class="w-full max-w-md flex flex-col items-center px-4 py-12 bg-white text-indigo-600 rounded-lg shadow-sm tracking-wide border-2 border-dashed border-indigo-200 cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                    <svg v-if="isUploading" class="w-12 h-12 mb-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <svg v-else class="w-12 h-12 mb-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4 4-4-4h3v-3h2v3z" />
-                    </svg>
+                <label class="w-full max-w-lg flex flex-col items-center px-4 py-12 bg-gray-50 text-gray-600 rounded-lg shadow-inner tracking-wide border-2 border-dashed border-gray-300 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-colors">
+                    <Icon v-if="isUploading" name="lucide:loader-2" class="w-12 h-12 mb-4 animate-spin" />
+                    <Icon v-else name="lucide:upload-cloud" class="w-12 h-12 mb-4" />
                     <span class="text-base leading-normal">
                         {{ isUploading ? 'Mengunggah...' : (selectedFileName || 'Pilih file untuk diunggah') }}
                     </span>
+                    <span class="text-xs mt-1 text-gray-400">Tarik & lepas file di sini</span>
                     <input type='file' class="hidden" accept="audio/*" @change="handleFileUpload" />
                 </label>
             </div>
           </div>
         </main>
 
-        <footer class="p-4 border-t bg-gray-50 flex justify-end">
-          <button @click="confirmSelection" :disabled="!selectedAudioUrl" class="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+        <footer class="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-shrink-0">
+          <!-- Audio Player Preview -->
+          <div class="w-full max-w-xs">
+            <audio v-if="selectedAudioUrl" ref="audioPlayer" controls class="w-full h-10"></audio>
+          </div>
+
+          <button @click="confirmSelection" :disabled="!selectedAudioUrl" class="btn-primary">
             Pilih Audio
           </button>
         </footer>
