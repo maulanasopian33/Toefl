@@ -84,7 +84,7 @@ const showMediaModal = ref(false);
                           @delete="emit('deleteQuestion',qIndex)"
                           @move="d=>emit('moveQuestion',qIndex,d)"
                           @updateOption="(o,t)=>emit('updateOption',qIndex,o,t)"
-                          @addOption="emit('addOption',qIndex)"
+                          @addOption="questionIndexPayload => emit('addOption', questionIndexPayload)"
                           @deleteOption="o=>emit('deleteOption',qIndex,o)" />
         </TransitionGroup>
 

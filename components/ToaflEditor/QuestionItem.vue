@@ -69,14 +69,14 @@ function toggleOptionDir(index: number) {
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
           </button>
         </div>
-        <button @click="emit('deleteOption',i)" class="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors flex-shrink-0">
+        <button @click.stop="emit('deleteOption',i)" class="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors flex-shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
     </div>
 
     <!-- Add Option Button -->
-    <button @click="emit('addOption')" class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center space-x-1.5 p-1">
+    <button @click.stop="emit('addOption', qIndex)" class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center space-x-1.5 p-1">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
       <span>Tambah Opsi</span>
     </button>

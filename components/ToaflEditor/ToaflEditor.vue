@@ -1,11 +1,29 @@
 <script setup lang="ts">
+import { useExamData, type Section } from '@/composables/useExamData';
 import { onMounted, ref, nextTick, watch } from 'vue'
-import { DataSoal } from '@/data/DataSoal'
 import Sidebar from './Sidebar.vue'
 import GroupCard from './GroupCard.vue'
 import SectionModal from './SectionModal.vue'
 
 const { $tinymceReady } = useNuxtApp() as any
+const { showNotification } = useNotification()
+
+// --- Pengambilan Data & State Management ---
+const config = useRuntimeConfig();
+const route = useRoute();
+const examId = route.params.id as string;
+const apiUrl = `${config.public.API_URL}/exams/${examId}`;
+const { $auth } = useNuxtApp();
+
+// 1. Panggil composable untuk mengambil data
+const { data: fetchedData, pending: isLoading, error } = useExamData(examId);
+
+// Jika terjadi error saat fetch, tampilkan notifikasi
+if (error.value) {
+  showNotification("Gagal memuat data ujian dari server.", 'error');
+  console.error("Gagal memuat data ujian:", error.value);
+}
+// 2. Panggil composable editor
 const {
   data, activeSectionId, isSidebarOpen, activeSection,
   setActiveSection, toggleSidebar,
@@ -14,34 +32,28 @@ const {
   addGroup, moveGroup, deleteGroup, toggleGroup, updateGroupMedia,
   addQuestion, deleteQuestion, moveQuestion,
   updateOption, addOption, deleteOption
-} = useToaflEditor()
+} = useToaflEditor();
 
-const { showNotification } = useNotification()
-
-onMounted(() => data.value = DataSoal)
-
-watch(activeSection, (newSection, oldSection) => {
-  // Cleanup function to destroy the old editor instance
-  if (oldSection) {
-    const oldEditorId = `section-${oldSection.id}`;
-    const tinymce = (window as any).tinymce;
-    const editor = tinymce?.get(oldEditorId);
-    if (editor) {
-      editor.destroy();
-    }
+// 3. Sinkronkan data dari fetch ke state editor
+watch(fetchedData, (newData) => {
+  if (newData) {
+    // Gunakan JSON.parse/stringify untuk deep copy agar tidak ada referensi silang
+    data.value = JSON.parse(JSON.stringify(newData));
   }
+}, { immediate: true });
 
-  if (newSection) {
-    const editorId = `section-${newSection.id}`;
-    initEditorFor(editorId, () => newSection.instructions, () => updateFromEditor(editorId, (html) => {
-      if (activeSection.value) activeSection.value.instructions = html;
-    }));
+// Watcher untuk inisialisasi section aktif
+// Ditempatkan di sini agar terikat dengan siklus hidup komponen
+// dan data yang baru dimuat.
+watch(() => data.value, (newSections) => {
+  if (newSections && newSections.length > 0 && !activeSectionId.value) {
+    setActiveSection(newSections[0].id);
   }
-});
+}, { immediate: true, deep: true }); // `immediate: true` untuk berjalan saat komponen dimuat
 
 const isSaving = ref(false);
 
-function saveAllChanges() {
+async function saveAllChanges() {
   if (isSaving.value) return;
   isSaving.value = true;
 
@@ -56,16 +68,36 @@ function saveAllChanges() {
   }
 
   // Tunggu DOM diperbarui setelah event blur
-  nextTick(() => {
-    // Simulasi proses penyimpanan ke server dengan jeda 1.5 detik
-    setTimeout(() => {
-      // Di sini, `data.value` sudah berisi semua perubahan terbaru
-      console.log("DATA UNTUK DISIMPAN:", JSON.stringify(data.value, null, 2));
-      showNotification("Semua perubahan telah berhasil disimpan.", 'success');
-      // Di aplikasi nyata, Anda akan mengirim `data.value` ke API backend Anda di sini.
-      isSaving.value = false;
-    }, 1500);
-  });
+  await nextTick();
+
+  // --- DEBUGGING: Tampilkan data yang akan dikirim ---
+  // console.log("Data yang akan disimpan:", JSON.parse(JSON.stringify(data.value)));
+  // showNotification("Mode Debug: Data ditampilkan di console.", "success");
+  // isSaving.value = false;
+
+  // --- FUNGSI SIMPAN AKTIF (Hapus komentar jika sudah siap) ---
+  const user = $auth.currentUser;
+  if (!user) {
+    showNotification("Sesi Anda telah berakhir. Silakan login kembali.", "error");
+    isSaving.value = false;
+    return;
+  }
+
+  try {
+    const token = await user.getIdToken();
+    // Mengirim data terbaru ke API
+    await $fetch(apiUrl, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: data.value // API Anda mengharapkan array of sections
+    });
+    showNotification("Semua perubahan telah berhasil disimpan.", 'success');
+  } catch (error) {
+    console.error("Gagal menyimpan data ujian:", error);
+    showNotification("Gagal menyimpan perubahan ke server.", 'error');
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 const showModal = ref(false)
@@ -90,18 +122,24 @@ async function initTiny(selector: string, initialContent: string, onBlur: () => 
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
 
-        input.onchange = () => {
+        input.onchange = async () => {
           const file = (input.files as FileList)[0];
           
-          // Simulasi unggah: Buat URL sementara untuk gambar yang dipilih.
-          // Di aplikasi nyata, Anda akan mengunggah file ini ke server
-          // dan menggunakan URL yang dikembalikan oleh server.
-          const reader = new FileReader();
-          reader.onload = () => {
-            const blobUrl = URL.createObjectURL(file);
-            callback(blobUrl, { alt: file.name });
-          };
-          reader.readAsDataURL(file);
+          // --- Integrasi API Unggah Gambar ---
+          const formData = new FormData();
+          // Menggunakan key 'media' sesuai spesifikasi API Anda
+          formData.append('media', file);
+
+          try {
+            const response: { url: string } = await $fetch(`${config.public.API_URL}/media/upload`, {
+              method: 'POST',
+              body: formData
+            });
+            callback(response.url, { alt: file.name });
+          } catch (error) {
+            console.error('Gagal mengunggah gambar:', error);
+            showNotification('Gagal mengunggah gambar.', 'error');
+          }
         };
 
         input.click();
@@ -111,7 +149,7 @@ async function initTiny(selector: string, initialContent: string, onBlur: () => 
       ed.on('init',()=>{ ed.setContent(wrapped); ed.execCommand(dir==='rtl'?'mceDirectionRTL':'mceDirectionLTR'); })
       ed.on('blur', onBlur)
     }
-  })
+  });
 }
 
 function toggleDir(editorId:string){
@@ -146,7 +184,7 @@ function initEditorFor(id:string,getInit:()=>string,onBlur:()=>void){
 
 function openSectionModal(id?:string){
   const s=data.value.find(x=>x.id===id)
-  modalPayload.value=s?{...s}:{}
+  modalPayload.value=s?{...s}:{ batchId: examId }
   showModal.value=true
 }
 function onSaveSection(p:any){saveSectionDetails(p);showModal.value=false}
@@ -181,7 +219,14 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                @add-section="openSectionModal()" />
 
       <div class="flex-1 overflow-y-auto p-6">
-        <div v-if="!activeSection" class="flex flex-col items-center justify-center h-full text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div v-if="isLoading" class="flex flex-col items-center justify-center h-full text-center p-8">
+          <svg class="w-16 h-16 text-gray-400 animate-spin mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <h3 class="text-xl font-semibold text-gray-700">Memuat Data Ujian...</h3>
+        </div>
+        <div v-else-if="!activeSection" class="flex flex-col items-center justify-center h-full text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
           <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           <h3 class="text-xl font-semibold text-gray-700">Selamat Datang di Editor</h3>
           <p class="text-gray-500 mt-2">Pilih bagian dari panel samping atau buat bagian baru untuk memulai.</p>
@@ -196,10 +241,15 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
             </div>
           </div>
 
-          <div class="bg-white p-5 rounded-xl mb-6 shadow-sm border border-gray-200">
+          <!-- Gunakan :key untuk memaksa re-render saat activeSection berubah -->
+          <!-- Ini cara yang lebih bersih daripada menggunakan watch untuk destroy/init editor -->
+          <div :key="activeSection.id" class="bg-white p-5 rounded-xl mb-6 shadow-sm border border-gray-200">
             <label class="font-semibold text-gray-700 mb-2 block">Instruksi</label>
             <div class="bg-gray-50 p-1 rounded-lg border border-gray-200">
-              <ClientOnly><textarea :id="`section-${activeSection.id}`">{{activeSection.instructions}}</textarea></ClientOnly>
+              <!-- Pindahkan ClientOnly ke luar textarea untuk stabilitas -->
+              <ClientOnly>
+                <textarea :id="`section-${activeSection.id}`" @vue:mounted="initEditorFor(`section-${activeSection.id}`, () => activeSection.instructions, () => updateFromEditor(`section-${activeSection.id}`, html => activeSection.instructions = html))"></textarea>
+              </ClientOnly>
             </div>
             <div class="flex justify-end mt-2">
               <button @click="toggleDir(`section-${activeSection.id}`)" class="text-sm text-gray-600 hover:text-indigo-600 flex items-center space-x-1 p-1 rounded-md hover:bg-gray-100 transition-colors">
@@ -224,7 +274,7 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                      @deleteQuestion="q=>deleteQuestion(activeSection.id,i,q)"
                      @moveQuestion="(q,d)=>moveQuestion(activeSection.id,i,q,d)"
                      @updateOption="(q,o,t)=>updateOption(activeSection.id,i,q,o,t)"
-                     @addOption="q=>addOption(activeSection.id,i,q)"
+                     @addOption="qIndex=>addOption(activeSection.id,i,qIndex)"
                      @deleteOption="(q,o)=>deleteOption(activeSection.id,i,q,o)" />
           <button @click="addGroup(activeSection.id)" class="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-all duration-200 flex items-center justify-center space-x-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
