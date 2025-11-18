@@ -76,7 +76,7 @@ export default [
       { name: 'Semua Pembayaran', link: '/admin/payments' },
       { name: 'Tambah Pembayaran', link: '/admin/payments/add' },
       { name: 'Tagihan per Batch', link: '/admin/payments/invoices' },
-      { name: 'Rekap Keuangan', link: '/admin/payments/summary' },
+      { name: 'Rekap Keuangan', link: '/admin/payments/recap' },
     ],
   },
 

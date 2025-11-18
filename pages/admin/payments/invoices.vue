@@ -55,11 +55,7 @@
             class="input w-full rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option :value="null" disabled>— Pilih salah satu batch —</option>
-            <option
-              v-for="batch in batches"
-              :key="batch.idBatch"
-              :value="batch.idBatch"
-            >
+            <option v-for="batch in batches" :key="batch.id" :value="batch.id">
               {{ batch.namaBatch }}
             </option>
           </select>
