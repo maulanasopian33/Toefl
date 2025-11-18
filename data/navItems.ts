@@ -120,6 +120,16 @@ export default [
     ],
   },
 
+  // LOGS
+  {
+    name: 'Log Aktivitas',
+    link: '/admin/log-activity',
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+      <path d="M9 4v16h2V4zm5 0v16h2V4z"/>
+    </svg>`,
+  },
+
   // SETTINGS
   {
     name: 'Settings',
