@@ -20,7 +20,7 @@
           :disabled="isSaving"
           type="button"
           class="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-white/10"
-          @click="fetchSettings"
+          @click="() => fetchSettings()"
         >
           <Icon name="lucide:refresh-cw" class="h-4 w-4" />
           Muat Ulang
@@ -497,20 +497,20 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAppSettings } from '@/composables/useAppSettings'
+import { useAppSettings, type AppSettings } from '@/composables/useAppSettings'
 
 definePageMeta({
   title: 'App Settings - Admin Panel',
   layout: 'admin',
 })
 
-const { settings, isLoading, isSaving, error, fetchSettings, updateSettings, uploadMedia } = useAppSettings()
+const { settings, isLoading, isSaving, error, fetchSettings, updateSettings } = useAppSettings()
 
 // Local state for form and file handling
-const form = ref(null)
-const logoFile = ref(null)
-const logoPreviewUrl = ref(null)
-const faviconPreviewUrl = ref(null) // New ref for favicon preview
+const form = ref<AppSettings | null>(null)
+const logoFile = ref<File | null>(null)
+const logoPreviewUrl = ref<string | null>(null)
+const faviconPreviewUrl = ref<string | null>(null) // New ref for favicon preview
 const selectedMediaType = ref<'logo' | 'favicon'>('logo')
 const showMediaModal = ref(false)
 
@@ -519,7 +519,7 @@ const appInitials = computed(() => {
   const source = form.value.appShortName || form.value.appName || 'APP'
   return source
     .split(' ')
-    .map(w => w[0])
+    .map((w: string) => w[0])
     .slice(0, 2)
     .join('')
     .toUpperCase()
@@ -541,12 +541,12 @@ const languageLabel = computed(() => {
 watch(settings, (newSettings) => {
   if (newSettings) {
     // Deep copy to avoid direct mutation of the composable's state
-    form.value = JSON.parse(JSON.stringify(newSettings))
+    form.value = JSON.parse(JSON.stringify(newSettings));
 
-    console.log(settings);
-    faviconPreviewUrl.value = form.value.faviconUrl || null // Initialize favicon preview
-    
-    logoPreviewUrl.value = form.value.logoUrl || null
+    if (form.value) {
+      faviconPreviewUrl.value = form.value.faviconUrl || null; // Initialize favicon preview
+      logoPreviewUrl.value = form.value.logoUrl || null;
+    }
   }
 }, { immediate: true })
 
@@ -577,10 +577,10 @@ const handleSave = async () => {
 
   const settingsToSave = JSON.parse(JSON.stringify(form.value))
 
-  console.log("Initial settingsToSave before logo upload check:", JSON.parse(JSON.stringify(settingsToSave)));
+  // console.log("Initial settingsToSave before logo upload check:", JSON.parse(JSON.stringify(settingsToSave)));
 
   try {
-    console.log("settingsToSave after logo upload (if any):", JSON.parse(JSON.stringify(settingsToSave)));
+    // console.log("settingsToSave after logo upload (if any):", JSON.parse(JSON.stringify(settingsToSave)));
 
     await updateSettings(settingsToSave)
   } catch (uploadError) {

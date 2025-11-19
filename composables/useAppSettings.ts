@@ -90,33 +90,24 @@ export function useAppSettings() {
   const API_URL = `${config.public.API_URL}/settings`
 
   // Menggunakan useFetch untuk mengambil data pengaturan
-  const { data: apiResponse, pending: isLoading, error, refresh: fetchSettings } = useAsyncData<{ data: any }>(
+  const { data: settings, pending: isLoading, error, refresh: fetchSettings } = useAsyncData<AppSettings | null>(
     'app-settings',
     async () => {
-      const token = await useFirebaseToken()
+      const token = await useFirebaseToken();
       if (!token) {
-        throw new Error('Autentikasi pengguna gagal.')
+        throw new Error('Autentikasi pengguna gagal.');
       }
       const response = await $fetch<{ data: any }>(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      return response;
+      });
+      // Map the data right here, so the handler returns the correct type.
+      return response.data ? mapApiToAppSettings(response.data) : null;
     },
     {
       // Nilai awal untuk mencegah error saat rendering di client
-      default: () => ({ data: null }),
-      transform: (response) => {
-        // Map the API's snake_case data to our internal camelCase AppSettings structure
-        return response.data ? mapApiToAppSettings(response.data) : null
-      }
+      default: () => null,
     },
   )
-
-  // Expose the transformed settings data
-  const settings = ref<AppSettings | null>(null);
-  watch(apiResponse, (newResponse) => {
-    settings.value = newResponse;
-  }, { immediate: true });
 
   const isSaving = ref(false)
 
@@ -161,8 +152,8 @@ export function useAppSettings() {
           Authorization: `Bearer ${token}`,
         },
       })
-      settings.value = { ...updatedSettings } // Update local state with the new settings (which are already in camelCase)
       showNotification('Pengaturan aplikasi berhasil diperbarui.', 'success')
+      await fetchSettings() // Refresh data from server to ensure consistency
     } catch (e: any) {
       showNotification('Gagal menyimpan pengaturan ke server.', 'error')
       console.error(e)
