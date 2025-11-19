@@ -7,27 +7,31 @@ import { useNotification } from '@/composables/useNotification'; // Added missin
 import { useNotificationPopup } from '@/composables/NotificationPopup'; // Added missing import for useNotificationPopup
 
 const { showNotification } = useNotification(); // Now this is valid
-const props = defineProps<{ modelValue: boolean }>();
+const props = defineProps<{ modelValue: boolean, mediaType: 'image' | 'file' }>();
 const emit = defineEmits(['update:modelValue', 'select']);
 
-const isUploading = ref(false);
-const isLoadingMedia = ref(false);
-const audioPlayer = ref<HTMLAudioElement | null>(null);
+const isUploading = ref(false)
+const isLoadingMedia = ref(false)
 
-const activeTab = ref('library');
+const activeTab = ref('library')
 
-// Data media dari server
+const selectedMediaUrl = ref<string | null>(null)
+const selectedFileName = ref<string | null>(null)
+const { data: allMediaItems, refresh } = await useMediaGet()
+const { showConfirm } = useNotificationPopup()
 
-const selectedAudioUrl = ref<string | null>(null); // Consider renaming to selectedMediaUrl for generality
-const selectedFileName = ref<string | null>(null);
-const { data: allMediaItems, refresh } = await useMediaGet(); // Removed pending, error as isLoadingMedia is used locally
-const { showConfirm } = useNotificationPopup(); // Destructure showConfirm
+const mediaItems = computed(() => {
+  if (!allMediaItems.value) return []
+  const allItems = allMediaItems.value
 
-// Computed property untuk memfilter hanya audio
-const audioItems = computed(() => {
-  if (!allMediaItems.value) return [];
-  return allMediaItems.value.filter(item => item.mimeType?.startsWith('audio/'));
-});
+  if (props.mediaType === 'image') {
+    return allItems.filter(item => item.mimeType?.startsWith('image/'))
+  } else if (props.mediaType === 'file') {
+    // Filter for anything that is NOT an image and NOT an audio
+    return allItems.filter(item => !item.mimeType?.startsWith('image/') && !item.mimeType?.startsWith('audio/'))
+  }
+  return allItems // Should not be reached given strict prop type
+})
 // --- FUNGSI API ---
 
 async function fetchMedia() {
@@ -69,29 +73,19 @@ async function deleteMedia(id: string) {
 // --- FUNGSI UI ---
 
 async function selectMedia(url: string) { // Renamed for generality
-  selectedAudioUrl.value = url;
-  // Tunggu DOM update, lalu putar audio
-  await nextTick();
-  if (audioPlayer.value) {
-    audioPlayer.value.src = url;
-    try {
-      await audioPlayer.value.play();
-    } catch (error) {
-      console.error("Gagal memutar audio secara otomatis:", error);
-    }
-  }
+  selectedMediaUrl.value = url
 }
 
 function confirmSelection() {
-  if (selectedAudioUrl.value) {
-    emit('select', selectedAudioUrl.value);
-    closeModal();
+  if (selectedMediaUrl.value) {
+    emit('select', selectedMediaUrl.value)
+    closeModal()
   }
 }
 
 function closeModal() {
   emit('update:modelValue', false);
-  selectedAudioUrl.value = null;
+  selectedMediaUrl.value = null; // Clear selection on close
   selectedFileName.value = null; // Clear selected file name on close
 }
 
@@ -112,12 +106,12 @@ async function handleFileUpload(event: Event) {
             await refresh(); // Refresh the list after successful upload
             selectMedia(response.url); // Select the newly uploaded item
             activeTab.value = 'library'; // Pindah ke tab library
-            showNotification('File audio berhasil diunggah.', 'success');
+            showNotification('File berhasil diunggah.', 'success');
             selectedFileName.value = null; // Clear after successful upload
             target.value = null; // Clear the input field
-        } catch (error) {
-            console.error('Gagal mengunggah audio:', error);
-            showNotification('Gagal mengunggah file audio.', 'error');
+        } catch (error: any) {
+            console.error('Gagal mengunggah file:', error);
+            showNotification('Gagal mengunggah file.', 'error');
         } finally {
             isUploading.value = false;
         }
@@ -166,22 +160,22 @@ watch(() => props.modelValue, (isShowing) => {
                 <Icon name="lucide:loader-2" class="w-8 h-8 animate-spin mr-3" />
                 <span>Memuat Pustaka...</span>
               </div>
-              <div v-else-if="audioItems.length === 0" class="flex flex-col items-center justify-center h-full text-center text-gray-500 p-8">
+              <div v-else-if="mediaItems.length === 0" class="flex flex-col items-center justify-center h-full text-center text-gray-500 p-8">
                 <Icon name="lucide:folder-search" class="w-16 h-16 text-gray-300 mb-4" />
-                <h3 class="text-lg font-semibold text-gray-700">Pustaka Audio Kosong</h3>
-                <p class="mt-1 text-sm">Belum ada file audio yang diunggah.</p>
+                <h3 class="text-lg font-semibold text-gray-700">Pustaka {{ props.mediaType === 'image' ? 'Gambar' : 'File' }} Kosong</h3>
+                <p class="mt-1 text-sm">Belum ada {{ props.mediaType === 'image' ? 'gambar' : 'file' }} yang diunggah.</p>
                 <button @click="activeTab = 'upload'" class="btn-primary-small mt-6">
                   <Icon name="lucide:upload" class="w-4 h-4 mr-2" />
                   Unggah File Pertama Anda
                 </button>
               </div>
               <div v-else class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <div v-for="item in audioItems" :key="item.url" @click="selectMedia(item.url)"
+                <div v-for="item in mediaItems" :key="item.url" @click="selectMedia(item.url)"
                      class="relative group border rounded-lg cursor-pointer flex flex-col text-center aspect-square transition-all duration-200"
-                     :class="selectedAudioUrl === item.url ? 'border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50' : 'border-gray-200 hover:shadow-md hover:border-indigo-300'">
-                  <div class="flex-grow flex items-center justify-center overflow-hidden bg-gray-100">
-                    <img v-if="item.mimeType.startsWith('image/')" :src="item.url" :alt="item.originalName" class="w-full h-20 object-cover overflow-hidden">
-                    <Icon v-else name="lucide:file-audio" class="w-10 h-10 text-indigo-400" />
+                     :class="selectedMediaUrl === item.url ? 'border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50' : 'border-gray-200 hover:shadow-md hover:border-indigo-300'">                  <div class="flex-grow flex items-center justify-center overflow-hidden bg-gray-100">
+                    <img v-if="item.mimeType?.startsWith('image/')" :src="item.url" :alt="item.originalName" class="w-full h-20 object-cover overflow-hidden">
+                    <Icon v-else-if="item.mimeType?.startsWith('audio/')" name="lucide:file-audio" class="w-10 h-10 text-indigo-400" />
+                    <Icon v-else name="lucide:file" class="w-10 h-10 text-gray-400" /> <!-- Generic file icon -->
                   </div>
                   <div class="flex-shrink-0 border-t border-gray-200 p-2 w-full">
                     <span class="text-xs font-medium text-gray-600 break-all truncate block">{{ item.originalName }}</span>
@@ -198,9 +192,9 @@ watch(() => props.modelValue, (isShowing) => {
                     <Icon v-else name="lucide:upload-cloud" class="w-12 h-12 mb-4" />
                     <span class="text-base leading-normal">
                         {{ isUploading ? 'Mengunggah...' : (selectedFileName || 'Pilih file untuk diunggah') }}
-                    </span>
+                    </span>                    
                     <span class="text-xs mt-1 text-gray-400">Tarik & lepas file di sini</span>
-                    <input type='file' class="hidden" accept="audio/*" @change="handleFileUpload" />
+                    <input type='file' class="hidden" :accept="props.mediaType === 'image' ? 'image/*' : '*'" @change="handleFileUpload" />
                 </label>
             </div>
           </div>
@@ -208,12 +202,9 @@ watch(() => props.modelValue, (isShowing) => {
 
         <footer class="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-shrink-0">
           <!-- Audio Player Preview -->
-          <div class="w-full max-w-xs">
-            <audio v-if="selectedAudioUrl" ref="audioPlayer" controls class="w-full h-10"></audio>
-          </div>
-
-          <button @click="confirmSelection" :disabled="!selectedAudioUrl" class="btn-primary">
-            Pilih Audio
+          <div class="w-full max-w-xs"></div>
+          <button @click="confirmSelection" :disabled="!selectedMediaUrl" class="btn-primary">
+            Pilih Media
           </button>
         </footer>
       </div>
