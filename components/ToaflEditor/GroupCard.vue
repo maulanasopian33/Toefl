@@ -97,6 +97,14 @@ const showMediaModal = ref(false);
 
     <!-- Media Library Modal -->
     <MediaLibraryModal v-model="showMediaModal" @select="url => emit('updateGroupMedia', 'audioUrl', url)" />
+
+      <ClientOnly>
+    <MediaLibraryModal
+      v-model="showMediaModal"
+      :media-type="'audio'"
+      @select="url => emit('updateGroupMedia', 'audioUrl', url)"
+    />
+  </ClientOnly>
   </div>
 </template>
 

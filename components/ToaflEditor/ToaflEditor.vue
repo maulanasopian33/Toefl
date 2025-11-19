@@ -101,7 +101,7 @@ async function saveAllChanges() {
 }
 
 const showModal = ref(false)
-const modalPayload = ref<{id?: string; name?: string; type?: string; instructions?: string}>()
+const modalPayload = ref<Partial<Section> & { batchId?: string }>()
 
 async function initTiny(selector: string, initialContent: string, onBlur: () => void) {
   await $tinymceReady()
@@ -212,7 +212,7 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
 
     <main class="flex flex-1">
       <Sidebar class="shadow-lg" :sections="data.map(s=>({id:s.id,name:s.name}))"
-               :active-id="activeSectionId"
+               :active-id="activeSectionId || ''"
                :is-open="isSidebarOpen"
                @select="setActiveSection"
                @toggle="toggleSidebar"
@@ -232,7 +232,7 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
           <p class="text-gray-500 mt-2">Pilih bagian dari panel samping atau buat bagian baru untuk memulai.</p>
         </div>
 
-        <div v-else>
+        <div v-else-if="activeSection">
           <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
             <h2 class="text-3xl font-bold text-gray-800">{{activeSection.name}}</h2>
             <div class="space-x-2">
