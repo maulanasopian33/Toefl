@@ -487,17 +487,24 @@
     </div>
   </div>
   <ClientOnly>
-    <ToaflEditorMediaLibraryModal
-      v-model="showMediaModal"
-      :media-type="'image'"
-      @select="handleMediaSelect"
-    />
+    <template #default>
+      <ToaflEditorMediaLibraryModal
+        v-model="showMediaModal"
+        :media-type="'image'"
+        @select="handleMediaSelect"
+      />
+    </template>
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAppSettings, type AppSettings } from '@/composables/useAppSettings'
+import type { AppSettings } from '@/composables/useAppSettings';
+
+// Lazy load the component only on the client side
+const ToaflEditorMediaLibraryModal = defineAsyncComponent(() =>
+  import('@/components/ToaflEditor/MediaLibraryModal.vue')
+)
 
 definePageMeta({
   title: 'App Settings - Admin Panel',
@@ -569,6 +576,7 @@ const handleMediaSelect = (url: string) => {
     form.value.faviconUrl = url; // Update form data
     faviconPreviewUrl.value = url; // Update preview for favicon
   }
+  showMediaModal.value = false; // Close the modal after selection
 }
 const handleSave = async () => {
   if (!form.value || isSaving.value) return // Check isSaving at the very beginning

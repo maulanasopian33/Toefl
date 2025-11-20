@@ -3,6 +3,10 @@ import { ref, onMounted, watch, nextTick } from 'vue';
 import QuestionItem from './QuestionItem.vue';
 import MediaLibraryModal from './MediaLibraryModal.vue';
 import CustomAudioPlayer from './CustomAudioPlayer.vue';
+// Lazy load the component only on the client side
+const ToaflEditorMediaLibraryModal = defineAsyncComponent(() =>
+  import('@/components/ToaflEditor/MediaLibraryModal.vue')
+)
 
 const props = defineProps<{sectionId:string,groupIndex:number,groupsLength:number,group:any}>()
 const emit = defineEmits(['toggle','moveGroup','deleteGroup','updateGroupMedia','initPassageEditor','initQuestionEditor','toggleDir',
@@ -94,17 +98,15 @@ const showMediaModal = ref(false);
         </button>
       </div>
     </Transition>
-
-    <!-- Media Library Modal -->
-    <MediaLibraryModal v-model="showMediaModal" @select="url => emit('updateGroupMedia', 'audioUrl', url)" />
-
-      <ClientOnly>
-    <MediaLibraryModal
-      v-model="showMediaModal"
-      :media-type="'audio'"
-      @select="url => emit('updateGroupMedia', 'audioUrl', url)"
-    />
-  </ClientOnly>
+    <ClientOnly>
+      <template #default>
+        <ToaflEditorMediaLibraryModal
+          v-model="showMediaModal"
+          :media-type="'audio'"
+          @select="url => emit('updateGroupMedia', 'audioUrl', url)"
+        />
+      </template>
+    </ClientOnly>
   </div>
 </template>
 
