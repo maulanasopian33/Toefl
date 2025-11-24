@@ -1,28 +1,27 @@
-// middleware/role-check.ts
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  // Access the requiredRole property directly from the meta object
-  const requiredRole = to.meta.requiredRole as string;
+  // Middleware ini hanya berjalan di sisi klien, di mana state otentikasi sudah tersedia.
+  if (process.server) return
 
-  // If there's no required role, let the user proceed
-  if (!requiredRole) {
-    return;
+  const requiredRoles = to.meta.roles as string[] | undefined
+
+  // Jika rute tidak memerlukan role spesifik, izinkan akses.
+  if (!requiredRoles || requiredRoles.length === 0) {
+    return
   }
 
-  // Fetch the user data
-  const { data, error } = await useUserMe();
+  const { claims, isAuthenticated, isLoading } = useAuth()
+  const { showNotification } = useNotification()
 
-  // Handle a failed data fetch
-  if (error.value) {
-    console.error('Failed to fetch user data:', error.value);
-    return navigateTo('/auth/login');
+  // Tunggu hingga state otentikasi selesai dimuat
+  if (isLoading.value) {
+    // Anda bisa menambahkan logika loading di sini jika perlu,
+    // tapi untuk sekarang kita tunggu saja.
+    await new Promise(resolve => setTimeout(resolve, 50)) // simple delay
   }
 
-  // Check if the user's role matches the required role
-  if (data.value?.role !== requiredRole) {
-    return navigateTo('/forbidden');
+  // Jika pengguna terotentikasi dan rolenya tidak termasuk dalam yang diizinkan
+  if (isAuthenticated.value && !requiredRoles.includes(claims.value.role || '')) {
+    showNotification('Anda tidak memiliki izin untuk mengakses halaman ini.', 'error')
+    return navigateTo('/forbidden') // Arahkan ke halaman terlarang
   }
-
-  // If all checks pass, allow navigation
-  return;
-});
+})

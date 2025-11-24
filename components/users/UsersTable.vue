@@ -163,6 +163,13 @@
                   <button type="button" class="flex w-full items-center justify-between px-3 py-2 hover:bg-slate-50" @click="emit('toggleDisable', user)">
                     <span>{{ user.disabled ? 'Aktifkan Akun' : 'Nonaktifkan Akun' }}</span>
                   </button>
+                  <button type="button" class="flex w-full items-center justify-between px-3 py-2 hover:bg-slate-50" @click="emit('changeRole', user)">
+                    <span>Ubah Role</span>
+                  </button>
+                  <div class="my-1 h-px bg-slate-100"></div>
+                  <button type="button" class="flex w-full items-center justify-between px-3 py-2 text-red-600 hover:bg-red-50" @click="emit('deleteUser', user)">
+                    <span>Hapus User</span>
+                  </button>
                 </div>
               </transition>
             </td>
@@ -193,7 +200,7 @@ defineProps<{
   totalPages: number
 }>()
 
-const emit = defineEmits(['viewDetail', 'resetPassword', 'toggleDisable', 'update:currentPage'])
+const emit = defineEmits(['viewDetail', 'resetPassword', 'toggleDisable', 'update:currentPage', 'deleteUser', 'changeRole'])
 
 // 3-dot menu state
 const openMenuUid = ref<string | null>(null)

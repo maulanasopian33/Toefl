@@ -32,7 +32,15 @@
         @view-detail="handleViewDetail"
         @reset-password="handleResetPassword"
         @toggle-disable="handleToggleDisable"
+        @delete-user="handleDeleteUser"
+        @change-role="handleChangeRole"
+        
         @update:currentPage="p => page = p"
+      />
+
+      <UserDetailModal
+        v-model="showDetailModal"
+        :user="selectedUser"
       />
     </div>
   </section>
@@ -44,11 +52,17 @@ import UsersHeader from '@/components/users/UsersHeader.vue'
 import UsersFilters from '@/components/users/UsersFilters.vue'
 import UsersSummary from '@/components/users/UsersSummary.vue'
 import UsersTable from '@/components/users/UsersTable.vue'
+import UserDetailModal from '@/components/users/UserDetailModal.vue'
 import { useNotification } from '@/composables/useNotification'
+import { useNotificationPopup } from '@/composables/NotificationPopup'
+import { useUserDelete } from '@/composables/users/delete'
+import { useUserChangeRole } from '@/composables/users/changeRole'
 
 definePageMeta({
   title: 'Peserta - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 const {
@@ -76,11 +90,14 @@ const {
   programOptions,
 } = useUsers()
 
+const showDetailModal = ref(false);
 const { showNotification } = useNotification()
+const { showConfirm, showRoleSelector } = useNotificationPopup()
 
 // Placeholder handlers – nanti sambungkan ke Firebase Admin API
 const handleViewDetail = (user: User) => {
-  console.log('View detail', user.uid)
+  selectedUser.value = user;
+  showDetailModal.value = true;
 }
 
 const handleResetPassword = (user: User) => {
@@ -89,7 +106,13 @@ const handleResetPassword = (user: User) => {
 
 const handleToggleDisable = async (user: User) => {
   const actionText = user.disabled ? 'mengaktifkan' : 'menonaktifkan'
-  const confirmed = confirm(`Apakah Anda yakin ingin ${actionText} akun ${user.name}?`)
+  const confirmed = await showConfirm(
+    `Pengguna "${user.name}" akan di${actionText}. Anda yakin?`,
+    {
+      title: `Konfirmasi ${actionText.charAt(0).toUpperCase() + actionText.slice(1)} Akun`,
+      confirmText: `Ya, ${actionText}`,
+    }
+  )
 
   if (!confirmed) return
 
@@ -101,7 +124,72 @@ const handleToggleDisable = async (user: User) => {
     showNotification(error.message || `Gagal ${actionText} akun.`, 'error')
   }
 }
+
+const handleDeleteUser = async (user: User) => {
+  const confirmed = await showConfirm(
+    `Pengguna "${user.name}" akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.`,
+    {
+      title: 'Hapus Pengguna Permanen?',
+      type: 'danger',
+      confirmText: 'Ya, Hapus Pengguna',
+    }
+  )
+
+  if (!confirmed) return
+
+  try {
+    await useUserDelete(user.uid)
+    showNotification(`Pengguna "${user.name}" berhasil dihapus.`, 'success')
+    await fetchUsers() // Muat ulang data pengguna
+  } catch (error: any) {
+    console.error('Gagal menghapus pengguna:', error)
+    showNotification(error.message || 'Terjadi kesalahan saat menghapus pengguna.', 'error')
+  }
+}
+
+const handleChangeRole = async (user: User) => {
+  // Daftar role yang tersedia
+  const availableRoles = ['admin', 'user', 'proctor'];
+
+  const newRole = await showRoleSelector(
+    `Pilih role baru untuk pengguna "${user.name}". Role saat ini adalah "${user.role}".`,
+    user.role,
+    availableRoles,
+    { title: 'Ubah Role Pengguna' }
+  );
+
+  // Jika pengguna membatalkan atau tidak memilih role baru
+  if (!newRole || newRole === user.role) {
+    return;
+  }
+
+  try {
+    await useUserChangeRole(user.uid, newRole);
+    showNotification(`Role untuk ${user.name} berhasil diubah menjadi ${newRole}.`, 'success');
+    await fetchUsers(); // Muat ulang data untuk menampilkan role baru
+  } catch (error: any) {
+    showNotification(error.message || 'Gagal mengubah role pengguna.', 'error');
+  }
+}
+
+const closeModal = () => {
+  showDetailModal.value = false;
+}
+
+const selectedUser = ref(null);
+
+
+
+
 </script>
+
+
+
+
+
+
+
+
 
 <style scoped>
 .shadow-xs {

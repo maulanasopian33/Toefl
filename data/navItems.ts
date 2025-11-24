@@ -31,9 +31,9 @@ export default [
       <path d="M16 11a4 4 0 1 0-4-4 4.005 4.005 0 0 0 4 4zM8 11a3 3 0 1 0-3-3 3.003 3.003 0 0 0 3 3zm8 2c-2.67 0-8 1.34-8 4v2h12v-2c0-2.66-5.33-4-8-4zM8 13c-2.67 0-6 1.34-6 4v2h4v-2c0-1.37.63-2.55 1.7-3.5A9.18 9.18 0 0 0 8 13z"/>
     </svg>`,
     children: [
-      { name: 'Semua Peserta', link: '/admin/participants' },
-      { name: 'Tambah Peserta', link: '/admin/participants/add' },
-      { name: 'Import Peserta', link: '/admin/participants/import' },
+      { name: 'Semua Peserta', link: '/admin/peserta' },
+      { name: 'Tambah Peserta', link: '/admin/peserta/add' },
+      { name: 'Import Peserta', link: '/admin/peserta/import' },
     ],
   },
 
@@ -89,7 +89,7 @@ export default [
     </svg>`,
     children: [
       { name: 'Hasil per Batch', link: '/admin/results/batch' },
-      { name: 'Hasil per Peserta', link: '/admin/results/participants' },
+      { name: 'Hasil per Peserta', link: '/admin/results/peserta' },
     ],
   },
 
@@ -116,7 +116,7 @@ export default [
     </svg>`,
     children: [
       { name: 'Laporan Ujian', link: '/admin/reports/exam' },
-      { name: 'Laporan Peserta', link: '/admin/reports/participants' },
+      { name: 'Laporan Peserta', link: '/admin/reports/peserta' },
       { name: 'Laporan Keuangan', link: '/admin/reports/finance' },
     ],
   },

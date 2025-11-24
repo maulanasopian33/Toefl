@@ -240,6 +240,8 @@ import PaymentDetailModal from '@/components/payments/PaymentDetailModal.vue';
 definePageMeta({
   title: 'Invoices by Batch - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 const {

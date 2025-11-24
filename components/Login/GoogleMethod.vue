@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-const { signInWithGoogle, error } = useAuth()
+const { signInWithGoogle, error } = useAuthActions()
 // onMounted(() => {
 //   $auth.onAuthStateChanged(user => {
 //     if (user) {

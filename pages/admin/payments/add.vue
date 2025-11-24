@@ -62,6 +62,8 @@ import { useNotification } from '@/composables/useNotification';
 definePageMeta({
   title: 'Add Payment - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 const { createPayment } = usePayments();

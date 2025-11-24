@@ -16,18 +16,53 @@ const confirm = ref({
   resolve: (value: boolean) => {},
 });
 
+// State untuk dialog pemilihan role
+const roleSelector = ref({
+  show: false,
+  title: 'Pilih Role Baru',
+  message: '',
+  currentRole: '',
+  availableRoles: [] as string[],
+  resolve: (value: string | null) => {},
+});
+
 /**
  * Composable untuk mengelola notifikasi dan dialog konfirmasi global.
  */
 export const useNotificationPopup = () => {
   // Fungsi untuk menampilkan dialog konfirmasi
-  const showConfirm = (message: string, options?: { type?: 'info' | 'warning' | 'danger', title?: string }): Promise<boolean> => {
+  const showConfirm = (
+    message: string,
+    options?: {
+      type?: 'info' | 'warning' | 'danger'
+      title?: string
+      confirmText?: string
+      html?: boolean
+    }
+  ): Promise<boolean> => {
     confirm.value.show = true;
     confirm.value.message = message;
     confirm.value.type = options?.type || 'warning';
     confirm.value.title = options?.title || 'Anda Yakin?';
     return new Promise((resolve) => {
       confirm.value.resolve = resolve;
+    });
+  };
+
+  // Fungsi untuk menampilkan dialog pemilihan role
+  const showRoleSelector = (
+    message: string,
+    currentRole: string,
+    availableRoles: string[],
+    options?: { title?: string }
+  ): Promise<string | null> => {
+    roleSelector.value.show = true;
+    roleSelector.value.message = message;
+    roleSelector.value.currentRole = currentRole;
+    roleSelector.value.availableRoles = availableRoles;
+    roleSelector.value.title = options?.title || 'Ubah Role Pengguna';
+    return new Promise((resolve) => {
+      roleSelector.value.resolve = resolve;
     });
   };
 
@@ -43,11 +78,27 @@ export const useNotificationPopup = () => {
     confirm.value.resolve(false);
   };
 
+  // Fungsi yang dipanggil saat role baru dipilih dan disimpan
+  const onSelectRole = (newRole: string) => {
+    roleSelector.value.show = false;
+    roleSelector.value.resolve(newRole);
+  };
+
+  // Fungsi yang dipanggil saat modal role dibatalkan
+  const onCancelRoleSelection = () => {
+    roleSelector.value.show = false;
+    roleSelector.value.resolve(null);
+  };
+
   return {
     notification: readonly(notification),
     confirm: readonly(confirm),
+    roleSelector: readonly(roleSelector),
     showConfirm,
+    showRoleSelector,
     onConfirm,
     onCancel,
+    onSelectRole,
+    onCancelRoleSelection,
   };
 };

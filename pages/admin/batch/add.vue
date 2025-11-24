@@ -210,7 +210,12 @@ const { $toast } = useNuxtApp()
 
 const { startLoading, stopLoading } = useLoading()
 const { showAlert } = useNotificationPopup()
-definePageMeta({ title: 'Tambah Batch - Admin Panel', layout: 'admin' })
+definePageMeta({ 
+  title: 'Tambah Batch - Admin Panel',
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
+})
 
 const isLoading = ref(false)
 const formData = reactive({

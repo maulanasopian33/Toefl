@@ -16,7 +16,9 @@ import { useBatchDelete } from '@/composables/Batch/delete';
 import { useNotificationPopup } from '@/composables/NotificationPopup';
 definePageMeta({
   title: 'Tambah Batch - Admin Panel',
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 
 const { data, pending, refresh } = await useBatchGet();

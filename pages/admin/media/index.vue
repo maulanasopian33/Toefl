@@ -105,7 +105,9 @@ const { showConfirm } = useNotificationPopup();
 const { showNotification } = useNotification();
 definePageMeta({
   title: 'Media Library - Admin Panel',
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 const q = ref('');
 const selectedType = ref('');

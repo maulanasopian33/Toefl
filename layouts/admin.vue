@@ -1,5 +1,6 @@
 <template>
   <div class="flex h-screen overflow-hidden bg-gray-100">
+    <!-- Tampilkan loading overlay jika state auth sedang dimuat -->
     <div
       v-if="isSidebarOpen"
       class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 lg:hidden"
@@ -17,27 +18,25 @@
     </main>
     <LoadingPopup/>
     <NotificationPopup />
+    <RoleSelectorModal />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import NotificationPopup from '@/components/NotificationPopup.vue';
-import { useNuxtApp } from '#app';
+import RoleSelectorModal from '@/components/global/RoleSelectorModal.vue';
+import { useAuth } from '@/composables/useAuth';
 
 const isSidebarOpen = ref(false);
-const user = ref<any>(null); // To store Firebase user object
-const { $auth } = useNuxtApp();
+
+// Gunakan composable auth yang baru
+const { user, isLoading: isAuthLoading } = useAuth();
+
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
-
-onMounted(() => {
-  $auth.onAuthStateChanged(firebaseUser => {
-    user.value = firebaseUser;
-  });
-});
 </script>
 
 <style>

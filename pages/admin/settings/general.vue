@@ -509,6 +509,8 @@ const ToaflEditorMediaLibraryModal = defineAsyncComponent(() =>
 definePageMeta({
   title: 'App Settings - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 
 const { settings, isLoading, isSaving, error, fetchSettings, updateSettings } = useAppSettings()

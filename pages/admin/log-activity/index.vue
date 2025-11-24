@@ -124,6 +124,8 @@ import LogItem from '@/components/logsActivity/LogItem.vue';
 definePageMeta({
   title: 'System Logs - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 const {

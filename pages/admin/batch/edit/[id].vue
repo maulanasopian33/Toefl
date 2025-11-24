@@ -214,7 +214,12 @@ const { startLoading, stopLoading } = useLoading()
 const { showAlert } = useNotificationPopup()
 const { $toast } = useNuxtApp() 
 
-definePageMeta({ title: 'Edit Batch - Admin Panel', layout: 'admin' })
+definePageMeta({
+  title: 'Edit Batch - Admin Panel',
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
+})
 
 const route = useRoute()
 const id = route.params.id // ID Batch dari URL

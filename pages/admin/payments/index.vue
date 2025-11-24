@@ -114,6 +114,8 @@ import PaymentDetailModal from '@/components/payments/PaymentDetailModal.vue';
 definePageMeta({
   title: 'Payment - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 const { showNotification } = useNotification();

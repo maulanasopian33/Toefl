@@ -3,7 +3,9 @@ import ToaflEditor from '@/components/ToaflEditor/ToaflEditor.vue';
 import NotificationPopup from '@/components/NotificationPopup.vue';
 definePageMeta({
   title: 'Editor Soal - Admin Panel',
-  layout: false // Menonaktifkan layout bawaan
+  layout: false,
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 </script>
 

@@ -82,7 +82,9 @@ const router = useRouter();
 const id = route.params.id;
 definePageMeta({
   title: 'dashboard Batch - Admin Panel',
-  layout: 'admin'
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 
 // -------------------------------------------------

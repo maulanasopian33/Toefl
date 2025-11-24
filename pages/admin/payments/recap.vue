@@ -408,6 +408,8 @@ import RevenueStatusDonut from '@/components/analytics/RevenueStatusDonut.vue';
 definePageMeta({
   title: 'Financial Recap - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 });
 
 

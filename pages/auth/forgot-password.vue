@@ -37,7 +37,6 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { useAuth } from '../../composables/Auth';
 const { startLoading, stopLoading } = useLoading();
 const { setTitle, setDescription, NavLogin, NavRegister } = useLayoutStore();
 const email = ref('');
@@ -45,7 +44,7 @@ const success = ref(false);
 const countdown = ref(300); // 5 minutes in seconds
 const isResendDisabled = ref(false);
 let countdownInterval: any = null;
-const { resetPassword, error } = useAuth();
+const { resetPassword } = useAuthActions();
 
 definePageMeta({
   layout: 'auth'
@@ -75,12 +74,10 @@ const startCountdown = () => {
 const handleResetPassword = async () => {
   startLoading();
   success.value = false;
-  await resetPassword(email.value);
-  if (!error.value) {
-    success.value = true;
-    stopLoading();
-    startCountdown();
-  }
+  await resetPassword(email.value); // Fungsi ini sekarang menangani notifikasi sendiri
+  success.value = true; // Asumsikan sukses jika tidak ada error yang menghentikan eksekusi
+  stopLoading();
+  startCountdown();
 };
 
 const handleResendCode = async () => {

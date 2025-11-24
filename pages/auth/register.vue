@@ -44,13 +44,29 @@ const email = ref('');
 const password = ref('');
 const error = ref(null);
 const handleRegister = async () => {
+  const config = useRuntimeConfig();
   try {
     error.value = null; // Reset error
-    await createUserWithEmailAndPassword($auth, email.value, password.value);
+    const userCredential = await createUserWithEmailAndPassword($auth, email.value, password.value);
+    const user = userCredential.user;
+
+    // Setelah registrasi Firebase berhasil, panggil backend untuk sinkronisasi
+    const idToken = await user.getIdToken();
+    await $fetch(`${config.public.API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+      body: {
+        // Kirim data tambahan jika diperlukan oleh backend
+        name: 'Pengguna Baru' // Contoh, bisa diambil dari form
+      }
+    });
     
     // Pendaftaran berhasil, Anda bisa mengarahkan pengguna ke halaman lain
     showAlert('Pendaftaran berhasil!');
-    navigateTo('/auth/personality'); // Contoh: Arahkan ke halaman dashboard
+    navigateTo('/'); // Arahkan ke halaman utama, middleware akan mengurus sisanya
   } catch (err : any) {
     console.log(err);
     switch (err.code) {

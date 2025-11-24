@@ -14,8 +14,12 @@ export interface User {
   createdAt: string
   disabled: boolean
   nim?: string
-  fakultas?: string
-  prodi?: string
+  // Add detailuser property
+  detailuser?: {
+    nim?: string
+    fakultas?: string
+    prodi?: string
+  }
 }
 
 export function useUsers() {

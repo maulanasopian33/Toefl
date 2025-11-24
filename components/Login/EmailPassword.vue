@@ -24,9 +24,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useAuth } from '../../composables/Auth';
 const { startLoading, stopLoading } = useLoading();
-const { loginEmailPassword, error} = useAuth();
+const { loginEmailPassword} = useAuthActions();
 const email = ref('');
 const password = ref('');
 const showPasswordStrength = ref(false);

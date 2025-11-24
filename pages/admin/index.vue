@@ -67,6 +67,8 @@ const options = {
 
 <script>
 definePageMeta({
-  layout: "admin"
+  layout: "admin",
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
 })
 </script>
