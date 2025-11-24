@@ -18,10 +18,18 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // tapi untuk sekarang kita tunggu saja.
     await new Promise(resolve => setTimeout(resolve, 50)) // simple delay
   }
-
-  // Jika pengguna terotentikasi dan rolenya tidak termasuk dalam yang diizinkan
+  
+  // Jika pengguna terotentikasi dan rolenya tidak termasuk dalam yang diizinkan, tangani pengalihan.
   if (isAuthenticated.value && !requiredRoles.includes(claims.value.role || '')) {
+    const userRole = claims.value.role
+
+    // KASUS KHUSUS: Jika admin mencoba mengakses halaman user, arahkan ke dashboard admin.
+    if (userRole === 'admin' && requiredRoles.includes('user')) {
+      return navigateTo('/admin')
+    }
+
+    // Untuk semua kasus lain, arahkan ke halaman 'forbidden'.
     showNotification('Anda tidak memiliki izin untuk mengakses halaman ini.', 'error')
-    return navigateTo('/forbidden') // Arahkan ke halaman terlarang
+    return navigateTo('/forbidden')
   }
 })

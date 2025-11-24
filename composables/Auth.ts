@@ -5,15 +5,17 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import { useAuth as useAuthState } from './useAuth'; // Impor state manager
+import { useNotification } from './useNotification'; // Impor useNotification
 
 const { startLoading, stopLoading } = useLoading();
-const { showAlert, showConfirm } = useNotificationPopup();
+const { showNotification } = useNotification(); // Ganti showAlert dengan showNotification
 
 /**
  * Composable ini berisi FUNGSI AKSI terkait otentikasi (login, logout, dll).
  * Untuk STATE pengguna (data, role, status login), gunakan `useAuth()`.
  */
 export const useAuthActions = () => {
+  const config = useRuntimeConfig(); // Tambahkan ini
   const { $auth, $googleProvider } = useNuxtApp();
   const router = useRouter();
 
@@ -21,9 +23,24 @@ export const useAuthActions = () => {
     try {
       startLoading();
       await signInWithPopup($auth, $googleProvider);
-      // Setelah login, state di `useAuth` akan diperbarui secara otomatis.
-      // Kita hanya perlu menunggu dan kemudian redirect.
-      await redirectBasedOnRole();
+      
+      // --- LANGKAH BARU: Panggil backend untuk konfirmasi/set custom claims ---
+      const idToken = await $auth.currentUser?.getIdToken(); // Dapatkan token terbaru
+      if (!idToken) throw new Error('Tidak dapat mengambil token otentikasi.');
+
+      await $fetch(`${config.public.API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        // Anda bisa mengirim data tambahan jika backend membutuhkannya
+        body: { /* optional data */ }
+      });
+      // --- AKHIR LANGKAH BARU ---
+
+      // Setelah backend selesai, baru redirect
+      await redirectBasedOnRole(); 
     } catch (err: any) {
       errorHandler(err);
     } finally {
@@ -36,6 +53,21 @@ export const useAuthActions = () => {
     try {
       startLoading();
       await signInWithEmailAndPassword($auth, email, password);
+
+      // --- LANGKAH BARU: Panggil backend untuk konfirmasi/set custom claims ---
+      const idToken = await $auth.currentUser?.getIdToken(); // Dapatkan token terbaru
+      if (!idToken) throw new Error('Tidak dapat mengambil token otentikasi.');
+
+      await $fetch(`${config.public.API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: { /* optional data */ }
+      });
+      // --- AKHIR LANGKAH BARU ---
+
       await redirectBasedOnRole();
     } catch (e: any) {
       errorHandler(e);
@@ -46,12 +78,15 @@ export const useAuthActions = () => {
 
   const redirectBasedOnRole = async () => {
     // Tunggu sesaat agar custom claims termuat
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Delay ini mungkin tidak lagi diperlukan atau bisa diperpendek setelah backend call
     const { forceRefreshUserToken } = useAuthState();
     await forceRefreshUserToken(); // Paksa refresh token untuk mendapatkan claims terbaru
 
     const { claims } = useAuthState();
     const role = claims.value.role;
+
+    // --- DEBUGGING POINT 2: Periksa role yang digunakan untuk redirect ---
+    console.log('[AuthActions] Redirecting based on role:', role);
 
     if (role === 'admin') {
       return navigateTo('/admin');
@@ -67,7 +102,7 @@ export const useAuthActions = () => {
         throw new Error('Anda harus login terlebih dahulu.');
       }
       await updatePassword($auth.currentUser, newPassword);
-      showAlert('Password berhasil diubah.', 'success');
+      showNotification('Password berhasil diubah.', 'success');
     } catch (e: any) {
       errorHandler(e);
     }
@@ -77,7 +112,7 @@ export const useAuthActions = () => {
   const resetPassword = async (email: string) => {
     try {
       await sendPasswordResetEmail($auth, email);
-      showAlert('Email reset password telah dikirim. Silakan periksa kotak masuk Anda.', 'success');
+      showNotification('Email reset password telah dikirim. Silakan periksa kotak masuk Anda.', 'success');
     } catch (e: any) {
       errorHandler(e);
     }
@@ -109,7 +144,7 @@ export const useAuthActions = () => {
     }
 
     // Tampilkan pesan dan perbarui nilai error
-    showAlert(errorMessage);
+    showNotification(errorMessage, 'error'); // Gunakan showNotification dengan tipe 'error'
   };
 
   const logout = async () => {

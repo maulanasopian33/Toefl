@@ -222,13 +222,15 @@ onUnmounted(() => {
 })
 
 // Helpers
-const initials = (name: string) =>
-  name
+const initials = (name?: string | null) => {
+  if (!name) return ''
+  return name
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join('')
+}
 
 const formatDate = (iso?: string) => {
   if (!iso) return ''
