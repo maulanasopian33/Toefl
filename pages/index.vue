@@ -32,7 +32,7 @@
             </div>
 
             <!-- Sidebar dengan Link Cepat -->
-            <div class="lg:col-span-1 h-fit lg:sticky top-6">
+            <div class="hidden lg:block lg:col-span-1 h-fit lg:sticky top-6">
                 <h2 class="text-xl font-semibold mb-4 text-slate-800">Menu Cepat</h2>
                 <nav class="space-y-3">
                     <a href="#" class="quick-link-card group bg-emerald-50 border-emerald-200 hover:border-emerald-400">
@@ -101,6 +101,37 @@
             @join-batch="handleJoinBatch"
         />
     </main>
+
+    <!-- Bottom Navigation (Hanya untuk Mobile) -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-1px_4px_rgba(0,0,0,0.05)]">
+      <nav class="flex justify-around">
+        <a href="#" class="flex flex-col items-center justify-center text-center p-2 w-full text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+          <div class="p-2 rounded-full">
+            <Icon name="lucide:book-open-check" class="w-5 h-5" />
+          </div>
+          <span class="text-[10px] font-medium leading-tight">Materi</span>
+        </a>
+        <a href="#" class="flex flex-col items-center justify-center text-center p-2 w-full text-slate-600 hover:bg-slate-50 hover:text-sky-600 transition-colors">
+          <div class="p-2 rounded-full">
+            <Icon name="lucide:file-question" class="w-5 h-5" />
+          </div>
+          <span class="text-[10px] font-medium leading-tight">Latihan</span>
+        </a>
+        <a href="#" class="flex flex-col items-center justify-center text-center p-2 w-full text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+          <div class="p-2 rounded-full">
+            <Icon name="lucide:bar-chart-3" class="w-5 h-5" />
+          </div>
+          <span class="text-[10px] font-medium leading-tight">Riwayat</span>
+        </a>
+        <a href="#" class="flex flex-col items-center justify-center text-center p-2 w-full text-slate-600 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+          <div class="p-2 rounded-full">
+            <Icon name="lucide:help-circle" class="w-5 h-5" />
+          </div>
+          <span class="text-[10px] font-medium leading-tight">Bantuan</span>
+        </a>
+      </nav>
+    </div>
+
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="overflow-x-hidden">
     <HeaderPrimary/>
     <main class="min-h-screen m-auto">
       <NuxtPage/>
