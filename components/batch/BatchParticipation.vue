@@ -1,216 +1,178 @@
 <template>
-  <div class="card mb-6">
-    <h3 class="text-xl font-bold text-gray-800 mb-4">Keikutsertaan</h3>
-    <div :class="alertClass">
-      <p class="font-semibold mb-2">{{ statusTitle }}</p>
-      <p class="text-sm" :class="{ 'mb-4': showButton }">{{ statusMessage }}</p>
-      <button
-        v-if="showButton"
-        @click="handleButtonClick"
-        :class="buttonClass"
-        class="text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out"
-      >
-        {{ buttonText }}
-      </button>
+  <div class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+    <div class="p-6">
+      <h2 class="text-lg font-semibold text-gray-800">Status Partisipasi Anda</h2>
+      
+      <!-- Status: Belum Bergabung -->
+      <div v-if="!participationStatus" class="mt-4 text-center">
+        <div class="flex justify-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <Icon name="lucide:user-plus" class="h-8 w-8 text-gray-500" />
+          </div>
+        </div>
+        <p class="mt-3 font-medium text-gray-800">Anda belum terdaftar di batch ini.</p>
+        <p class="mt-1 text-sm text-gray-500">Daftar sekarang untuk mengikuti tes pada batch ini.</p>
+        <button @click="handleJoinBatch" :disabled="isLoading" class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-60">
+          <Icon v-if="isLoading" name="lucide:loader-2" class="h-4 w-4 animate-spin" />
+          <span v-else>Join Batch Sekarang</span>
+        </button>
+      </div>
+
+      <!-- Status: Menunggu Pembayaran -->
+      <div v-else-if="participationStatus === 'pending_payment'" class="mt-4 text-center">
+        <div class="flex justify-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-100">
+            <Icon name="lucide:hourglass" class="h-8 w-8 text-yellow-500" />
+          </div>
+        </div>
+        <p class="mt-3 font-medium text-gray-800">Menunggu Pembayaran</p>
+        <p class="mt-1 text-sm text-gray-500">Selesaikan pembayaran sebelum batas waktu untuk mengamankan tempat Anda.</p>
+        <button @click="handleGoToPayment" class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-yellow-400">
+          Lanjutkan Pembayaran
+        </button>
+      </div>
+
+      <!-- Status: Sudah Bayar / Siap Tes -->
+      <div v-else-if="participationStatus === 'paid'" class="mt-4 text-center">
+        <div class="flex justify-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+            <Icon name="lucide:check-circle-2" class="h-8 w-8 text-emerald-500" />
+          </div>
+        </div>
+        <p class="mt-3 font-medium text-gray-800">Pendaftaran Berhasil!</p>
+        <p class="mt-1 text-sm text-gray-500">Anda sudah terdaftar. Tes akan dapat dimulai sesuai jadwal yang ditentukan.</p>
+        <button @click="handleStartTest" class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">
+          Mulai Tes
+        </button>
+      </div>
+
+      <!-- Status: Tes Selesai -->
+      <div v-else-if="participationStatus === 'test_completed'" class="mt-4 text-center">
+        <div class="flex justify-center">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100">
+            <Icon name="lucide:award" class="h-8 w-8 text-indigo-500" />
+          </div>
+        </div>
+        <p class="mt-3 font-medium text-gray-800">Tes Telah Selesai</p>
+        <p class="mt-1 text-sm text-gray-500">Anda telah menyelesaikan tes pada batch ini. Lihat hasil Anda di halaman riwayat.</p>
+        <button @click="handleViewHistory" class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+          Lihat Riwayat Skor
+        </button>
+      </div>
+
     </div>
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue';
-import { getNamaLengkap, getEmail, isEmailVerified, getPhoto } from '@/utils/userHelpers';
-import { useBatchJoin } from '@/composables/Batch/join';
-const { showConfirm,showAlert } = useNotificationPopup();
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useNotification } from '@/composables/useNotification';
+
 const props = defineProps({
   batch: {
-    type: Array,
-    required: true
-  }
+    type: Object,
+    required: true,
+  },
 });
 
-const { data: user, pending, error } = await useUserMe();
+const emit = defineEmits(['update-batch']);
 
-const emit = defineEmits(['updateBatch']);
-const BatchData = computed(() => props.batch);
-const isStudentRegistered = computed(() => BatchData.value.participants.find((participant) => participant.name === getNamaLengkap(user.value)));
-const today = new Date();
-const startDate = new Date(props.batch.tanggalMulai);
-const endDate = new Date(props.batch.tanggalSelesai);
+const { showNotification } = useNotification();
+const isLoading = ref(false);
+const config = useRuntimeConfig();
+const { $auth } = useNuxtApp();
 
-const status = computed(() => {
-  if (isStudentRegistered.value) {
-    if (today >= startDate && today <= endDate) return 'registered-ongoing';
-    if (today < startDate) return 'registered-pending';
-    return 'registered-closed';
-  } else {
-    if (props.batch.statusBatch === 'aktif' && today < endDate) return 'not-registered-open';
-    if (props.batch.statusBatch === 'tutup') return 'not-registered-closed';
-    return 'not-registered-past';
+// Logika untuk menentukan status partisipasi pengguna.
+const participationStatus = computed(() => {
+  const currentUserId = $auth.currentUser?.uid;
+  if (!currentUserId || !props.batch.participants) {
+    return null; // Pengguna belum login atau tidak ada peserta
   }
+
+  const userParticipant = props.batch.participants.find(
+    (p) => p.userId === currentUserId
+  );
+
+  if (!userParticipant) {
+    return null; // Pengguna belum terdaftar di batch ini
+  }
+
+  // Asumsi: Cek status pembayaran dari participant
+  const paymentStatus = userParticipant.payments?.[0]?.status; // Ambil status pembayaran pertama
+
+  if (paymentStatus === 'pending') return 'pending_payment';
+  if (paymentStatus === 'paid') return 'paid';
+  return null; // Default jika tidak ada status yang jelas atau status lain
 });
 
-const alertClass = computed(() => {
-  switch (status.value) {
-    case 'registered-ongoing':
-    case 'registered-closed':
-      return 'alert-success';
-    case 'registered-pending':
-    case 'not-registered-open':
-      return 'alert-info';
-    case 'not-registered-closed':
-    case 'not-registered-past':
-      return 'alert-danger';
-    default:
-      return 'alert-info';
-  }
-});
+console.log(props.batch);
 
-const statusTitle = computed(() => {
-  switch (status.value) {
-    case 'registered-ongoing':
-    case 'registered-pending':
-    case 'registered-closed':
-      return 'Anda sudah terdaftar di batch ini!';
-    case 'not-registered-open':
-      return 'Batch ini terbuka untuk pendaftaran!';
-    case 'not-registered-closed':
-      return 'Batch ini sudah ditutup.';
-    case 'not-registered-past':
-      return 'Batch ini sudah tidak tersedia.';
-    default:
-      return 'Memuat status keikutsertaan...';
-  }
-});
 
-const statusMessage = computed(() => {
-  switch (status.value) {
-    case 'registered-ongoing':
-      return 'Ujian sedang berlangsung. Anda dapat memulai atau melanjutkan tes Anda sekarang.';
-    case 'registered-pending':
-      return `Ujian akan dimulai pada tanggal ${props.batch.startDate}. Persiapkan diri Anda!`;
-    case 'registered-closed':
-      return `Batch ujian ini telah selesai pada tanggal ${props.batch.endDate}. Anda dapat melihat hasil Anda di Riwayat Skor.`;
-    case 'not-registered-open':
-      return 'Bergabunglah sekarang untuk mengikuti ujian pada tanggal yang ditentukan.';
-    case 'not-registered-closed':
-    case 'not-registered-past':
-      return 'Pendaftaran untuk batch ini telah berakhir atau batch telah selesai.';
-    default:
-      return '';
-  }
-});
+const handleJoinBatch = async () => {
+  isLoading.value = true;
+  try {
+    const token = await $auth.currentUser?.getIdToken();
+    if (!token) throw new Error("Autentikasi gagal.");
 
-const showButton = computed(() => ['registered-ongoing', 'registered-closed', 'not-registered-open'].includes(status.value));
+    // Panggil API untuk mendaftarkan pengguna ke batch
+    const response = await $fetch(`${config.public.API_URL}/participants/join`, {
+      method: 'POST',
+      body: { batchId: props.batch.idBatch },
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    
+    showNotification('Anda berhasil terdaftar! Silakan lanjutkan ke pembayaran.', 'success');
+    
+    // Emit event untuk memberitahu parent (halaman [id].vue) agar memperbarui data batch
+    emit('update-batch', response.data); // Asumsi API mengembalikan data batch terbaru
 
-const buttonText = computed(() => {
-  switch (status.value) {
-    case 'registered-ongoing':
-      return 'Mulai / Lanjutkan Ujian';
-    case 'registered-closed':
-      return 'Lihat Riwayat Skor';
-    case 'not-registered-open':
-      return 'Gabung Batch';
-    default:
-      return '';
-  }
-});
+    console.log(response.data);
+    
+  } catch (error: any) {
+    console.error("Gagal join batch:", error);
 
-const buttonClass = computed(() => {
-  switch (status.value) {
-    case 'registered-ongoing':
-    case 'not-registered-open':
-      return 'main-button';
-    case 'registered-closed':
-      return 'secondary-button';
-    default:
-      return '';
-  }
-});
+    // Default error message
+    let errorMessage = 'Gagal mendaftar ke batch. Silakan coba lagi nanti.';
 
-const handleButtonClick = () => {
-  switch (status.value) {
-    case 'registered-ongoing':
-      navigateTo(`/batch/${props.batch.id}`);
-      break;
-    case 'registered-closed':
-      navigateTo(`/batch/${props.batch.id}/results`);
-      break;
-    case 'not-registered-open':
-      daftarBatch();
-      break;
+    // Cek jika ada pesan error spesifik dari body respons API
+    if (error.data && error.data.message) {
+      errorMessage = error.data.message;
+    } 
+    // Jika tidak ada, coba berikan pesan berdasarkan status code
+    else if (error.statusCode) {
+      switch (error.statusCode) {
+        case 409: // Conflict
+          errorMessage = 'Anda sudah terdaftar di batch ini.';
+          break;
+        case 404: // Not Found
+          errorMessage = 'Batch yang Anda coba ikuti tidak ditemukan atau sudah ditutup.';
+          break;
+      }
+    }
+
+    showNotification(errorMessage, 'error');
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const daftarBatch = async() => {
-  try {
-    const confirmation = await showConfirm("Apakah Anda Yakin Ingin Daftar Batch Ini?");
-    if (confirmation) {
-      const batchData = {
-        userId : user.value.uid,
-        batchId : BatchData.value.idBatch
-      };
-      const { data, pending, error } = await useBatchJoin(batchData);
-      if (error.value) {
-        throw error.value
-      }
-      if (data.value) {
-        showAlert('Pendaftaran berhasil!');
-        await refreshNuxtData();
-      }
-    }
-  } catch (error) {
-    console.log(error)
-    showAlert('Pendaftaran gagal. Silakan coba lagi.');
+const handleGoToPayment = () => {
+  // Arahkan ke halaman pembayaran dengan ID invoice dari data partisipasi
+  const invoiceId = props.batch.userParticipation?.invoiceId;
+  if (invoiceId) {
+    navigateTo(`/payment/${invoiceId}`);
+  } else {
+    showNotification('Detail pembayaran tidak ditemukan.', 'error');
   }
-}
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-</script>
+};
 
-<style scoped>
-.alert-info {
-    background-color: #e0f2fe;
-    border-left: 4px solid #3b82f6;
-    color: #1e40af;
-    padding: 1rem;
-    border-radius: 0.5rem;
-}
-.alert-success {
-    background-color: #d1fae5;
-    border-left: 4px solid #34d399;
-    color: #065f46;
-    padding: 1rem;
-    border-radius: 0.5rem;
-}
-.alert-danger {
-    background-color: #fee2e2;
-    border-left: 4px solid #ef4444;
-    color: #991b1b;
-    padding: 1rem;
-    border-radius: 0.5rem;
-}
-.main-button {
-    background-color: #10b981;
-    transition: all 0.2s ease-in-out;
-}
-.main-button:hover {
-    background-color: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-.secondary-button {
-    background-color: #06b6d4;
-    transition: all 0.2s ease-in-out;
-}
-.secondary-button:hover {
-    background-color: #0891b2;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-</style>
+const handleStartTest = () => {
+  // Arahkan ke halaman ujian
+  navigateTo(`/test/${props.batch.idBatch}`);
+};
+
+const handleViewHistory = () => {
+  // Arahkan ke halaman riwayat skor
+  navigateTo('/history/scores');
+};
+</script>

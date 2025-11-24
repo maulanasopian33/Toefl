@@ -1,46 +1,53 @@
 <template>
-  <div class="card mb-6">
-    <h3 class="text-xl font-bold text-gray-800 mb-4">
-      Peserta yang Sudah Bergabung (<span>{{ participants.length }}</span>)
-    </h3>
-    <div v-if="participants.length > 0" class="participants-grid">
-      <div v-for="(participant, index) in participants" :key="index">
-        <img :src="participant.profilePic" alt="Avatar Peserta" class="participant-avatar">
+  <div class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm">
+    <div class="flex items-center gap-3">
+      <Icon name="lucide:users" class="h-5 w-5 flex-shrink-0 text-gray-500" />
+      <h3 class="text-lg font-semibold text-gray-800">
+        Peserta Terdaftar ({{ participants.length }})
+      </h3>
+    </div>
+
+    <div v-if="participants && participants.length > 0" class="mt-4 flex items-center">
+      <div class="flex -space-x-2 overflow-hidden">
+        <img
+          v-for="participant in visibleParticipants"
+          :key="participant.id"
+          class="inline-block h-10 w-10 rounded-full ring-2 ring-white"
+          :src="getAvatarUrl(participant.user.picture)"
+          :alt="participant.user.name"
+          :title="participant.user.name"
+        />
+      </div>
+      <div v-if="remainingCount > 0" class="ml-2">
+        <span class="text-sm font-medium text-gray-500">+{{ remainingCount }} lainnya</span>
       </div>
     </div>
-    <p v-else class="text-gray-500 text-center py-4">Belum ada peserta yang bergabung.</p>
+
+    <div v-else class="mt-4 text-center text-gray-400 italic">
+      <p>Belum ada peserta yang bergabung di batch ini.</p>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
 const props = defineProps({
   participants: {
     type: Array,
-    required: true
+    default: () => []
   }
 });
-</script>
 
-<style scoped>
-.participant-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #cbd5e1;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  cursor: pointer;
-}
-.participant-avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  border-color: #3b82f6;
-}
-.participants-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  gap: 0.5rem;
-  justify-items: center;
-  align-items: center;
-}
-</style>
+const config = useRuntimeConfig();
+const MAX_VISIBLE = 8;
+
+const visibleParticipants = computed(() => props.participants.slice(0, MAX_VISIBLE));
+const remainingCount = computed(() => Math.max(0, props.participants.length - MAX_VISIBLE));
+
+const getAvatarUrl = (path) => {
+  if (!path) return 'https://via.placeholder.com/40'; // Fallback avatar
+  // Asumsi path adalah relatif, misal: /images/avatar/....png
+  return `${config.public.API_URL.replace('/api/v1', '')}${path}`;
+};
+</script>
