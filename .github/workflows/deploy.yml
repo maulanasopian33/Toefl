@@ -35,7 +35,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           API_URL: ${{ secrets.API_URL }}
 
-      - name: Deploy to FTP
+      - name: Deploy to FTP Server
         uses: SamKirkland/ftp-deploy-action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
