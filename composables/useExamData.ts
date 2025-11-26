@@ -17,14 +17,6 @@ interface Group {
   questions: Question[];
 }
 
-export interface Section {
-  id: string;
-  name: string;
-  type: string;
-  instructions: string;
-  groups: Group[];
-}
-
 /**
  * Composable untuk mengambil data ujian dari API dengan autentikasi.
  * @param examId - ID dari ujian yang akan diambil.

@@ -35,14 +35,6 @@ export default defineNuxtConfig({
       // Pastikan output directory public ada jika menggunakan preset 'static'
       publicDir: './.output/public'
     },
-    routeRules: {
-      '/uploads/**': {
-        redirect: {
-          to: `${process.env.API_URL}/uploads/**`,
-          statusCode: 301
-        }
-      }
-    },
     // *** Bagian penting untuk shared hosting tanpa server Node.js ***
     preset: 'static' // Ini akan memaksa Nitro untuk menghasilkan file statis
   },
