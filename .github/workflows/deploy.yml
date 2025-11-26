@@ -9,29 +9,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: Setup Node.js (match local Node 20)
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project (Nuxt SPA)
+      - name: Rebuild native modules (oxc parser fix)
+        run: npm rebuild
+
+      - name: Build Nuxt SPA
         run: npm run build
 
-      - name: Deploy via FTP (keep .htaccess)
+      - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@3.1.1
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          protocol: ftp
           local-dir: dist
-          server-dir: /toaflProject/app
+          server-dir: /home/maurl34x/toaflProject/app
           exclude: |
             .htaccess
             **/.htaccess
