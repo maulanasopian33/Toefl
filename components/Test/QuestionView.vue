@@ -2,11 +2,39 @@
   <div>
     <!-- Header Pertanyaan -->
     <div class="mb-6 border-b border-gray-200 pb-4">
-      <p class="text-sm text-gray-500">Pertanyaan {{ questionNumber }} dari {{ totalQuestions }}</p>
-      <div class="prose prose-lg mt-2 max-w-none" v-html="questionData.question"></div>
+      <h2 id="questionSectionTitle" class="text-2xl font-semibold mb-6 text-gray-800">
+        Bagian {{ questionData.type }} - Pertanyaan {{ questionNumber }} dari {{ totalQuestions }}
+      </h2>
     </div>
+    <!-- Konten Pertanyaan -->
+    <div class="mb-8">
+      <!-- Audio Player (Hidden by default for Reading Section) -->
+      <div
+        id="audioPlayerContainer"
+        class="bg-gray-100 p-4 rounded-lg mb-6 shadow-sm"
+        :class="{ hidden: !questionData.audioUrl }"
+      >
+        <audio id="audioPlayer" controls class="w-full rounded-md">
+          <source :src="questionData.audioUrl" type="audio/mpeg" />
+          Browser Anda tidak mendukung elemen audio.
+        </audio>
+        <p class="text-sm text-gray-500 mt-2 text-center">Dengarkan audio di atas.</p>
+      </div>
 
-    <!-- Pilihan Jawaban -->
+      <!-- Passage Area -->
+      <div
+        v-if="questionData.passage"
+        id="passageArea" dir="rtl"
+        class="bg-gray-50 p-4 text-right rounded-lg border border-gray-200 text-gray-800 mb-6 max-h-80 overflow-y-auto custom-scrollbar"
+      > 
+        <div id="passageText" class="text-sm md:text-base leading-relaxed whitespace-pre-wrap" v-html="questionData.passage"></div>
+      </div>
+
+      <div id="questionText" dir="rtl" class="text-gray-900 text-xl text-right font-medium mb-4">
+        <div class="prose prose-lg mt-2 max-w-none" v-html="questionData.question"></div>
+      </div>
+
+      <!-- Pilihan Jawaban -->
     <div class="space-y-3">
       <label
         v-for="option in questionData.options"
@@ -26,6 +54,7 @@
         />
         <span class="prose prose-sm max-w-none flex-1" v-html="option.text"></span>
       </label>
+    </div>
     </div>
 
     <!-- Tombol Navigasi -->

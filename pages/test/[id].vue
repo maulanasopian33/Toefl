@@ -67,7 +67,7 @@
     <!-- Tampilkan pertanyaan -->
     <QuestionView
       v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
-      :question-data="{ ...currentQuestion, type: currentSection.name }"
+      :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage }"
       :question-number="currentQuestionIndex + 1"
       :total-questions="currentGroup.questions.length"
       :is-first="isFirstQuestionOfSection"

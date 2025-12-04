@@ -9,9 +9,13 @@ export interface Option {
 
 export interface Question {
   id: string;
+  type: string;
+  passage?: string; // Opsional karena mungkin tidak selalu ada (misal di writing/speaking)
+  audioUrl?: string; // Opsional
   question: string;
-  options: Option[];
-  userAnswer?: string | null; // Untuk menyimpan jawaban pengguna
+  options?: Option[]; // Diubah menjadi array of Option
+  correctAnswer?: string; // Opsional
+  userAnswer: string | null;
 }
 
 export interface QuestionGroup {
