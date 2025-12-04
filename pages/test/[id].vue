@@ -67,7 +67,7 @@
     <!-- Tampilkan pertanyaan -->
     <QuestionView
       v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
-      :question-data="currentQuestion"
+      :question-data="{ ...currentQuestion, type: currentSection.name }"
       :question-number="currentQuestionIndex + 1"
       :total-questions="currentGroup.questions.length"
       :is-first="isFirstQuestionOfSection"
@@ -153,11 +153,14 @@ const allQuestions = computed(() => {
 });
 
 const totalQuestionsCount = computed(() => {
-  // Hitung total pertanyaan dari semua sectionDetails yang didapat di awal.
-  return sectionDetails.value?.reduce((total, section) => total + section.questionCount, 0) || 0;
+  return testMetadata.value?.totalQuestions || 0;
 });
 
 const answeredQuestionsCount = computed(() => allQuestions.value.filter(q => q.userAnswer).length);
+console.log("answerd count", answeredQuestionsCount);
+console.log("answerd", allQuestions);
+
+
 const progressPercentage = computed(() => totalQuestionsCount.value > 0 ? (answeredQuestionsCount.value / totalQuestionsCount.value) * 100 : 0);
 
 
@@ -203,13 +206,27 @@ const startCurrentSection = () => {
 };
 
 const updateUserAnswer = (payload: { questionId: string; answer: string | null }) => {
-  const question = currentSectionQuestions.value.find(q => q.id === payload.questionId);
-    if (question) {
+  console.log('updateUserAnswer dipanggil dengan payload:', payload);
+  // Cari pertanyaan di sumber data utama (sectionsData) dan perbarui di sana.
+  for (const section of sectionsData.value) {
+    for (const group of section.groups) {
+      const question = group.questions.find(q => q.id === payload.questionId);
+      if (question) {
+        console.log('Pertanyaan ditemukan, memperbarui jawaban:', question.id);
         question.userAnswer = payload.answer;
+        // Log seluruh data pertanyaan setelah diubah untuk verifikasi
+        console.log('Data allQuestions setelah diubah:', JSON.parse(JSON.stringify(allQuestions.value)));
+        console.log('Jumlah jawaban terhitung:', allQuestions.value.filter(q => q.userAnswer).length);
+        return; // Keluar dari loop setelah pertanyaan ditemukan dan diperbarui.
+      }
     }
+  }
+  console.warn('Pertanyaan dengan ID', payload.questionId, 'tidak ditemukan di sectionsData.');
 };
 
 const handleNextQuestion = async () => {
+  console.log('handleNextQuestion dipanggil.');
+  console.log('Pertanyaan saat ini:', JSON.parse(JSON.stringify(currentQuestion.value)));
   if (currentGroup.value && currentQuestionIndex.value < currentGroup.value.questions.length - 1) {
     currentQuestionIndex.value++;
   } else if (currentSection.value && currentGroupIndex.value < currentSection.value.groups.length - 1) {

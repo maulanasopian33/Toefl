@@ -102,6 +102,11 @@
 <script setup lang="ts"> // Tambahkan lang="ts" untuk TypeScript
 import { ref, watch, onMounted } from 'vue';
 
+interface Option {
+  id: string;
+  text: string;
+}
+
 // Definisikan tipe untuk questionData
 interface QuestionData {
   id: string;
@@ -109,7 +114,7 @@ interface QuestionData {
   passage?: string; // Opsional karena mungkin tidak selalu ada (misal di writing/speaking)
   audioUrl?: string; // Opsional
   question: string;
-  options?: string[]; // Opsional karena mungkin tidak ada pilihan (misal di writing/speaking)
+  options?: Option[]; // Diubah menjadi array of Option
   correctAnswer?: string; // Opsional
   userAnswer: string | null;
 }
@@ -125,13 +130,13 @@ const props = defineProps<{
 
 // Define emits for parent communication with types
 const emit = defineEmits<{
-  (e: 'next', payload: { questionId: string; answer: string | null }): void;
+  (e: 'next'): void;
   (e: 'prev'): void;
   (e: 'update:userAnswer', payload: { questionId: string; answer: string | null }): void;
 }>();
 
 // Reactive state for the selected answer
-const selectedAnswer = ref<string | null>(props.questionData.userAnswer);
+const selectedAnswer = ref<string | null>(props.questionData.userAnswer); // Akan menyimpan ID Opsi
 
 // Watch for changes in questionData.userAnswer to update selectedAnswer
 // This is important when navigating between questions that might already have an answer
@@ -154,12 +159,7 @@ const handleOptionChange = () => {
 
 // Handle next button click
 const nextQuestion = () => {
-  // Emit the next event with the current question's ID and the selected answer
-  // The parent component will handle saving this answer to the main data structure
-  emit('next', {
-    questionId: props.questionData.id,
-    answer: selectedAnswer.value,
-  });
+  emit('next');
 };
 
 // Helper function to get option labels (A, B, C, D)
@@ -200,4 +200,3 @@ onMounted(() => {
   background: #555;
 }
 </style>
-

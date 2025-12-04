@@ -65,6 +65,8 @@ const emit = defineEmits(['update:userAnswer', 'next', 'prev']);
 
 const localUserAnswer = ref(props.questionData.userAnswer || null);
 
+
+
 // Watch untuk perubahan dari parent (misal saat navigasi nomor soal)
 watch(() => props.questionData.userAnswer, (newVal) => {
   localUserAnswer.value = newVal || null;
@@ -72,6 +74,10 @@ watch(() => props.questionData.userAnswer, (newVal) => {
 
 // Watch untuk perubahan lokal dan emit ke parent
 watch(localUserAnswer, (newVal) => {
-  emit('update:userAnswer', newVal);
+  console.log("local answer",localUserAnswer);
+  emit('update:userAnswer', {
+    questionId: props.questionData.id,
+    answer: newVal
+  });
 });
 </script>

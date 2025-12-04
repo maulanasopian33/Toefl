@@ -33,6 +33,7 @@ export interface TestMetadata {
   id: string;
   name: string;
   totalTime: number;
+  totalQuestions: number;
   sectionOrder: { id: string; name: string }[];
 }
 
@@ -100,7 +101,19 @@ export function useTestSession(testId: string) {
       const response = await $fetch<Section>(`${API_BASE_URL}/sections/${sectionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      sectionsData.value[index] = response;
+
+      // Pastikan setiap pertanyaan memiliki properti userAnswer yang reaktif
+      response.groups.forEach(group => {
+        group.questions.forEach(question => {
+          if (question.userAnswer === undefined) {
+            question.userAnswer = null;
+          }
+        });
+      });
+
+      const newSectionsData = [...sectionsData.value];
+      newSectionsData[index] = response;
+      sectionsData.value = newSectionsData;
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -120,7 +133,7 @@ export function useTestSession(testId: string) {
       const response = await $fetch<{ score: number; totalQuestions: number }>(`${API_BASE_URL}/submit`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: { answers },
+        body: {answers},
       });
       finalScore.value = response;
     } catch (e: any) {
