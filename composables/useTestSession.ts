@@ -36,6 +36,12 @@ export interface TestMetadata {
   sectionOrder: { id: string; name: string }[];
 }
 
+export interface SectionDetail {
+  id: string;
+  name: string;
+  questionCount: number;
+}
+
 export interface UserAnswerPayload {
   questionId: string;
   userAnswer: string; // ID dari pilihan jawaban
@@ -44,10 +50,11 @@ export interface UserAnswerPayload {
 // --- Composable ---
 export function useTestSession(testId: string) {
   const config = useRuntimeConfig();
-  const API_BASE_URL = `${config.public.API_URL}/tests/${testId}`;
+  const API_BASE_URL = `${config.public.API_URL}/exams/${testId}`;
 
   // --- State ---
   const testMetadata = ref<TestMetadata | null>(null);
+  const sectionDetails = ref<SectionDetail[]>([]); // State untuk detail section
   const sectionsData = ref<Section[]>([]);
   const finalScore = ref<{ score: number; totalQuestions: number } | null>(null);
 
@@ -70,6 +77,7 @@ export function useTestSession(testId: string) {
         headers: { Authorization: `Bearer ${token}` },
       });
       testMetadata.value = response;
+
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -126,7 +134,7 @@ export function useTestSession(testId: string) {
   onMounted(fetchTestMetadata);
 
   return {
-    testMetadata, sectionsData, finalScore,
+    testMetadata, sectionDetails, sectionsData, finalScore,
     isLoadingMetadata, isLoadingSection, isSubmitting, error,
     fetchSectionData, submitAnswers,
   };

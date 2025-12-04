@@ -29,7 +29,13 @@
                 <div class="mt-8 pt-6 border-t border-gray-200">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Navigasi Pertanyaan</h3>
                     <div id="questionNavigationGrid" class="grid grid-cols-5 gap-2">
-                        <button id="q-btn-R2" class="p-2 rounded-md font-semibold text-sm transition duration-200 ease-in-out bg-gray-200 text-gray-700 hover:bg-gray-300">2</button>
+                        <button 
+                            v-for="(question, index) in currentSectionQuestions" 
+                            :key="question.id"
+                            @click="goToQuestion(question.groupIndex, question.questionIndexInGroup)"
+                            :class="getNavButtonClass(question, index)"
+                            class="p-2 rounded-md font-semibold text-sm transition duration-200 ease-in-out"
+                        >{{ index + 1 }}</button>
                     </div>
                 </div>
             </div>
@@ -106,10 +112,16 @@ const route = useRoute();
 const testId = route.params.id as string;
 
 const {
-  testMetadata, sectionsData, finalScore,
-  isLoadingMetadata, isLoadingSection, isSubmitting, error,
+  testMetadata, sectionDetails, sectionsData, finalScore,
+  isLoadingMetadata, isLoadingSection, isSubmitting, error, fetchTestMetadata,
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
+
+console.log("Meta Data",testMetadata);
+console.log("Sections Data",sectionsData);
+console.log("final score",finalScore);
+  
+
 
 // --- State Lokal Halaman Ujian ---
 const quizState = ref<'intro' | 'questions' | 'finished'>('intro');
@@ -124,9 +136,30 @@ const currentSection = computed<Section | null>(() => sectionsData.value[current
 const currentGroup = computed<QuestionGroup | null>(() => currentSection.value?.groups?.[currentGroupIndex.value] || null);
 const currentQuestion = computed<Question | null>(() => currentGroup.value?.questions?.[currentQuestionIndex.value] || null);
 
-const totalQuestionsCount = computed(() => sectionsData.value.flatMap(s => s.groups || []).flatMap(g => g.questions).length);
-const answeredQuestionsCount = computed(() => sectionsData.value.flatMap(s => s.groups || []).flatMap(g => g.questions).filter(q => q.userAnswer).length);
+const currentSectionQuestions = computed(() => {
+  if (!currentSection.value?.groups) return [];
+  let questionCounter = 0;
+  return currentSection.value.groups.flatMap((group, groupIdx) => 
+    group.questions.map((question, questionIdx) => ({
+      ...question,
+      groupIndex: groupIdx,
+      questionIndexInGroup: questionIdx,
+    }))
+  );
+});
+
+const allQuestions = computed(() => {
+  return sectionsData.value.flatMap(s => s.groups || []).flatMap(g => g.questions || []);
+});
+
+const totalQuestionsCount = computed(() => {
+  // Hitung total pertanyaan dari semua sectionDetails yang didapat di awal.
+  return sectionDetails.value?.reduce((total, section) => total + section.questionCount, 0) || 0;
+});
+
+const answeredQuestionsCount = computed(() => allQuestions.value.filter(q => q.userAnswer).length);
 const progressPercentage = computed(() => totalQuestionsCount.value > 0 ? (answeredQuestionsCount.value / totalQuestionsCount.value) * 100 : 0);
+
 
 const isFirstQuestionOfSection = computed(() => currentGroupIndex.value === 0 && currentQuestionIndex.value === 0);
 const isLastQuestionOfSection = computed(() => {
@@ -169,10 +202,11 @@ const startCurrentSection = () => {
   }
 };
 
-const updateUserAnswer = (answer: string | null) => {
-  if (currentQuestion.value) {
-    currentQuestion.value.userAnswer = answer;
-  }
+const updateUserAnswer = (payload: { questionId: string; answer: string | null }) => {
+  const question = currentSectionQuestions.value.find(q => q.id === payload.questionId);
+    if (question) {
+        question.userAnswer = payload.answer;
+    }
 };
 
 const handleNextQuestion = async () => {
@@ -219,6 +253,25 @@ const goToSection = async (index: number) => {
     currentQuestionIndex.value = 0;
     quizState.value = 'intro';
   }
+};
+
+const goToQuestion = (groupIndex: number, questionIndex: number) => {
+  currentGroupIndex.value = groupIndex;
+  currentQuestionIndex.value = questionIndex;
+  if (quizState.value === 'intro') {
+    quizState.value = 'questions';
+  }
+};
+
+const getNavButtonClass = (question: any, index: number) => {
+  const isCurrent = question.groupIndex === currentGroupIndex.value && question.questionIndexInGroup === currentQuestionIndex.value;
+  if (isCurrent) {
+    return 'bg-indigo-600 text-white ring-2 ring-indigo-400';
+  }
+  if (question.userAnswer) {
+    return 'bg-green-200 text-green-800 hover:bg-green-300';
+  }
+  return 'bg-gray-200 text-gray-700 hover:bg-gray-300';
 };
 
 const handleCheatingAction = (details: { type: string, duration?: number }) => {

@@ -28,10 +28,24 @@ export const useExamData = (examId: string) => {
   const apiUrl = `${config.public.API_URL}/exams/${examId}`;
 
   const { data, pending, error } = useFetch<Section[]>(apiUrl, {
-    // lazy: true agar tidak memblokir rendering
     lazy: true,
-    // Sediakan nilai default untuk mencegah error
     default: () => [],
+    async onRequest({ options }) {
+      try {
+        const token = await $auth.currentUser?.getIdToken();
+        if (!token) {
+          showNotification('Gagal mendapatkan token otentikasi.', 'error');
+          return;
+        }
+        options.headers = {
+          ...options.headers,
+          Authorization: `Bearer ${token}`,
+        };
+      }
+      catch (e) {
+        showNotification('Terjadi kesalahan saat otentikasi.', 'error');
+      }
+    },
   });
 
   return { data, pending, error };
