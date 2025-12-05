@@ -3,7 +3,7 @@
     <h3 class="text-xl font-semibold text-slate-800 mb-4">Riwayat Tes Terakhir</h3>
 
     <!-- Loading State -->
-    <div v-if="pending" class="text-center py-8">
+    <div v-if="isLoading" class="text-center py-8">
       <div class="flex justify-center mb-4">
         <Icon name="lucide:loader-2" class="w-8 h-8 text-slate-400 animate-spin" />
       </div>
@@ -22,7 +22,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!history" class="text-center py-8">
+    <div v-else-if="!histories || histories.length === 0" class="text-center py-8">
       <div class="flex justify-center mb-4">
         <div class="bg-slate-100 rounded-full p-3">
           <Icon name="lucide:history" class="w-8 h-8 text-slate-500" />
@@ -33,28 +33,36 @@
     </div>
 
     <!-- Success State -->
-    <div v-else>
+    <div v-else-if="latestHistory">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p class="text-sm text-slate-500">{{ formatDate(history.completedDate) }}</p>
-          <h4 class="text-lg font-semibold text-slate-800">{{ history.batchName }}</h4>
+          <p class="text-sm text-slate-500">{{ formatDate(latestHistory.completedDate) }}</p>
+          <h4 class="text-lg font-semibold text-slate-800">{{ latestHistory.batchName }}</h4>
         </div>
         <div class="text-right">
-          <p class="text-3xl font-bold text-green-600">{{ history.score }}</p>
+          <p class="text-3xl font-bold text-green-600">{{ latestHistory.score }}</p>
           <p class="text-sm text-slate-500">Skor Total</p>
         </div>
       </div>
       <!-- Rincian Skor per Sesi -->
-      <div class="mt-4 pt-4 border-t border-slate-200/80 grid grid-cols-3 gap-4 text-center">
-        <div v-for="section in history.sections" :key="section.name">
-          <p class="font-semibold text-slate-700">{{ section.score }}</p>
-          <p class="text-xs text-slate-500">{{ section.name }}</p>
+      <div v-if="latestHistory.sectionScores" class="mt-4 pt-4 border-t border-slate-200/80 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.listening }}</p>
+          <p class="text-xs text-slate-500">Listening</p>
+        </div>
+        <div>
+          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.structure }}</p>
+          <p class="text-xs text-slate-500">Structure</p>
+        </div>
+        <div>
+          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.reading }}</p>
+          <p class="text-xs text-slate-500">Reading</p>
         </div>
       </div>
     </div>
 
     <!-- Footer Button -->
-    <div class="mt-4 border-t border-slate-200 pt-4 flex justify-end">
+    <div v-if="histories && histories.length > 0" class="mt-4 border-t border-slate-200 pt-4 flex justify-end">
       <button @click="navigateTo('/history')" class="inline-flex items-center gap-2 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors duration-200">
         Lihat Semua Riwayat
         <Icon name="lucide:arrow-right" class="w-4 h-4" />
@@ -64,27 +72,15 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig();
-const { $auth } = useNuxtApp();
+import { useTestHistory } from '@/composables/useTestHistory';
+import { computed } from 'vue';
 
-// Ambil data dari API. Kita akan mengambil array dan memilih yang pertama.
-const { data: history, pending, error } = await useAsyncData('latest-history', async () => {
-  const token = await $auth.currentUser?.getIdToken();
-  if (!token) return null;
+const { histories, isLoading, error } = useTestHistory();
 
-  // Endpoint ini mengembalikan array riwayat tes
-  const response = await $fetch<{ data: any[] }>(`${config.public.API_URL}/exams/history`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
+// Mengambil riwayat tes terbaru (elemen pertama dari array)
+const latestHistory = computed(() => (histories.value && histories.value.length > 0) ? histories.value[0] : null);
 
-  // Kembalikan hanya elemen pertama (tes terbaru) jika ada, atau null jika array kosong.
-  return response.data && response.data.length > 0 ? response.data[0] : null;
-}, {
-  lazy: true, // Data akan dimuat di sisi client
-  server: false // Tidak perlu dijalankan di server
-});
-
-
+// Fungsi untuk memformat tanggal
 const formatDate = (isoString: string) => {
   if (!isoString) return '-';
   return new Date(isoString).toLocaleDateString('id-ID', {

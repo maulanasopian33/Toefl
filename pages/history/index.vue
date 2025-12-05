@@ -28,7 +28,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="histories.length === 0" class="text-center py-20 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+          <div v-else-if="histories && histories.length === 0" class="text-center py-20 bg-white rounded-xl border border-slate-200/80 shadow-sm">
             <div class="flex justify-center mb-4">
               <div class="bg-slate-100 rounded-full p-4">
                 <Icon name="lucide:history" class="w-12 h-12 text-slate-400" />
@@ -94,6 +94,7 @@ definePageMeta({
 });
 
 const { histories, isLoading, error } = useTestHistory();
+
 
 /**
  * @function formatDate
