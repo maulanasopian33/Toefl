@@ -1,0 +1,298 @@
+<template>
+  <div class="p-6 sm:p-8">
+    <!-- Header Halaman -->
+    <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800">Hasil Tes per Batch</h1>
+        <p class="mt-1 text-slate-600">Tinjau hasil tes dari semua peserta dalam satu batch.</p>
+      </div>
+      <!-- Pemilih Batch -->
+      <div class="w-full sm:w-64">
+        <label for="batch-selector" class="sr-only">Pilih Batch</label>
+        <select id="batch-selector" v-model="selectedBatchId" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <option v-if="isBatchesLoading" value="">Memuat batch...</option>
+          <option v-for="batch in batches" :key="batch.id" :value="batch.id">{{ batch.name }}</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Card Utama untuk Tabel -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200/80">
+      <header class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 class="font-semibold text-slate-800 whitespace-nowrap">
+          Hasil untuk: <span class="font-bold">{{ selectedBatchName }}</span>
+        </h2>
+        <!-- Input Pencarian -->
+        <div class="w-full sm:max-w-xs">
+          <label for="search-filter" class="sr-only">Cari Peserta</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Icon name="lucide:search" class="h-5 w-5 text-slate-400" />
+            </div>
+            <input type="text" id="search-filter" v-model="searchQuery" placeholder="Cari nama atau email..." class="w-full pl-10 pr-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          </div>
+        </div>
+      </header>
+
+      <!-- Container untuk State dan Tabel -->
+      <div class="p-4 sm:p-6">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="flex flex-col items-center justify-center py-16 text-center">
+          <Icon name="lucide:loader-2" class="w-10 h-10 text-slate-400 animate-spin mb-4" />
+          <h3 class="text-lg font-semibold text-slate-700">Memuat Hasil Tes</h3>
+          <p class="text-slate-500">Mohon tunggu sebentar...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="flex flex-col items-center justify-center py-16 text-center bg-red-50 rounded-lg">
+          <Icon name="lucide:server-crash" class="w-12 h-12 text-red-500 mb-4" />
+          <h3 class="text-lg font-semibold text-red-800">Gagal Memuat Data</h3>
+          <p class="text-red-700 max-w-md">Terjadi kesalahan saat mengambil data. Silakan segarkan halaman atau coba lagi nanti.</p>
+        </div>
+
+        <!-- Empty States (Combined) -->
+        <div v-else-if="results.length === 0 || filteredResults.length === 0" class="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-lg">
+          <Icon :name="searchQuery ? 'lucide:search-x' : 'lucide:folder-open'" class="w-12 h-12 text-slate-400 mb-4" />
+          <h3 class="text-lg font-semibold text-slate-700">
+            {{ searchQuery ? 'Tidak Ada Hasil' : 'Belum Ada Data' }}
+          </h3>
+          <p class="text-slate-500 max-w-md">
+            {{ 
+              searchQuery 
+                ? `Tidak ada peserta yang cocok dengan pencarian "${searchQuery}".` 
+                : 'Belum ada hasil tes yang tercatat untuk batch ini.' 
+            }}
+          </p>
+        </div>
+
+        <!-- Tabel Hasil Tes -->
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-slate-500">
+            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+              <tr>
+                <th scope="col" class="px-6 py-3">
+                  <button @click="sortBy('userName')" class="flex items-center gap-1">
+                    Nama Peserta <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="userName" />
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                   <button @click="sortBy('userEmail')" class="flex items-center gap-1">
+                    Email <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="userEmail" />
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                   <button @click="sortBy('nim')" class="flex items-center gap-1">
+                    NIM <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="nim" />
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3 text-center">
+                  <button @click="sortBy('score')" class="mx-auto flex items-center gap-1">
+                    Skor Total <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="score" />
+                  </button>
+                </th>
+                <th v-for="sectionName in sectionNames" :key="sectionName" scope="col" class="px-6 py-3 text-center capitalize">
+                  <button @click="sortBy(`sectionScores.${sectionName}`)" class="mx-auto flex items-center gap-1">
+                    {{ sectionName }} <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" :currentKey="`sectionScores.${sectionName}`" />
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                  <button @click="sortBy('completedDate')" class="flex items-center gap-1">
+                    Tanggal Selesai <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="completedDate" />
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                  <span class="sr-only">Aksi</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="result in paginatedResults" :key="result.id" class="bg-white border-b hover:bg-slate-50">
+                <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
+                  {{ result.userName }}
+                </th>
+                <td class="px-6 py-4">
+                  {{ result.userEmail }}
+                </td>
+                <td class="px-6 py-4">
+                  {{ result.nim }}
+                </td>
+                <td class="px-6 py-4 text-center font-bold text-green-600">
+                  {{ result.score }}
+                </td>
+                <td v-for="sectionName in sectionNames" :key="`${result.id}-${sectionName}`" class="px-6 py-4 text-center">
+                  {{ result.sectionScores[sectionName] ?? '-' }}
+                </td>
+                <td class="px-6 py-4">
+                  {{ formatDate(result.completedDate) }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <NuxtLink :to="`/admin/results/${result.userId}/${selectedBatchId}`" class="font-medium text-indigo-600 hover:underline">
+                    Detail
+                  </NuxtLink>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="sortedResults.length > itemsPerPage" class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span class="text-sm text-slate-600">
+          Menampilkan <span class="font-semibold">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>-<span class="font-semibold">{{ Math.min(currentPage * itemsPerPage, sortedResults.length) }}</span> dari <span class="font-semibold">{{ sortedResults.length }}</span> hasil
+        </span>
+        <div class="flex gap-2">
+          <button @click="prevPage" :disabled="currentPage === 1" class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Sebelumnya
+          </button>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Berikutnya
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useAdminResults, useAdminBatches } from '@/composables/useAdminResults';
+import SortIcon from '@/components/Admin/SortIcon.vue';
+import { ref, computed } from 'vue';
+
+definePageMeta({
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  roles: ['admin'],
+  title: 'Hasil Tes per Batch'
+});
+
+
+
+
+// 1. Mengambil daftar semua batch untuk dropdown
+const { batches, isLoading: isBatchesLoading } = useAdminBatches();
+
+console.log("admin", batches);
+// 2. State untuk menyimpan ID batch yang dipilih
+const selectedBatchId = computed(() => {
+  if (batches.value.length > 0) return batches.value[0].id;
+  return "";
+})
+
+// 3. Mengambil hasil tes berdasarkan batch yang dipilih (reaktif)
+const { results, isLoading, error } = useAdminResults(selectedBatchId);
+
+// 4. State untuk query pencarian
+const searchQuery = ref('');
+
+// 5. State untuk pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10); // Tampilkan 10 item per halaman
+
+// 6. State untuk sorting
+const sortKey = ref('completedDate'); // Default sort key
+const sortOrder = ref('desc'); // Default sort order (newest first)
+
+// Computed property untuk mendapatkan nama batch yang sedang dipilih
+const selectedBatchName = computed(() => batches.value.find(b => b.id === selectedBatchId.value)?.name || '...');
+ 
+// Membuat daftar nama sesi secara dinamis dari data hasil pertama.
+// Ini mengasumsikan semua hasil dalam satu batch memiliki sesi yang sama.
+const sectionNames = computed(() => {
+  if (!results.value || results.value.length === 0) return [];
+  return Object.keys(results.value[0].sectionScores);
+});
+
+// Computed property untuk memfilter hasil berdasarkan query pencarian
+const filteredResults = computed(() => {
+  // Reset ke halaman pertama setiap kali filter berubah
+  currentPage.value = 1;
+  if (!searchQuery.value) {
+    return results.value;
+  }
+  const lowerCaseQuery = searchQuery.value.toLowerCase();
+  return results.value.filter(result => 
+    result.userName.toLowerCase().includes(lowerCaseQuery) ||
+    result.userEmail.toLowerCase().includes(lowerCaseQuery) ||
+    result.nim.toLowerCase().includes(lowerCaseQuery)
+  );
+});
+
+// Computed property untuk mengurutkan hasil yang sudah difilter
+const sortedResults = computed(() => {
+  return [...filteredResults.value].sort((a, b) => {
+    const key = sortKey.value;
+    
+    // Helper untuk mengambil nilai, termasuk dari nested object
+    const getValue = (obj: any, path: string) => path.split('.').reduce((o, i) => o?.[i], obj);
+
+    let valA = getValue(a, key);
+    let valB = getValue(b, key);
+
+    // Handle null/undefined values
+    if (valA == null) return 1;
+    if (valB == null) return -1;
+
+    if (valA < valB) {
+      return sortOrder.value === 'asc' ? -1 : 1;
+    }
+    if (valA > valB) {
+      return sortOrder.value === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+});
+
+// Computed property untuk total halaman
+const totalPages = computed(() => {
+  return Math.ceil(sortedResults.value.length / itemsPerPage.value);
+});
+
+// Computed property untuk mendapatkan data pada halaman saat ini
+const paginatedResults = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return sortedResults.value.slice(startIndex, endIndex);
+});
+
+// Fungsi untuk mengubah sort key dan order
+const sortBy = (key: string) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+};
+
+// Fungsi untuk navigasi halaman
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++;
+};
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--;
+};
+/**
+ * @function formatDate
+ * @description Memformat tanggal dari string ISO ke format lokal (Indonesia).
+ * @param {string} isoString - Tanggal dalam format ISO.
+ * @returns {string} Tanggal yang sudah diformat.
+ */
+const formatDate = (isoString: string): string => {
+  if (!isoString) return '-';
+  return new Date(isoString).toLocaleString('id-ID', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+</script>
+
+<style scoped>
+/* Menambahkan sedikit padding pada sel tabel untuk keterbacaan */
+th, td {
+  vertical-align: middle;
+}
+</style>
