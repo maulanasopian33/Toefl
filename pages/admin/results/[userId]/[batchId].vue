@@ -92,7 +92,11 @@
                 <p class="text-xs text-slate-500 mt-1">ID: {{ attempt.id }}</p>
               </div>
               <!-- Rincian Skor Sesi -->
-              <div class="md:col-span-2 space-y-3">
+              <div class="md:col-span-2 space-y-3 flex flex-col justify-center">
+                <button @click="openAnswerDetailModal(attempt)" class="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 mb-3">
+                  <Icon name="lucide:file-check-2" class="h-4 w-4" />
+                  Lihat Detail Jawaban
+                </button>
                 <div v-for="(score, section) in attempt.sectionScores" :key="section" class="flex items-center justify-between gap-4 p-3 bg-slate-50/80 rounded-lg">
                   <div class="flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
@@ -114,12 +118,71 @@
       </div>
     </div>
 
+    <!-- Modal Detail Jawaban -->
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60" @click.self="isModalOpen = false">
+      <div class="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col m-4">
+        <header class="p-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-800">Detail Jawaban - Percobaan #{{ selectedAttempt?.attemptNumber }}</h2>
+            <p class="text-sm text-slate-500">Membandingkan jawaban peserta dengan kunci jawaban.</p>
+          </div>
+          <button @click="isModalOpen = false" class="p-2 rounded-full hover:bg-slate-200">
+            <Icon name="lucide:x" class="h-5 w-5 text-slate-600" />
+          </button>
+        </header>
+        
+        <main class="p-6 overflow-y-auto flex-grow">
+          <!-- Loading State Modal -->
+          <div v-if="isAnswersLoading" class="flex flex-col items-center justify-center h-full text-center">
+            <Icon name="lucide:loader-2" class="w-10 h-10 text-slate-400 animate-spin mb-4" />
+            <h3 class="text-lg font-semibold text-slate-700">Memuat Detail Jawaban...</h3>
+          </div>
+          <!-- Error State Modal -->
+          <div v-else-if="answersError" class="flex flex-col items-center justify-center h-full text-center bg-red-50 rounded-lg p-8">
+            <Icon name="lucide:server-crash" class="w-12 h-12 text-red-500 mb-4" />
+            <h3 class="text-lg font-semibold text-red-800">Gagal Memuat Jawaban</h3>
+            <p class="text-red-700 max-w-md mt-1">Terjadi kesalahan saat mengambil data jawaban. Silakan coba lagi.</p>
+          </div>
+          <!-- Tabel Jawaban -->
+          <div v-else-if="answerDetails" class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-slate-600">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-200/70 sticky top-0">
+                <tr>
+                  <th scope="col" class="px-4 py-3 w-12 text-center">No.</th>
+                  <th scope="col" class="px-4 py-3">Pertanyaan</th>
+                  <th scope="col" class="px-4 py-3 text-center">Jawaban User</th>
+                  <th scope="col" class="px-4 py-3 text-center">Kunci Jawaban</th>
+                  <th scope="col" class="px-4 py-3 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="answer in answerDetails" :key="answer.questionNumber" class="bg-white border-b hover:bg-slate-50" :class="!answer.isCorrect && 'bg-red-50 hover:bg-red-100/70'">
+                  <td class="px-4 py-3 font-medium text-slate-800 text-center">{{ answer.questionNumber }}</td>
+                  <td class="px-4 py-3" v-html="answer.section"></td>
+                  <td class="px-4 py-3 font-mono text-center">{{ answer.userAnswer }}</td>
+                  <td class="px-4 py-3 font-mono text-center font-bold text-green-700">{{ answer.correctAnswer }}</td>
+                  <td class="px-4 py-3 text-center">
+                    <span v-if="answer.isCorrect" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-800">
+                      <Icon name="lucide:check" class="h-3.5 w-3.5" /> Benar
+                    </span>
+                    <span v-else class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+                      <Icon name="lucide:x" class="h-3.5 w-3.5" /> Salah
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAdminResultDetail, type AdminTestResult } from '@/composables/useAdminResults';
-import { computed } from 'vue';
+import { useAdminResultDetail, useAdminAnswerDetails, type AdminTestResult } from '@/composables/useAdminResults';
+import { computed, ref, watch } from 'vue';
 
 definePageMeta({
   layout: 'admin',
@@ -134,6 +197,22 @@ const batchId = computed(() => route.params.batchId as string);
 
 const { result, isLoading, error } = useAdminResultDetail(userId, batchId);
 
+// --- State untuk Modal Detail Jawaban ---
+const isModalOpen = ref(false);
+const selectedAttempt = ref<{id: string, attemptNumber: number} | null>(null);
+const selectedAttemptId = computed(() => selectedAttempt.value?.id || '');
+
+const { answerDetails, isAnswersLoading, answersError, fetchAnswerDetails } = useAdminAnswerDetails(selectedAttemptId);
+
+const openAnswerDetailModal = (attempt: AdminTestResult & { attemptNumber: number }) => {
+  selectedAttempt.value = { id: attempt.id, attemptNumber: attempt.attemptNumber };
+  isModalOpen.value = true;
+  // fetchAnswerDetails akan dipanggil oleh watch
+};
+
+watch(isModalOpen, (isOpen) => {
+  if (isOpen && selectedAttempt.value) fetchAnswerDetails();
+});
 // Mengurutkan hasil tes dari yang terbaru (skor tertinggi) ke yang terlama
 const sortedResults = computed(() => {
   if (!result.value || !result.value.results) return [];
@@ -141,7 +220,10 @@ const sortedResults = computed(() => {
     // Urutkan berdasarkan skor (tertinggi dulu), lalu tanggal (terbaru dulu)
     if (b.score !== a.score) return b.score - a.score;
     return new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime();
-  });
+  }).map((res, index, arr) => ({
+    ...res,
+    attemptNumber: arr.length - index, // Memberi nomor percobaan
+  }));
 });
 
 const formatDate = (isoString: string | undefined): string => {

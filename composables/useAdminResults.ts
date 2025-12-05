@@ -32,6 +32,19 @@ export interface AdminUserBatchResultDetail {
 }
 
 /**
+ * @interface AnswerDetail
+ * @description Mendefinisikan struktur data untuk detail sebuah jawaban.
+ */
+export interface AnswerDetail {
+  questionNumber: number;
+  questionText: string; // Bisa ditambahkan jika API menyediakan
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  section: string;
+}
+
+/**
  * @interface AdminBatch
  * @description Mendefinisikan struktur data untuk sebuah batch.
  */
@@ -217,4 +230,32 @@ export const useAdminResultDetail = (userId: Ref<string>, batchId: Ref<string>) 
   );
 
   return { result: data, isLoading: pending, error, refresh };
+};
+
+/**
+ * @composable useAdminAnswerDetails
+ * @description Mengambil detail jawaban (user vs benar) untuk sebuah percobaan tes.
+ */
+export const useAdminAnswerDetails = (attemptId: Ref<string>) => {
+  const config = useRuntimeConfig();
+  const { data, pending, error, refresh, execute } = useAsyncData<AnswerDetail[]>(
+    `admin-answer-details-${attemptId.value}`,
+    async () => {
+      if (!attemptId.value) return [];
+      
+      const token = await useFirebaseToken();
+      if (!token) throw new Error('Autentikasi pengguna gagal.');
+
+      // Implementasi API yang sebenarnya
+      // Endpoint ini diasumsikan mengembalikan array objek AnswerDetail.
+      const response = await $fetch<AnswerDetail[]>(`${config.public.API_URL}/results/answers/${attemptId.value}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return response;
+    },
+    { immediate: false } // Jangan langsung dijalankan saat komponen dibuat
+  );
+
+  return { answerDetails: data, isAnswersLoading: pending, answersError: error, fetchAnswerDetails: execute };
 };
