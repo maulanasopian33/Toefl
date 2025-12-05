@@ -155,8 +155,8 @@
 </template>
 
 <script setup lang="ts">
+import SortIcon from '@/components/admin/SortIcon.vue';
 import { useAdminResults, useAdminBatches } from '@/composables/useAdminResults';
-import SortIcon from '@/components/Admin/SortIcon.vue';
 import { ref, computed } from 'vue';
 
 definePageMeta({
