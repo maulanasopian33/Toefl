@@ -1,4 +1,4 @@
-name: Deploy TOEFL App
+name: Deploy toefl App
 
 on:
   push:
@@ -30,9 +30,10 @@ jobs:
           FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          API_URL: ${{ secrets.TOEFL_API_URL }}
+          API_URL: ${{ secrets.toefl_API_URL }}
 
-      - name: Deploy TOEFL via SSH
+      # STEP 1 — Upload ke HOME user (AMAN)
+      - name: Upload build to VPS (temp)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -40,7 +41,17 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 2222
           source: ".output/public/*"
-          target: "/var/www/html/app/toefl"
+          target: "/home/deploy/releases/toefl"
           overwrite: true
           rm: true
-          debug: true
+
+      # STEP 2 — Sync ke web root
+      - name: Sync to web directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 2222
+          script: |
+            rsync -av --delete /home/deploy/releases/toefl/.output/public/ /var/www/html/app/toefl/

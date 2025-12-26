@@ -54,4 +54,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 2222
           script: |
-            rsync -av --delete /home/deploy/releases/toafl/ /var/www/html/app/toafl/
+            rsync -av --delete /home/deploy/releases/toafl/.output/public/ /var/www/html/app/toafl/
