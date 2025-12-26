@@ -32,7 +32,8 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           API_URL: ${{ secrets.TOAFL_API_URL }}
 
-      - name: Deploy TOAFL via SSH
+      # STEP 1 — Upload ke HOME user (AMAN)
+      - name: Upload build to VPS (temp)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -40,7 +41,18 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 2222
           source: ".output/public/*"
-          target: "/var/www/html/app/toafl"
+          target: "/home/deploy/releases/toafl"
           overwrite: true
           rm: true
-          debug: true
+
+      # STEP 2 — Sync ke web root
+      - name: Sync to web directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 2222
+          script: |
+            sudo rsync -av --delete /home/deploy/releases/toafl/ /var/www/html/app/toafl/
+            sudo chown -R www-data:www-data /var/www/html/app/toafl
