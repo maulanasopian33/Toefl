@@ -41,3 +41,5 @@ jobs:
           port: 2222
           source: ".output/public/*"
           target: "/var/www/html/app/toafl"
+          overwrite: true
+          rm: true
