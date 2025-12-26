@@ -43,3 +43,4 @@ jobs:
           target: "/var/www/html/app/toafl"
           overwrite: true
           rm: true
+          debug: true
