@@ -134,16 +134,35 @@
 
             <!-- Actions -->
             <div class="pt-4 border-t border-slate-100 flex flex-col gap-3">
-              <button 
+              <!-- Swipe to Confirm Button -->
+              <div 
                 v-if="paymentData.status !== 'paid' && paymentData.status !== 'PAID'"
-                @click="markAsPaid"
-                :disabled="processing"
-                class="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-70 transition-all"
+                ref="sliderContainer"
+                class="relative h-12 w-full overflow-hidden rounded-full bg-slate-100 border border-slate-200 select-none cursor-pointer"
+                :class="{ 'opacity-70': processing }"
               >
-                <Icon v-if="processing" name="lucide:loader-2" class="h-4 w-4 animate-spin" />
-                <Icon v-else name="lucide:check-circle-2" class="h-4 w-4" />
-                Verifikasi Lunas
-              </button>
+                <!-- Background Text -->
+                <div class="absolute inset-0 flex items-center justify-center text-sm font-semibold text-slate-400 z-0">
+                  Geser untuk Verifikasi
+                </div>
+                
+                <!-- Progress Track -->
+                <div 
+                  class="absolute inset-y-0 left-0 bg-emerald-100 z-0 transition-all duration-75 ease-linear"
+                  :style="{ width: (dragPosition + 44) + 'px' }"
+                ></div>
+
+                <!-- Handle -->
+                <div
+                  class="absolute top-1 bottom-1 left-1 w-10 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow-md z-10 cursor-grab active:cursor-grabbing"
+                  :style="{ transform: `translateX(${dragPosition}px)` }"
+                  @mousedown="startDrag"
+                  @touchstart="startDrag"
+                >
+                  <Icon v-if="processing" name="lucide:loader-2" class="h-4 w-4 animate-spin" />
+                  <Icon v-else name="lucide:chevrons-right" class="h-5 w-5" />
+                </div>
+              </div>
               
               <div v-else class="w-full bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex items-center justify-center gap-2 text-emerald-700 text-sm font-medium">
                 <Icon name="lucide:check-check" class="h-4 w-4" />
@@ -187,6 +206,13 @@ const processing = ref(false);
 const error = ref(null);
 const paymentData = ref(null);
 const manualInputId = ref('');
+
+// Swipe Logic Refs
+const sliderContainer = ref(null);
+const isDragging = ref(false);
+const dragPosition = ref(0);
+const startX = ref(0);
+
 let html5QrcodeScanner = null;
 
 const onScanSuccess = async (decodedText, decodedResult) => {
@@ -253,9 +279,11 @@ const markAsPaid = async () => {
 
     showNotification('Pembayaran berhasil diverifikasi Lunas.', 'success');
     paymentData.value.status = 'paid';
+    dragPosition.value = 0;
   } catch (err) {
     console.error(err);
     showNotification('Gagal memverifikasi pembayaran.', 'error');
+    dragPosition.value = 0; // Reset slider jika gagal
   } finally {
     processing.value = false;
   }
@@ -264,6 +292,7 @@ const markAsPaid = async () => {
 const resetState = () => {
   paymentData.value = null;
   error.value = null;
+  dragPosition.value = 0;
   initScanner();
 };
 
@@ -303,6 +332,64 @@ const formatCurrency = (val) => {
 
 const getInitials = (name) => {
   return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??';
+};
+
+// Swipe Logic Functions
+const startDrag = (e) => {
+  if (processing.value) return;
+  isDragging.value = true;
+  const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+  startX.value = clientX - dragPosition.value;
+  
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('touchmove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener('touchend', stopDrag);
+};
+
+const onDrag = (e) => {
+  if (!isDragging.value || !sliderContainer.value) return;
+  
+  const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+  const containerWidth = sliderContainer.value.clientWidth;
+  
+  // Max drag = container width - handle width (40px) - padding left (4px) - padding right (4px)
+  const maxDrag = containerWidth - 48; 
+  
+  let newPos = clientX - startX.value;
+  
+  if (newPos < 0) newPos = 0;
+  if (newPos > maxDrag) newPos = maxDrag;
+  
+  dragPosition.value = newPos;
+};
+
+const stopDrag = () => {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('touchmove', onDrag);
+  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener('touchend', stopDrag);
+  
+  if (!sliderContainer.value) return;
+  
+  const containerWidth = sliderContainer.value.clientWidth;
+  const maxDrag = containerWidth - 48;
+  
+  // Threshold 70% untuk trigger aksi
+  if (dragPosition.value > maxDrag * 0.7) {
+    dragPosition.value = maxDrag; // Snap ke ujung
+    markAsPaid();
+  } else {
+    // Animasi kembali ke awal jika belum sampai threshold
+    const animateBack = () => {
+      if (dragPosition.value > 0) {
+        dragPosition.value = Math.max(0, dragPosition.value - 15);
+        requestAnimationFrame(animateBack);
+      }
+    };
+    animateBack();
+  }
 };
 
 onMounted(() => {
