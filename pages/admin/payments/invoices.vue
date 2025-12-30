@@ -11,6 +11,14 @@
         </p>
       </div>
 
+      <div class="flex items-center gap-2">
+        <button
+          @click="navigateTo('/admin/payments/scanner')"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+        >
+          <Icon name="lucide:qr-code" class="h-4 w-4" />
+          Scan QR
+        </button>
       <button
         v-if="selectedBatchId"
         @click="refreshPayments"
@@ -19,6 +27,7 @@
         <Icon name="lucide:refresh-cw" class="h-4 w-4" />
         Segarkan Data
       </button>
+      </div>
     </header>
 
     <!-- BATCH SELECTOR -->

@@ -31,6 +31,7 @@
   "devDependencies": {
     "@iconify-json/ic": "^1.2.4",
     "@nuxt/image": "^1.10.0",
-    "@types/howler": "^2.2.12"
+    "@types/howler": "^2.2.12",
+    "html5-qrcode": "^2.3.8"
   }
 }
