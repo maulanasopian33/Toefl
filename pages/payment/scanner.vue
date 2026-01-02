@@ -334,6 +334,14 @@ const getInitials = (name) => {
   return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??';
 };
 
+const playSuccessSound = () => {
+  // Memutar suara notifikasi. Pastikan file 'success.mp3' ada di folder public/
+  // Atau ganti dengan URL audio online yang valid
+  const audio = new Audio('/success.mp3');
+  audio.volume = 0.5;
+  audio.play().catch(e => console.log('Gagal memutar audio:', e));
+};
+
 // Swipe Logic Functions
 const startDrag = (e) => {
   if (processing.value) return;
@@ -379,6 +387,7 @@ const stopDrag = () => {
   // Threshold 70% untuk trigger aksi
   if (dragPosition.value > maxDrag * 0.7) {
     dragPosition.value = maxDrag; // Snap ke ujung
+    playSuccessSound();
     markAsPaid();
   } else {
     // Animasi kembali ke awal jika belum sampai threshold

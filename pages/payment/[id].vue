@@ -35,6 +35,9 @@
               <span v-if="isPaid" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
                 <Icon name="lucide:check-circle-2" class="h-3.5 w-3.5" /> Lunas
               </span>
+              <span v-else-if="isVerificationPending" class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[9px] font-bold uppercase tracking-wide text-blue-700">
+                <Icon name="lucide:hourglass" class="h-3.5 w-3.5" /> Menunggu Konfirmasi
+              </span>
               <span v-else class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[9px] font-bold uppercase tracking-wide text-amber-700">
                 <Icon name="lucide:clock" class="h-3.5 w-3.5" /> Menunggu Pembayaran
               </span>
@@ -51,9 +54,41 @@
           </div>
         </div>
 
+        <!-- Verification Pending State -->
+        <div v-if="isVerificationPending && !isReuploading" class="rounded-2xl bg-white p-8 text-center shadow-sm border border-blue-100">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4 animate-pulse">
+            <Icon name="lucide:hourglass" class="h-8 w-8" />
+          </div>
+          <h3 class="text-xl font-bold text-slate-900">Pembayaran Sedang Diverifikasi</h3>
+          <p class="mt-2 text-slate-600 max-w-md mx-auto">
+            Bukti pembayaran Anda telah kami terima dan sedang dalam proses pengecekan oleh admin. Mohon tunggu 1x24 jam.
+          </p>
+          
+          <div v-if="payment.payment_proof" class="mt-6 mb-2">
+            <img :src="payment.payment_proof" alt="Bukti Transfer" class="mx-auto max-h-64 rounded-lg border border-slate-200 shadow-sm object-contain bg-slate-50" />
+          </div>
+
+          <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 inline-block text-left">
+             <div class="flex items-center gap-3">
+                <Icon name="lucide:file-check" class="h-5 w-5 text-slate-400" />
+                <div class="text-sm">
+                   <p class="font-medium text-slate-900">Bukti Transfer Terkirim</p>
+                   <a v-if="payment.payment_proof" :href="payment.payment_proof" target="_blank" class="text-blue-600 hover:underline text-xs">Lihat Bukti</a>
+                </div>
+             </div>
+          </div>
+
+          <div class="mt-6">
+            <button @click="isReuploading = true" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+              <Icon name="lucide:refresh-cw" class="h-4 w-4" />
+              Upload Ulang / Ganti Bukti
+            </button>
+          </div>
+        </div>
+
         <!-- Dynamic Payment Method Component -->
         <PaymentMethodInfo
-          v-if="!isPaid"
+          v-if="(!isPaid && !isVerificationPending) || isReuploading"
           :method-type="paymentMethodType"
           :title="paymentTitle"
           :bank-name="paymentBankName"
@@ -63,9 +98,8 @@
           :payment-id="payment.externalId || payment.id"
           :qr-code-data="payment.externalId || payment.id"
         />
-
         <!-- Manual Transfer Confirmation -->
-        <div v-if="!isPaid" class="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+        <div v-if="(!isPaid && !isVerificationPending) || isReuploading" class="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-100">
             <h3 class="font-semibold text-slate-900">Konfirmasi Pembayaran Manual</h3>
           </div>
@@ -97,15 +131,24 @@
                 </label>
               </div>
 
-              <button 
-                @click="submitProof" 
-                :disabled="!selectedFile || uploading"
-                class="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Icon v-if="uploading" name="lucide:loader-2" class="h-4 w-4 animate-spin" />
-                <Icon v-else name="lucide:send" class="h-4 w-4" />
-                {{ uploading ? 'Mengirim...' : 'Kirim Bukti Transfer' }}
-              </button>
+              <div class="flex gap-3">
+                <button 
+                  v-if="isReuploading"
+                  @click="isReuploading = false"
+                  class="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-all"
+                >
+                  Batal
+                </button>
+                <button 
+                  @click="submitProof" 
+                  :disabled="!selectedFile || uploading"
+                  class="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Icon v-if="uploading" name="lucide:loader-2" class="h-4 w-4 animate-spin" />
+                  <Icon v-else name="lucide:send" class="h-4 w-4" />
+                  {{ uploading ? 'Mengirim...' : 'Kirim Bukti Transfer' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -151,11 +194,16 @@ const openIndex = ref<number | null>(0);
 const selectedFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const uploading = ref(false);
+const isReuploading = ref(false);
 
 const isImage = computed(() => selectedFile.value?.type.startsWith('image/'));
 
 const isPaid = computed(() => {
   return payment.value?.status === 'PAID' || payment.value?.status === 'paid';
+});
+
+const isVerificationPending = computed(() => {
+  return !isPaid.value && !payment.value?.proof;
 });
 
 const fetchPaymentDetail = async () => {
@@ -309,36 +357,40 @@ const removeFile = () => {
 const submitProof = async () => {
   if (!selectedFile.value || !payment.value) return;
   
+  // Validasi Ukuran File (Max 2MB)
+  if (selectedFile.value.size > 2 * 1024 * 1024) {
+    showNotification('Ukuran file terlalu besar. Maksimal 2MB.', 'error');
+    return;
+  }
+
+  // Validasi Tipe File
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+  if (!allowedTypes.includes(selectedFile.value.type)) {
+    showNotification('Format file tidak valid. Harap unggah gambar (JPG/PNG) atau PDF.', 'error');
+    return;
+  }
+
   uploading.value = true;
   try {
     const user = $auth?.currentUser;
     const token = await user?.getIdToken();
     
-    // 1. Upload File ke endpoint media
     const formData = new FormData();
-    formData.append('file', selectedFile.value);
+    formData.append('image', selectedFile.value);
     
-    const uploadResponse: any = await $fetch(`${config.public.API_URL}/media/upload`, {
+    await $fetch(`${config.public.API_URL}/payments/${payment.value.id}/proof`, {
       method: 'POST',
       body: formData,
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    const fileUrl = uploadResponse.url || uploadResponse.data?.url;
-
-    // 2. Update Data Pembayaran
-    await $fetch(`${config.public.API_URL}/payments/${payment.value.id}`, {
-      method: 'PATCH',
-      body: { method: 'manual', payment_proof: fileUrl, status: 'pending' },
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (typeof showNotification === 'function') showNotification('Bukti transfer berhasil dikirim. Mohon tunggu verifikasi admin.', 'success');
+    showNotification('Bukti transfer berhasil dikirim. Mohon tunggu verifikasi admin.', 'success');
     removeFile();
-    fetchPaymentDetail(); // Refresh data
+    fetchPaymentDetail();
+    isReuploading.value = false;
   } catch (err) {
     console.error(err);
-    if (typeof showNotification === 'function') showNotification('Gagal mengirim bukti transfer.', 'error');
+    showNotification('Gagal mengirim bukti transfer.', 'error');
   } finally {
     uploading.value = false;
   }
