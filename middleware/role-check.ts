@@ -22,13 +22,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // Jika pengguna terotentikasi dan rolenya tidak termasuk dalam yang diizinkan, tangani pengalihan.
   if (isAuthenticated.value && !requiredRoles.includes(claims.value.role || '')) {
     const userRole = claims.value.role
-
-    // KASUS KHUSUS: Jika admin mencoba mengakses halaman user, arahkan ke dashboard admin.
-    if (userRole === 'admin' && requiredRoles.includes('user')) {
+    
+    // Jika pengguna yang tidak diizinkan memiliki role selain 'user' (misal: admin, proctor),
+    // arahkan mereka ke dashboard admin.
+    if (userRole !== 'user') {
       return navigateTo('/admin')
     }
 
-    // Untuk semua kasus lain, arahkan ke halaman 'forbidden'.
+    // Jika pengguna dengan role 'user' mencoba mengakses halaman terlarang, arahkan ke 'forbidden'.
     showNotification('Anda tidak memiliki izin untuk mengakses halaman ini.', 'error')
     return navigateTo('/forbidden')
   }

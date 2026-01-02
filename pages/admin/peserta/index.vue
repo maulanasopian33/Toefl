@@ -90,6 +90,7 @@ const {
   programOptions,
 } = useUsers()
 
+const availableRoles = ref<string[]>([]);
 const showDetailModal = ref(false);
 const { showNotification } = useNotification()
 const { showConfirm, showRoleSelector } = useNotificationPopup()
@@ -99,6 +100,25 @@ const handleViewDetail = (user: User) => {
   selectedUser.value = user;
   showDetailModal.value = true;
 }
+
+const config = useRuntimeConfig();
+const { $auth } = useNuxtApp();
+
+const fetchAvailableRoles = async () => {
+  try {
+    const token = await $auth?.currentUser?.getIdToken();
+    const response: any = await $fetch(`${config.public.API_URL}/rbac/roles`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (response.data && Array.isArray(response.data)) {
+      availableRoles.value = response.data.map((role: any) => role.name);
+    }
+  } catch (error) {
+    console.error('Failed to fetch roles:', error);
+    availableRoles.value = ['admin', 'user', 'proctor']; // Fallback
+    showNotification('Gagal memuat daftar role dari server, menggunakan daftar default.', 'error');
+  }
+};
 
 const handleResetPassword = (user: User) => {
   console.log('Reset password', user.uid)
@@ -149,12 +169,16 @@ const handleDeleteUser = async (user: User) => {
 
 const handleChangeRole = async (user: User) => {
   // Daftar role yang tersedia
-  const availableRoles = ['admin', 'user', 'proctor'];
+  if (availableRoles.value.length === 0) {
+    // showNotification('Daftar role sedang dimuat, silakan coba sesaat lagi.', 'info');
+    await fetchAvailableRoles();
+    if(availableRoles.value.length === 0) return; // exit if still empty
+  }
 
   const newRole = await showRoleSelector(
     `Pilih role baru untuk pengguna "${user.name}". Role saat ini adalah "${user.role}".`,
     user.role,
-    availableRoles,
+    availableRoles.value,
     { title: 'Ubah Role Pengguna' }
   );
 
@@ -178,7 +202,9 @@ const closeModal = () => {
 
 const selectedUser = ref(null);
 
-
+onMounted(() => {
+  fetchAvailableRoles();
+});
 
 
 </script>

@@ -142,7 +142,8 @@ export default [
       { name: 'Pengaturan Ujian', link: '/admin/settings/exam' },
       { name: 'Pengaturan Aplikasi', link: '/admin/settings/general' },
       { name: 'Pengaturan Lembaga', link: '/admin/settings/institution' },
-      { name: 'User & Roles', link: '/admin/settings/users' },
+      { name: 'Roles', link: '/admin/settings/roles' },
+      { name: 'Permissions', link: '/admin/settings/permissions' },
     ],
   },
 
