@@ -1,17 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <main class="lg:col-span-8 xl:col-span-9">
           <!-- Loading State -->
-          <div v-if="pending" class="flex h-[60vh] flex-col items-center justify-center rounded-2xl bg-white p-10 text-center shadow-sm border border-gray-200">
-            <Icon name="lucide:loader-2" class="h-16 w-16 animate-spin text-gray-300" />
-            <p class="mt-6 text-xl font-semibold text-gray-700">Memuat Detail Batch</p>
-            <p class="mt-1 text-gray-500">Kami sedang menyiapkan data untuk Anda, mohon tunggu sebentar.</p>
+          <div v-if="pending" class="flex h-[60vh] flex-col items-center justify-center rounded-xl bg-white p-10 text-center shadow-sm border border-gray-200">
+            <Icon name="lucide:loader-2" class="h-12 w-12 animate-spin text-gray-300" />
+            <p class="mt-4 text-lg font-semibold text-gray-700">Memuat Detail Batch...</p>
           </div>
           
           <!-- Not Found State -->
-          <div v-else-if="!data" class="flex h-[60vh] flex-col items-center justify-center rounded-2xl bg-white p-10 text-center shadow-sm border border-gray-200">
+          <div v-else-if="!batch" class="flex h-[60vh] flex-col items-center justify-center rounded-xl bg-white p-10 text-center shadow-sm border border-gray-200">
             <Icon name="lucide:file-search-2" class="h-20 w-20 text-red-400" />
             <p class="mt-6 text-2xl font-bold text-red-600">Batch Tidak Ditemukan</p>
             <p class="mt-2 max-w-sm text-gray-500">Maaf, batch yang Anda cari tidak ada atau mungkin telah dihapus.</p>
@@ -23,15 +22,16 @@
           
           <!-- Content -->
           <div v-else class="space-y-6">
-            <BatchHeader :batch="data" />
-            <BatchParticipation :batch="data" @update-batch="updateBatch" />
+            <BatchDetailHeader :batch="batch" />
+            <BatchDetailParticipation :batch="batch" @update-batch="updateBatch" />
+
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <BatchSchedule />
-              <BatchInstructions :instruksi="data.intruksiKhusus" />
+              <BatchDetailSchedule :sessions="batch.sessions" />
+              <BatchDetailInstructions :instruksi="batch.special_instructions" />
             </div>
 
-            <BatchParticipants :participants="data.participants" />
+            <BatchDetailParticipants :participants="batch.participants" />
           </div>
         </main>
 
@@ -80,18 +80,27 @@
 
 <script setup>
 import { useBatchGetById } from '@/composables/Batch/getbyid';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import BatchDetailHeader from '@/components/batch/detail/BatchHeader.vue';
+import BatchDetailParticipation from '@/components/batch/detail/BatchParticipation.vue';
+import BatchDetailSchedule from '@/components/batch/detail/BatchSchedule.vue';
+import BatchDetailInstructions from '@/components/batch/detail/BatchInstructions.vue';
+import BatchDetailParticipants from '@/components/batch/detail/BatchParticipants.vue';
 
 const route = useRoute();
 const batchId = route.params.id;
-const { data, pending, error } = await useBatchGetById(batchId);
+
+// Fetch data on client-side to show loading state properly
+const { data, pending, error, refresh } = await useBatchGetById(batchId, { immediate: false });
+
 definePageMeta({
   middleware: ['auth', 'role-check'],
-  permission: "batch.view_self",
+  permission: "batch.user",
   title: 'Detail Batch'
 });
 const batch = ref(data.value);
+onMounted(() => { refresh(); });
 
 watch(data, (newData) => {
   batch.value = newData;

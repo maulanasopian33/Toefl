@@ -1,218 +1,212 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50">
-    <div class="container mx-auto px-6 py-10 flex-grow">
+  <div class="min-h-screen flex flex-col bg-slate-50">
+    <div class="container mx-auto px-4 sm:px-6 py-8 flex-grow max-w-5xl">
       
-      <div class="flex justify-between items-center mb-8">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 class="text-3xl font-extrabold text-gray-800">Edit Batch Ujian 🛠️</h1>
-          <p v-if="formData.idBatch" class="text-gray-500 mt-1 text-base">Perbarui detail untuk **ID Batch: {{ formData.idBatch }}**</p>
-          <p v-else class="text-gray-500 mt-1 text-base">Perbarui detail batch ujian yang sudah ada</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Edit Batch</h1>
+          <p class="text-gray-500 mt-1">Perbarui informasi, jadwal, dan sesi untuk batch ini.</p>
         </div>
         <NuxtLink
           to="/admin/batch"
-          class="inline-flex items-center text-gray-600 hover:text-green-600 transition-colors font-medium"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
         >
-          <Icon name="lucide:arrow-left" class="mr-2" size="18" />
-          Kembali ke Daftar Batch
+          <Icon name="lucide:arrow-left" class="mr-2 w-4 h-4" />
+          Kembali
         </NuxtLink>
       </div>
 
-      <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 mb-8 shadow-sm">
-        <div class="flex items-start space-x-3">
-          <Icon name="lucide:pencil" class="mt-0.5 flex-shrink-0" size="20" />
-          <div>
-            <h4 class="font-bold text-blue-800 mb-1 text-lg">Mode Pengeditan</h4>
-            <ul class="text-sm space-y-1 list-disc list-inside">
-              <li>Pastikan data yang diubah sudah benar sebelum disimpan.</li>
-              <li>Perubahan pada tanggal ujian dapat memengaruhi jadwal peserta.</li>
-            </ul>
-          </div>
-        </div>
+      <!-- Loading State -->
+      <div v-if="isLoading && !formData.name" class="flex justify-center py-12">
+         <Icon name="lucide:loader-2" class="w-8 h-8 text-blue-600 animate-spin" />
       </div>
 
-      <form
-        @submit.prevent="handleSubmit"
-        class="bg-white shadow-xl rounded-2xl p-8 border border-gray-100"
-      >
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-          
-          <div class="space-y-6">
-            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Detail Dasar Batch</h3>
+      <form v-else @submit.prevent="handleSubmit" class="space-y-8">
+        
+        <!-- Informasi Utama -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-800">Informasi Utama</h3>
+          </div>
+          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nama Batch <span class="text-red-500">*</span></label>
+              <input v-model="formData.name" type="text" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: TOEFL Intensive Batch 1" required />
+            </div>
+            
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+              <textarea v-model="formData.description" rows="3" class="form-textarea w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Deskripsi program..."></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Program <span class="text-red-500">*</span></label>
+              <select v-model="formData.type" class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
+                <option value="">Pilih Tipe</option>
+                <option value="FULL_PACKAGE">Full Package</option>
+                <option value="PREP_CLASS">Preparation Class</option>
+                <option value="TRYOUT_ONLY">Tryout Only</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
+              <select v-model="formData.status" class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
+                <option value="DRAFT">Draft</option>
+                <option value="OPEN">Open (Dibuka)</option>
+                <option value="CLOSED">Closed (Ditutup)</option>
+                <option value="FULL">Full (Penuh)</option>
+                <option value="COMPLETED">Completed (Selesai)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jadwal & Pendaftaran -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-800">Jadwal & Pendaftaran</h3>
+          </div>
+          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Program <span class="text-red-500">*</span></label>
+              <input v-model="formData.start_date" type="date" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai Program <span class="text-red-500">*</span></label>
+              <input v-model="formData.end_date" type="date" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" required />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pendaftaran Dibuka</label>
+              <input v-model="formData.registration_open_at" type="datetime-local" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pendaftaran Ditutup</label>
+              <input v-model="formData.registration_close_at" type="datetime-local" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" />
+            </div>
             
             <div>
-              <label for="namaBatch" class="block text-sm font-medium text-gray-700 mb-1">
-                Nama Batch <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="namaBatch"
-                type="text"
-                v-model="formData.namaBatch"
-                @input="clearError('namaBatch')"
-                :class="{'border-red-500': errors.namaBatch}"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
-                placeholder="Contoh: Ujian TOEFL Periode Juli 2025"
-                required
-              />
-              <p v-if="errors.namaBatch" class="mt-1 text-sm text-red-600">{{ errors.namaBatch }}</p>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Total Durasi (Menit)</label>
+              <input v-model="formData.duration_minutes" type="number" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: 2400" />
             </div>
+          </div>
+        </div>
 
+        <!-- Kapasitas & Harga -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-800">Kapasitas & Harga</h3>
+          </div>
+          <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label for="deskripsiBatch" class="block text-sm font-medium text-gray-700 mb-1">
-                Deskripsi Batch <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                id="deskripsiBatch"
-                v-model="formData.deskripsiBatch"
-                @input="clearError('deskripsiBatch')"
-                :class="{'border-red-500': errors.deskripsiBatch}"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm h-24 resize-none"
-                placeholder="Deskripsi singkat mengenai batch ujian..."
-                required
-              ></textarea>
-              <p v-if="errors.deskripsiBatch" class="mt-1 text-sm text-red-600">{{ errors.deskripsiBatch }}</p>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Min. Peserta</label>
+              <input v-model="formData.min_participants" type="number" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="0" />
             </div>
-
             <div>
-              <label for="batasMaksimalPeserta" class="block text-sm font-medium text-gray-700 mb-1">
-                Batas Maksimal Peserta
-              </label>
-              <input
-                id="batasMaksimalPeserta"
-                type="number"
-                v-model="formData.batasMaksimalPeserta"
-                min="1"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
-                placeholder="Contoh: 50"
-              />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Max. Peserta</label>
+              <input v-model="formData.max_participants" type="number" class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="0" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Harga (IDR) <span class="text-red-500">*</span></label>
+              <div class="relative rounded-md shadow-sm">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span class="text-gray-500 sm:text-sm">Rp</span>
+                </div>
+                <input v-model="formData.price" type="number" class="form-input w-full rounded-lg border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500" placeholder="0" required />
               </div>
-          </div>
-
-          <div class="space-y-6">
-            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Jadwal dan Konfigurasi</h3>
-
-            <div>
-              <label for="tanggalMulai" class="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Mulai Ujian <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="tanggalMulai"
-                type="date"
-                v-model="formData.tanggalMulai"
-                @input="clearError('tanggalMulai')"
-                :class="{'border-red-500': errors.tanggalMulai}"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
-                required
-              />
-              <p v-if="errors.tanggalMulai" class="mt-1 text-sm text-red-600">{{ errors.tanggalMulai }}</p>
-            </div>
-
-            <div>
-              <label for="tanggalSelesai" class="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Selesai Ujian <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="tanggalSelesai"
-                type="date"
-                v-model="formData.tanggalSelesai"
-                @input="clearError('tanggalSelesai')"
-                :class="{'border-red-500': errors.tanggalSelesai}"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
-                required
-              />
-              <p v-if="errors.tanggalSelesai" class="mt-1 text-sm text-red-600">{{ errors.tanggalSelesai }}</p>
-            </div>
-
-            <div>
-              <label for="statusBatch" class="block text-sm font-medium text-gray-700 mb-1">
-                Status Batch <span class="text-red-500">*</span>
-              </label>
-              <select
-                id="statusBatch"
-                v-model="formData.statusBatch"
-                @change="clearError('statusBatch')"
-                :class="{'border-red-500': errors.statusBatch}"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm bg-white appearance-none"
-                required
-              >
-                <option value="" disabled>-- Pilih Status --</option>
-                <option value="aktif">Aktif (Pendaftaran Dibuka)</option>
-                <option value="penuh">Penuh (Kuota Tercapai)</option>
-                <option value="tutup">Tutup (Pendaftaran Ditutup)</option>
-                <option value="selesai">Selesai (Ujian Sudah Berakhir)</option>
-              </select>
-              <p v-if="errors.statusBatch" class="mt-1 text-sm text-red-600">{{ errors.statusBatch }}</p>
             </div>
           </div>
         </div>
 
-        <div class="mt-10 pt-6 border-t border-gray-100 space-y-6">
-            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Informasi Tambahan</h3>
-
-          <div>
-            <label for="intruksiKhusus" class="block text-sm font-medium text-gray-700 mb-1">
-              Instruksi Khusus
-            </label>
-            <textarea
-              id="intruksiKhusus"
-              v-model="formData.intruksiKhusus"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm h-32 resize-y"
-              placeholder="• Pastikan perangkat Anda memiliki koneksi stabil...&#10;• Siapkan kartu identitas untuk verifikasi. (Opsional)"
-            ></textarea>
+        <!-- Instruksi Khusus -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-800">Instruksi Tambahan</h3>
           </div>
-
-          <div>
-            <label for="materi_belajar" class="block text-sm font-medium text-gray-700 mb-1">
-              Link Materi Belajar (Opsional)
-            </label>
-            <input
-              id="materi_belajar"
-              type="url"
-              v-model="formData.materi_belajar"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm"
-              placeholder="https://contoh.com/materi-belajar"
-            />
+          <div class="p-6">
+            <textarea v-model="formData.special_instructions" rows="4" class="form-textarea w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Instruksi khusus untuk peserta..."></textarea>
           </div>
         </div>
 
-        <div class="flex justify-end space-x-4 pt-8 border-t mt-8">
-          <button
-            type="button"
-            @click="goBack"
-            class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-medium transition duration-150"
-          >
-            <Icon name="lucide:x" class="mr-2 inline" size="18" /> Batalkan
+        <!-- Sesi (Sessions) -->
+        <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">Sesi Pertemuan</h3>
+            <button type="button" @click="addSession" class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <Icon name="lucide:plus-circle" class="w-4 h-4" /> Tambah Sesi
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <div v-if="formData.sessions.length === 0" class="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+              Belum ada sesi yang ditambahkan.
+            </div>
+            
+            <div v-for="(session, index) in formData.sessions" :key="index" class="bg-gray-50 rounded-lg border border-gray-200 p-4 relative group">
+              <button type="button" @click="removeSession(index)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                <Icon name="lucide:trash-2" class="w-4 h-4" />
+              </button>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Judul Sesi</label>
+                  <input v-model="session.title" type="text" class="form-input w-full text-sm rounded-md border-gray-300" placeholder="Judul Sesi" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Tipe</label>
+                  <select v-model="session.session_type" class="form-select w-full text-sm rounded-md border-gray-300">
+                    <option value="CLASS">Class</option>
+                    <option value="TRYOUT">Tryout</option>
+                    <option value="CONSULTATION">Consultation</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Meeting URL</label>
+                  <input v-model="session.meeting_url" type="url" class="form-input w-full text-sm rounded-md border-gray-300" placeholder="https://..." />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Mulai</label>
+                  <input v-model="session.start_at" type="datetime-local" class="form-input w-full text-sm rounded-md border-gray-300" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Selesai</label>
+                  <input v-model="session.end_at" type="datetime-local" class="form-input w-full text-sm rounded-md border-gray-300" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Catatan</label>
+                  <input v-model="session.notes" type="text" class="form-input w-full text-sm rounded-md border-gray-300" placeholder="Catatan tambahan..." />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-4 pt-4">
+          <button type="button" @click="goBack" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all">
+            Batal
           </button>
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center transition duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Icon 
-              :name="isLoading ? 'lucide:loader-2' : 'lucide:refresh-ccw'" 
-              class="mr-2"
-              :class="{ 'animate-spin': isLoading }"
-              size="18"
-            />
-            {{ isLoading ? 'Memperbarui...' : 'Perbarui Batch' }}
+          <button type="submit" :disabled="isLoading" class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+            <Icon v-if="isLoading" name="lucide:loader-2" class="w-4 h-4 mr-2 animate-spin" />
+            {{ isLoading ? 'Menyimpan...' : 'Perbarui Batch' }}
           </button>
         </div>
+
       </form>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useBatchGetById } from '@/composables/Batch/getbyid';
 import { useBatchUpdate } from '@/composables/Batch/Update';
+import { useLoading } from '@/composables/Loading';
+import { useNotificationPopup } from '@/composables/NotificationPopup';
 
-// --- Asumsi Composables dan Helper Functions (Harus Didefinisikan di App Anda) ---
-const useLoading = () => ({ startLoading: () => {}, stopLoading: () => {} })
-const useNotificationPopup = () => ({ showAlert: (msg) => { console.log('Alert:', msg) } })
-const useNuxtApp = () => ({ $toast: { success: (msg) => { console.log('Toast Success:', msg) } } })
-
+const { $toast } = useNuxtApp() 
 const { startLoading, stopLoading } = useLoading()
 const { showAlert } = useNotificationPopup()
-const { $toast } = useNuxtApp() 
 
 definePageMeta({
   title: 'Edit Batch - Admin Panel',
@@ -223,59 +217,123 @@ definePageMeta({
 
 const route = useRoute()
 const id = route.params.id // ID Batch dari URL
+
 const isLoading = ref(false)
-const formData = reactive({
-  idBatch: '', 
-  namaBatch: '',
-  deskripsiBatch: '',
-  tanggalMulai: '',
-  tanggalSelesai: '',
-  batasMaksimalPeserta: '',
-  statusBatch: '',
-  intruksiKhusus: '',
-  materi_belajar: ''
-})
-const errors = reactive({})
 
-// Fungsi utilitas untuk membersihkan error
-const clearError = field => delete errors[field]
-
-// Fungsi validasi
-const validateForm = () => {
-  Object.keys(errors).forEach(k => delete errors[k])
-  let isValid = true
-
-  if (!formData.namaBatch.trim()) { errors.namaBatch = 'Nama batch wajib diisi'; isValid = false }
-  if (!formData.deskripsiBatch.trim()) { errors.deskripsiBatch = 'Deskripsi wajib diisi'; isValid = false }
-  if (!formData.tanggalMulai) { errors.tanggalMulai = 'Tanggal mulai wajib diisi'; isValid = false }
-  if (!formData.tanggalSelesai) { errors.tanggalSelesai = 'Tanggal selesai wajib diisi'; isValid = false }
-  if (!formData.statusBatch) { errors.statusBatch = 'Status wajib dipilih'; isValid = false }
-  
-  if (formData.tanggalMulai && formData.tanggalSelesai && formData.tanggalMulai > formData.tanggalSelesai) {
-    errors.tanggalSelesai = 'Tanggal selesai harus setelah atau sama dengan tanggal mulai'; isValid = false
-  }
-
-  return isValid
+interface Session {
+  id?: number | string; // Optional for new sessions
+  title: string;
+  session_type: string;
+  start_at: string;
+  end_at: string;
+  meeting_url: string;
+  capacity: number;
+  notes: string;
 }
 
+const formData = reactive({
+  idBatch: '',
+  name: '',
+  description: '',
+  type: 'FULL_PACKAGE',
+  start_date: '',
+  end_date: '',
+  registration_open_at: '',
+  registration_close_at: '',
+  max_participants: null as number | null,
+  min_participants: null as number | null,
+  status: 'OPEN',
+  price: 0,
+  currency: 'IDR',
+  duration_minutes: null as number | null,
+  special_instructions: '',
+  sessions: [] as Session[]
+})
+
+const addSession = () => {
+  formData.sessions.push({
+    title: '',
+    session_type: 'CLASS',
+    start_at: '',
+    end_at: '',
+    meeting_url: '',
+    capacity: formData.max_participants || 20,
+    notes: ''
+  })
+}
+
+const removeSession = (index: number) => {
+  formData.sessions.splice(index, 1)
+}
+
+const validateForm = () => {
+  if (!formData.name.trim()) return { valid: false, message: 'Nama batch wajib diisi' }
+  if (!formData.type) return { valid: false, message: 'Tipe program wajib dipilih' }
+  if (!formData.start_date) return { valid: false, message: 'Tanggal mulai wajib diisi' }
+  if (!formData.end_date) return { valid: false, message: 'Tanggal selesai wajib diisi' }
+  if (formData.price < 0) return { valid: false, message: 'Harga tidak boleh negatif' }
+  
+  if (formData.start_date > formData.end_date) {
+    return { valid: false, message: 'Tanggal selesai harus setelah tanggal mulai' }
+  }
+
+  return { valid: true }
+}
+
+// Helper to format date for input
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  return new Date(dateStr).toISOString().split('T')[0]
+}
+
+const formatDateTime = (dateStr: string) => {
+  if (!dateStr) return ''
+  // Handle timezone offset for local input
+  const date = new Date(dateStr)
+  const offset = date.getTimezoneOffset() * 60000
+  return (new Date(date.getTime() - offset)).toISOString().slice(0, 16)
+}
 
 onMounted(async () => {
   isLoading.value = true
   startLoading()
   try {
     const { data } = await useBatchGetById(id)
-    
     if (data.value) {
-      // Pastikan angka dikonversi ke string untuk input type="number" agar tidak error
-      const dataToLoad = {
-          ...data.value,
-          batasMaksimalPeserta: data.value.batasMaksimalPeserta ? String(data.value.batasMaksimalPeserta) : ''
+      const b = data.value
+      formData.idBatch = b.idBatch
+      formData.name = b.name
+      formData.description = b.description
+      formData.type = b.type
+      formData.start_date = formatDate(b.start_date)
+      formData.end_date = formatDate(b.end_date)
+      formData.registration_open_at = formatDateTime(b.registration_open_at)
+      formData.registration_close_at = formatDateTime(b.registration_close_at)
+      formData.max_participants = b.max_participants
+      formData.min_participants = b.min_participants
+      formData.status = b.status
+      formData.price = b.price
+      formData.currency = b.currency || 'IDR'
+      formData.duration_minutes = b.duration_minutes
+      formData.special_instructions = b.special_instructions
+      
+      // Map sessions
+      if (b.sessions && Array.isArray(b.sessions)) {
+        formData.sessions = b.sessions.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          session_type: s.session_type,
+          start_at: formatDateTime(s.start_at),
+          end_at: formatDateTime(s.end_at),
+          meeting_url: s.meeting_url,
+          capacity: s.capacity,
+          notes: s.notes
+        }))
       }
-      Object.assign(formData, dataToLoad)
     }
   } catch (err) {
     console.error('Gagal memuat data batch:', err)
-    showAlert('Gagal memuat data batch untuk diedit.')
+    showAlert('Gagal memuat data batch.')
   } finally {
     stopLoading()
     isLoading.value = false
@@ -283,29 +341,42 @@ onMounted(async () => {
 })
 
 const handleSubmit = async () => {
-  if (!validateForm()) {
-    showAlert('Periksa kembali form Anda. Ada kolom wajib yang belum terisi atau tidak valid.')
+  const validation = validateForm()
+  if (!validation.valid) {
+    showAlert(validation.message || 'Form tidak valid')
     return
   }
   
   isLoading.value = true
   startLoading()
   try {
-    // Konversi batasMaksimalPeserta kembali ke number/integer untuk payload API
-    const maxPeserta = formData.batasMaksimalPeserta ? parseInt(formData.batasMaksimalPeserta) : null
-    
-    const finalData = { 
-        ...formData, 
-        batasMaksimalPeserta: maxPeserta // Kirim sebagai number atau null
+    // Prepare payload
+    const payload = {
+      ...formData,
+      // Ensure numbers are numbers
+      max_participants: formData.max_participants ? Number(formData.max_participants) : null,
+      min_participants: formData.min_participants ? Number(formData.min_participants) : null,
+      price: Number(formData.price),
+      duration_minutes: formData.duration_minutes ? Number(formData.duration_minutes) : null,
+      // Convert empty strings to null for optional dates
+      registration_open_at: formData.registration_open_at || null,
+      registration_close_at: formData.registration_close_at || null,
+      // Format sessions if needed (e.g. ensure dates are ISO)
+      sessions: formData.sessions.map(s => ({
+        ...s,
+        start_at: s.start_at ? new Date(s.start_at).toISOString() : null,
+        end_at: s.end_at ? new Date(s.end_at).toISOString() : null,
+        capacity: s.capacity ? Number(s.capacity) : null
+      }))
     }
 
-    await useBatchUpdate(id, finalData) 
+    await useBatchUpdate(id, payload) 
     
-    $toast.success(`Batch "${formData.namaBatch}" berhasil diperbarui!`)
+    $toast.success(`Batch "${formData.name}" berhasil diperbarui!`)
     navigateTo('/admin/batch')
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error saat memperbarui batch:', err)
-    showAlert('Gagal memperbarui batch. Silakan coba lagi.')
+    showAlert(err.message || 'Gagal memperbarui batch. Silakan coba lagi.')
   } finally {
     stopLoading()
     isLoading.value = false

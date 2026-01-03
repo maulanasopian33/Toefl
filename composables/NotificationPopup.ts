@@ -16,6 +16,15 @@ const confirm = ref({
   resolve: (value: boolean) => {},
 });
 
+// State untuk dialog alert (informasi tunggal)
+const alert = ref({
+  show: false,
+  message: '',
+  title: 'Informasi',
+  type: 'info' as 'success' | 'info' | 'warning' | 'error',
+  resolve: () => {},
+});
+
 // State untuk dialog pemilihan role
 const roleSelector = ref({
   show: false,
@@ -49,6 +58,23 @@ export const useNotificationPopup = () => {
     });
   };
 
+  // Fungsi untuk menampilkan dialog alert
+  const showAlert = (
+    message: string,
+    options?: {
+      title?: string
+      type?: 'success' | 'info' | 'warning' | 'error'
+    }
+  ): Promise<void> => {
+    alert.value.show = true;
+    alert.value.message = message;
+    alert.value.title = options?.title || 'Informasi';
+    alert.value.type = options?.type || 'info';
+    return new Promise((resolve) => {
+      alert.value.resolve = resolve;
+    });
+  };
+
   // Fungsi untuk menampilkan dialog pemilihan role
   const showRoleSelector = (
     message: string,
@@ -78,6 +104,12 @@ export const useNotificationPopup = () => {
     confirm.value.resolve(false);
   };
 
+  // Fungsi yang dipanggil saat pengguna menutup alert
+  const onAlertClose = () => {
+    alert.value.show = false;
+    alert.value.resolve();
+  };
+
   // Fungsi yang dipanggil saat role baru dipilih dan disimpan
   const onSelectRole = (newRole: string) => {
     roleSelector.value.show = false;
@@ -93,11 +125,14 @@ export const useNotificationPopup = () => {
   return {
     notification: readonly(notification),
     confirm: readonly(confirm),
+    alert: readonly(alert),
     roleSelector: readonly(roleSelector),
     showConfirm,
+    showAlert,
     showRoleSelector,
     onConfirm,
     onCancel,
+    onAlertClose,
     onSelectRole,
     onCancelRoleSelection,
   };
