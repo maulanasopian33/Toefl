@@ -55,9 +55,47 @@
               <p>Terjadi kesalahan: {{ error.message }}</p>
               <p class="text-gray-500 text-base mt-2">Silakan coba muat ulang halaman.</p>
             </div>
+
+            <!-- Waiting for Exam Start (Dummy Data) -->
+            <div v-else-if="!isTestOpen" class="flex flex-col items-center justify-center min-h-[50vh] py-12 px-4 text-center space-y-8">
+              <!-- Icon Wrapper -->
+              <div class="relative">
+                <div class="absolute -inset-4 bg-indigo-100 rounded-full opacity-50 blur-lg animate-pulse"></div>
+                <div class="relative bg-white p-5 rounded-full shadow-lg border border-indigo-50">
+                  <Icon name="lucide:calendar-clock" class="h-16 w-16 text-indigo-600" />
+                </div>
+              </div>
+
+              <!-- Text -->
+              <div class="max-w-md mx-auto space-y-2">
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Ujian Belum Dimulai</h2>
+                <p class="text-slate-500 text-lg leading-relaxed">
+                  Mohon bersabar, ujian akan segera dimulai sesuai jadwal yang ditentukan.
+                </p>
+              </div>
+              
+              <!-- Countdown -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl">
+                <div v-for="(val, label) in { Hari: countdown.days, Jam: countdown.hours, Menit: countdown.minutes, Detik: countdown.seconds }" :key="label" 
+                     class="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:border-indigo-200 hover:shadow-sm">
+                  <span class="text-4xl font-black text-indigo-600 tabular-nums">{{ val }}</span>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">{{ label }}</span>
+                </div>
+              </div>
+
+              <!-- Info Badge -->
+              <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-100">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                Halaman akan dimuat ulang otomatis
+              </div>
+            </div>
+
             <!-- Tampilkan layar pengantar bagian -->
     <SectionIntroScreen
-      v-if="quizState === 'intro' && currentSection"
+      v-else-if="quizState === 'intro' && currentSection"
       :section-title="currentSection.name"
       :instructions="currentSection.instructions"
       :audio-src="currentSection.audioInstructions"
@@ -135,6 +173,38 @@ const currentGroupIndex = ref(0);
 const currentQuestionIndex = ref(0);
 const timeLeft = ref(0);
 let timerInterval: NodeJS.Timeout | null = null;
+let clockInterval: NodeJS.Timeout | null = null;
+
+// --- Dummy Data & Logic for Scheduled Start ---
+const currentTime = ref(new Date());
+
+const scheduledStartTime = computed(() => {
+  return testMetadata.value?.start_date ? new Date(testMetadata.value.start_date) : null;
+});
+
+const isTestOpen = computed(() => {
+  if (!scheduledStartTime.value) return true; // Jika tidak ada jadwal mulai, anggap ujian terbuka
+  return currentTime.value >= scheduledStartTime.value;
+});
+
+const countdown = computed(() => {
+  if (!scheduledStartTime.value) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  const diff = scheduledStartTime.value.getTime() - currentTime.value.getTime();
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  return { days, hours, minutes, seconds };
+});
+
+onMounted(() => {
+  clockInterval = setInterval(() => {
+    currentTime.value = new Date();
+  }, 1000);
+});
 
 // --- Computed Properties ---
 const currentSection = computed<Section | null>(() => sectionsData.value[currentSectionIndex.value] || null);
@@ -303,6 +373,7 @@ const handleCheatingAction = (details: { type: string, duration?: number }) => {
 
 onBeforeUnmount(() => {
   if (timerInterval) clearInterval(timerInterval);
+  if (clockInterval) clearInterval(clockInterval);
 });
 </script>
 

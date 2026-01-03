@@ -39,6 +39,7 @@ export interface TestMetadata {
   totalTime: number;
   totalQuestions: number;
   sectionOrder: { id: string; name: string }[];
+  start_date?: string;
 }
 
 export interface SectionDetail {

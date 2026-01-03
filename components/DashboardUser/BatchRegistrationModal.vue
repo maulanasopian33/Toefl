@@ -35,12 +35,12 @@
               <p class="mt-2">Saat ini belum ada batch tes baru yang dibuka.</p>
             </div>
             <ul v-else role="list" class="space-y-3">
-              <li v-for="batch in batches" :key="batch.id" class="overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-500 transition-colors duration-200">
+              <li v-for="batch in batches" :key="batch.idBatch" class="overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-500 transition-colors duration-200">
                 <div class="flex items-center justify-between gap-x-6 p-4">
                   <div class="min-w-0">
-                    <p class="font-semibold text-gray-900">{{ batch.namaBatch }}</p>
+                    <p class="font-semibold text-gray-900">{{ batch.name }}</p>
                     <p class="mt-1 text-xs leading-5 text-gray-500">
-                      {{ formatDate(batch.tanggalMulai) }} - {{ formatDate(batch.tanggalSelesai) }}
+                      {{ formatDate(batch.start_date) }} - {{ formatDate(batch.end_date) }}
                     </p>
                   </div>
                   <div class="flex flex-none items-center gap-x-4">

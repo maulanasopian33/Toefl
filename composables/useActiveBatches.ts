@@ -3,10 +3,10 @@ import { useFirebaseToken } from './FirebaseToken'
 
 export interface Batch {
   idBatch: string
-  namaBatch: string
-  deskripsi?: string // Deskripsi bersifat opsional
-  tanggalMulai: string
-  tanggalSelesai:string
+  name: string
+  description?: string // Deskripsi bersifat opsional
+  start_date: string
+  end_date:string
   price: number
   status: 'published' | 'draft' | 'archived'
 }

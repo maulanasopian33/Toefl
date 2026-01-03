@@ -19,7 +19,7 @@ export function usePublicBatches() {
 
       // Mengambil batch yang 'published' (aktif untuk umum)
       const response = await $fetch<{ data: Batch[] }>(API_URL, {
-        params: { status: 'published' },
+        params: { status: 'OPEN' },
         headers: { Authorization: `Bearer ${token}` },
       })
       publicBatches.value = response.data
