@@ -62,7 +62,7 @@ import { usePublicBatches } from '@/composables/usePublicBatches';
 
 definePageMeta({
   middleware: ['auth', 'finish-register', 'role-check'],
-  roles: ['user'],
+  permission: "dashboard.user",
 });
 
 // --- State untuk Modal ---

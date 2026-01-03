@@ -185,6 +185,12 @@ const config = useRuntimeConfig();
 const { $auth } = useNuxtApp();
 const { showNotification } = useNotification(); // Asumsi ada composable ini
 
+definePageMeta({
+  middleware: ['auth', 'role-check'],
+  permission: "payment.view_self",
+  title: 'Detail Pembayaran'
+});
+
 const payment = ref<any>(null);
 const isLoading = ref(true);
 const error = ref('');

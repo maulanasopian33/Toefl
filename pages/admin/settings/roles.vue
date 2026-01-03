@@ -142,7 +142,8 @@ import { ref, onMounted, computed } from 'vue';
 
 definePageMeta({
   layout: 'admin',
-  middleware: ['auth']
+  middleware: ['auth', 'role-check'],
+  permission: 'user.manage_role'
 });
 
 const config = useRuntimeConfig();

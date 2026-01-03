@@ -510,7 +510,7 @@ definePageMeta({
   title: 'App Settings - Admin Panel',
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission:"system.app"
 })
 
 const { settings, isLoading, isSaving, error, fetchSettings, updateSettings } = useAppSettings()

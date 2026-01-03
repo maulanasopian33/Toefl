@@ -5,7 +5,7 @@ definePageMeta({
   title: 'Editor Soal - Admin Panel',
   layout: false,
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: "batch.update",
 })
 </script>
 

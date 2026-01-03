@@ -86,7 +86,11 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 const batchId = route.params.id;
 const { data, pending, error } = await useBatchGetById(batchId);
-
+definePageMeta({
+  middleware: ['auth', 'role-check'],
+  permission: "batch.view_self",
+  title: 'Detail Batch'
+});
 const batch = ref(data.value);
 
 watch(data, (newData) => {

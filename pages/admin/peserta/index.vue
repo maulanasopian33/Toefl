@@ -62,7 +62,7 @@ definePageMeta({
   title: 'Peserta - Admin Panel',
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: 'user.view_all', // Ganti roles statis dengan permission dinamis
 });
 
 const {

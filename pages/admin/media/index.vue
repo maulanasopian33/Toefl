@@ -107,7 +107,7 @@ definePageMeta({
   title: 'Media Library - Admin Panel',
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: 'media.read',
 })
 const q = ref('');
 const selectedType = ref('');

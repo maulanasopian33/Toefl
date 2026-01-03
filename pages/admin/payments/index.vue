@@ -115,7 +115,7 @@ definePageMeta({
   title: 'Payment - Admin Panel',
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission : "payment.view_all"
 });
 
 const { showNotification } = useNotification();

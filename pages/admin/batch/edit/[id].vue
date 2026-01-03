@@ -218,7 +218,7 @@ definePageMeta({
   title: 'Edit Batch - Admin Panel',
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: "batch.update",
 })
 
 const route = useRoute()

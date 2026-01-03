@@ -2,35 +2,67 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // Middleware ini hanya berjalan di sisi klien, di mana state otentikasi sudah tersedia.
   if (process.server) return
 
-  const requiredRoles = to.meta.roles as string[] | undefined
+  const requiredPermission = to.meta.permission as string | undefined
 
-  // Jika rute tidak memerlukan role spesifik, izinkan akses.
-  if (!requiredRoles || requiredRoles.length === 0) {
+  // Jika rute tidak memerlukan permission spesifik, izinkan akses.
+  if (!requiredPermission) {
     return
   }
 
-  const { claims, isAuthenticated, isLoading } = useAuth()
   const { showNotification } = useNotification()
-
-  // Tunggu hingga state otentikasi selesai dimuat
-  if (isLoading.value) {
-    // Anda bisa menambahkan logika loading di sini jika perlu,
-    // tapi untuk sekarang kita tunggu saja.
-    await new Promise(resolve => setTimeout(resolve, 50)) // simple delay
-  }
+  const config = useRuntimeConfig()
   
-  // Jika pengguna terotentikasi dan rolenya tidak termasuk dalam yang diizinkan, tangani pengalihan.
-  if (isAuthenticated.value && !requiredRoles.includes(claims.value.role || '')) {
-    const userRole = claims.value.role
-    
-    // Jika pengguna yang tidak diizinkan memiliki role selain 'user' (misal: admin, proctor),
-    // arahkan mereka ke dashboard admin.
-    if (userRole !== 'user') {
-      return navigateTo('/admin')
-    }
+  // 1. Tunggu hingga status otentikasi Firebase benar-benar siap (menghindari race condition)
+  const token = await useFirebaseToken()
+  const { claims, forceRefreshUserToken } = useAuth()
 
-    // Jika pengguna dengan role 'user' mencoba mengakses halaman terlarang, arahkan ke 'forbidden'.
-    showNotification('Anda tidak memiliki izin untuk mengakses halaman ini.', 'error')
+  // 1. Pastikan pengguna sudah login. Jika tidak, arahkan ke login.
+  if (!token) {
+    return navigateTo('/auth/login')
+  }
+
+  // 2. Pastikan data claims (role) sudah terisi. 
+  // Jika token ada tapi claims masih kosong (karena useAuth belum update), paksa refresh.
+  if (!claims.value?.role) {
+    await forceRefreshUserToken()
+  }
+
+
+  // Cek Permission (Dinamis dari API)
+  // Gunakan useState untuk cache data role agar tidak fetch berulang kali per navigasi
+  const rbacRoles = useState<any[]>('rbacRoles', () => [])
+  
+  // Jika cache kosong, fetch dari API
+  if (rbacRoles.value.length === 0) {
+    try {
+      // Mengambil konfigurasi role & permission dari backend
+      const { data } = await $fetch<any>(`${config.public.API_URL}/rbac/roles`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (data) {
+        rbacRoles.value = data
+      }
+    } catch (e) {
+      console.error("Gagal memuat data permission:", e)
+      showNotification('Gagal memverifikasi izin akses.', 'error')
+      return navigateTo('/forbidden')
+    }
+  }
+
+  // Ambil role terbaru dari claims (setelah potensi await di atas selesai)
+  // Gunakan optional chaining (?.) untuk keamanan jika claims belum siap
+  const userRole = claims.value?.role || ''
+
+  // Cari konfigurasi untuk role user saat ini
+  const currentUserConfig = rbacRoles.value.find((r: any) => r.name === userRole)
+  // Ambil daftar permission yang dimiliki role tersebut
+  const userPermissions = currentUserConfig?.permissions?.map((p: any) => p.name) || []
+  
+  if (!userPermissions.includes(requiredPermission)) {
+    showNotification('Anda tidak memiliki izin (permission) untuk mengakses halaman ini.', 'error')
     return navigateTo('/forbidden')
   }
+  
+  // Jika lolos permission check, return (izinkan akses)
+  return
 })

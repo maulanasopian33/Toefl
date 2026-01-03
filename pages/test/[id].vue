@@ -110,6 +110,11 @@ import QuestionView from '@/components/Test/QuestionView.vue';
 
 const route = useRoute();
 const testId = route.params.id as string;
+definePageMeta({
+  middleware: ['auth', 'role-check'],
+  permission: "test.read",
+  title: 'Ujian'
+});
 
 const {
   testMetadata, sectionDetails, sectionsData, finalScore,

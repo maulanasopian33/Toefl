@@ -135,7 +135,7 @@ import { useAdminResultDetail } from '@/composables/useAdminResults';
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: "result.view_all",
   title: 'Detail Hasil Tes'
 });
 

@@ -402,6 +402,8 @@ import { useNotification } from '@/composables/useNotification';
 definePageMeta({
   title: 'CORS Whitelist Settings - Admin Panel',
   layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  permission: "system.cors"
 });
 
 const { showNotification } = useNotification?.() || { showNotification: () => {} };

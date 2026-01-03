@@ -12,13 +12,23 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
     return new Promise((resolve) => {
       // Firebase onAuthStateChanged bersifat asinkron dan berjalan di client
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        console.log(user)
+      const unsubscribe = auth.onAuthStateChanged(async (user) => {
         stopLoading();
         if (!user) {
           // Pengguna belum login, redirect ke halaman login
           return resolve(navigateTo('/auth/login')); // Gunakan navigateTo dari Nuxt 3
         }
+
+        // Jika pengguna mengakses halaman root ('/') dan memiliki role selain 'user', arahkan ke /admin
+        if (to.path === '/') {
+          const tokenResult = await user.getIdTokenResult();
+          const role = tokenResult.claims.role;
+          if (role && role !== 'user') {
+            unsubscribe();
+            return resolve(navigateTo('/admin'));
+          }
+        }
+
         unsubscribe(); // Berhenti mendengarkan setelah status diketahui
         resolve();
       });

@@ -162,7 +162,7 @@ import { ref, computed } from 'vue';
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role-check'],
-  roles: ['admin'],
+  permission: "result.view_all",
   title: 'Hasil Tes per Batch'
 });
 

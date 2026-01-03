@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { computed, watch } from 'vue'; // Ensure computed and watch are imported
 import PromoCard from '@/components/Cards/PromoCard.vue';
 import navItems from '@/data/navItems'; // Import data
@@ -126,13 +126,76 @@ const route = useRoute();
 const pathRoute = computed(() => route.path);
 const { settings } = useAppSettings()
 const config = useRuntimeConfig()
+const { claims } = useAuth()
+const { $auth } = useNuxtApp();
+
+const allRoles = ref<any[]>([]);
+
+const fetchRoles = async () => {
+  try {
+    const token = await $auth?.currentUser?.getIdToken();
+    const response: any = await $fetch(`${config.public.API_URL}/rbac/roles`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (response.data) {
+      allRoles.value = response.data;
+    }
+  } catch (e) {
+    console.error("Failed to fetch roles for sidebar:", e);
+  }
+};
+
+// Definisikan izin yang diperlukan untuk setiap rute menu.
+// Rute yang tidak ada di sini akan dianggap publik (selalu tampil).
+const permissionMap: Record<string, string> = {
+  '/admin/batch': 'batch.read',
+  '/admin/peserta': 'user.view_all',
+  // Idealnya, gunakan izin spesifik seperti 'question.read', 'media.read', dll.
+  // Untuk saat ini, kita gunakan izin yang lebih umum yang dimiliki admin.
+  '/admin/questions': 'system.view_logs',
+  '/admin/sections': 'system.view_logs',
+  '/admin/groups': 'system.view_logs',
+  '/admin/media': 'media.read',
+  '/admin/payments': 'payment.view_all',
+  '/admin/results': 'result.view_all',
+  '/admin/certificates': 'system.view_logs', // Placeholder
+  '/admin/reports': 'system.view_logs', // Placeholder
+  '/admin/log-activity': 'system.view_logs',
+  '/admin/settings/roles': 'user.manage_role',
+  '/admin/settings/permissions': 'user.manage_role',
+  '/admin/settings/exam': 'setting.update',
+  '/admin/settings/general': 'setting.update',
+  '/admin/settings/institution': 'setting.update',
+};
 
 const computedNavItems = computed(() => {
   const appSettings = settings.value;
 
-  return navItems.map(item => {
-    if (item.name === 'Settings' && item.children) {
-      const updatedChildren = item.children.map(child => {
+  // Temukan role pengguna saat ini dari data yang di-fetch
+  const currentUserRoleName = (claims.value as any)?.role;
+  const currentUserRole = allRoles.value.find(r => r.name === currentUserRoleName);
+
+  // Dapatkan permissions dari role tersebut
+  const userPermissions = new Set(currentUserRole?.permissions?.map((p: any) => p.name) || []);
+
+  // Helper untuk mengecek izin berdasarkan link
+  const hasPermission = (link: string) => {
+    if (!link || link === '#') return true; // Item induk selalu dianggap punya izin
+    
+    // Cari izin yang paling cocok berdasarkan awalan link
+    const requiredPermissionKey = Object.keys(permissionMap).find(key => link.startsWith(key));
+    if (requiredPermissionKey) {
+      const permission = permissionMap[requiredPermissionKey];
+      return userPermissions.has(permission);
+    }
+    
+    return true; // Tampilkan jika tidak ada aturan izin spesifik
+  };
+
+  // 1. Proses item navigasi awal (termasuk penyesuaian nama)
+  const processedNavItems = navItems.map(item => {
+    if (item.name === 'Settings' && item.children && appSettings) {
+      const updatedChildren = item.children.map((child: any) => {
         if (child.name === 'Pengaturan Aplikasi' && appSettings) {
           return { ...child, name: `Pengaturan ${appSettings.appName || 'Aplikasi'}` };
         }
@@ -142,6 +205,13 @@ const computedNavItems = computed(() => {
     }
     return item;
   });
+
+  // 2. Filter item berdasarkan izin pengguna
+  return processedNavItems.map(item => {
+    if (!item.children) return hasPermission(item.link) ? item : null;
+    const visibleChildren = item.children.filter(child => hasPermission(child.link));
+    return visibleChildren.length > 0 ? { ...item, children: visibleChildren } : null;
+  }).filter(item => item !== null) as typeof navItems;
 });
 
 const appInitials = computed(() => {
@@ -161,6 +231,10 @@ watch(
     pathRoute.value = newPath;
   }
 );
+
+onMounted(() => {
+  fetchRoles();
+});
 
 function toggleSubmenu(itemName: string) { // Add type for itemName
   openSubmenus.value[itemName] = !openSubmenus.value[itemName];

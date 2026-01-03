@@ -89,7 +89,7 @@ import { useTestHistory } from '@/composables/useTestHistory';
 
 definePageMeta({
   middleware: ['auth', 'role-check'],
-  roles: ['user'],
+  permission: "test.history",
   title: 'Riwayat Tes'
 });
 
