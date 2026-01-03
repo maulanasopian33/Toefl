@@ -8,7 +8,7 @@
         </div>
         <span class="text-[10px] font-medium leading-tight">Dashboard</span>
       </NuxtLink>
-      <NuxtLink to="/payment/history" class="bottom-nav-item">
+      <NuxtLink to="/payment/history" class="bottom-nav-item" active-class="text-amber-600">
         <div class="p-2 rounded-full">
           <Icon name="lucide:wallet" class="w-5 h-5" />
         </div>
@@ -20,12 +20,12 @@
         </div>
         <span class="text-[10px] font-medium leading-tight">Riwayat</span>
       </NuxtLink>
-      <a href="#" class="bottom-nav-item">
+      <NuxtLink to="/profile" class="bottom-nav-item" active-class="text-blue-600">
         <div class="p-2 rounded-full">
           <Icon name="lucide:user-circle-2" class="w-5 h-5" />
         </div>
         <span class="text-[10px] font-medium leading-tight">Profil</span>
-      </a>
+      </NuxtLink>
     </nav>
   </div>
 </template>
