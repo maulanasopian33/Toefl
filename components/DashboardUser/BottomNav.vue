@@ -8,12 +8,12 @@
         </div>
         <span class="text-[10px] font-medium leading-tight">Dashboard</span>
       </NuxtLink>
-      <a href="#" class="bottom-nav-item">
+      <NuxtLink to="/payment/history" class="bottom-nav-item">
         <div class="p-2 rounded-full">
-          <Icon name="lucide:file-question" class="w-5 h-5" />
+          <Icon name="lucide:wallet" class="w-5 h-5" />
         </div>
-        <span class="text-[10px] font-medium leading-tight">Latihan</span>
-      </a>
+        <span class="text-[10px] font-medium leading-tight">Pembayaran</span>
+      </NuxtLink>
       <NuxtLink to="/history" class="bottom-nav-item" active-class="text-indigo-600">
         <div class="p-2 rounded-full">
           <Icon name="lucide:bar-chart-3" class="w-5 h-5" />

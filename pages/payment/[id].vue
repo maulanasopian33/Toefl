@@ -209,7 +209,7 @@ const isPaid = computed(() => {
 });
 
 const isVerificationPending = computed(() => {
-  return !isPaid.value && !payment.value?.proof;
+  return !isPaid.value && !!payment.value?.proofs;
 });
 
 const fetchPaymentDetail = async () => {
