@@ -138,8 +138,12 @@ async function initTiny(selector: string, initialContent: string, onBlur: () => 
           formData.append('media', file);
 
           try {
+            const token = await $auth.currentUser?.getIdToken();
+            if (!token) throw new Error("No auth token");
+
             const response: { url: string } = await $fetch(`${config.public.API_URL}/media/upload`, {
               method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
               body: formData
             });
             callback(response.url, { alt: file.name });
