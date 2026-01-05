@@ -34,9 +34,22 @@ const paymentSummary = computed(() => {
     Unpaid: 0,
   };
 
-  props.participants.forEach(p => {
-    if (summary.hasOwnProperty(p.paymentStatus)) {
-      summary[p.paymentStatus]++;
+  props.participants?.forEach(p => {
+    if (p.payments && p.payments.length > 0) {
+      const status = (p.payments[0].status || 'unpaid').toLowerCase();
+      switch (status) {
+        case 'paid':
+          summary.Paid++;
+          break;
+        case 'pending':
+          summary.Pending++;
+          break;
+        default: // 'unpaid', 'failed', 'expired', etc.
+          summary.Unpaid++;
+          break;
+      }
+    } else {
+      summary.Unpaid++;
     }
   });
 

@@ -1,278 +1,216 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- KOLUMEN KIRI (konten utama) -->
-    <div class="col-span-2 space-y-5">
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- LEFT COLUMN (Main Content) -->
+    <div class="xl:col-span-2 space-y-6">
       <!-- CARD: Informasi Batch -->
-      <section class="card">
-        <div class="card-section-header">
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Icon name="lucide:clipboard-list" class="w-4 h-4 text-teal-500" />
-            <span class="section-title">Informasi Batch</span>
+            <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+              <Icon name="lucide:info" class="w-4 h-4" />
+            </div>
+            <h3 class="font-semibold text-slate-800">Informasi Batch</h3>
           </div>
-          <span
-            :class="statusClass"
-            class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold border border-black/5"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-current" />
+          <span :class="statusBadgeClass" class="px-2.5 py-1 rounded-full text-xs font-medium border uppercase tracking-wide">
             {{ batch.status }}
           </span>
         </div>
 
-        <div class="px-5 pb-4 pt-1 space-y-4">
-          <!-- Nama Batch -->
+        <div class="p-6 space-y-6">
           <div>
-            <p class="text-base md:text-lg font-semibold text-gray-900 leading-snug">
-              {{ batch.name }}
-            </p>
+            <label class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1 block">Nama Batch</label>
+            <p class="text-lg font-bold text-slate-900">{{ batch.name }}</p>
           </div>
 
-          <!-- Strip Status / Periode / Peserta -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="stat-item">
-              <div class="stat-icon bg-emerald-50 ring-emerald-100">
-                <Icon name="lucide:check-circle-2" class="w-4 h-4 text-emerald-700" />
-              </div>
+            <!-- Status -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+              <Icon name="lucide:activity" class="w-5 h-5 text-slate-400 mt-0.5" />
               <div>
-                <p class="metric-label">Status</p>
-                <p class="metric-value capitalize">{{ batch.status }}</p>
+                <p class="text-xs font-medium text-slate-500">Status</p>
+                <p class="font-semibold text-slate-700 capitalize">{{ batch.status }}</p>
               </div>
             </div>
 
-            <div class="stat-item">
-              <div class="stat-icon bg-sky-50 ring-sky-100">
-                <Icon name="lucide:calendar-days" class="w-4 h-4 text-sky-700" />
-              </div>
+            <!-- Periode -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+              <Icon name="lucide:calendar" class="w-5 h-5 text-slate-400 mt-0.5" />
               <div>
-                <p class="metric-label">Periode</p>
-                <p class="metric-value text-xs">
-                  {{ batch.startDate }} – {{ batch.endDate }}
-                </p>
+                <p class="text-xs font-medium text-slate-500">Periode</p>
+                <p class="font-semibold text-slate-700 text-sm">{{ batch.startDate }} - {{ batch.endDate }}</p>
               </div>
             </div>
 
-            <div class="stat-item">
-              <div class="stat-icon bg-indigo-50 ring-indigo-100">
-                <Icon name="lucide:users" class="w-4 h-4 text-indigo-700" />
-              </div>
+            <!-- Peserta -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+              <Icon name="lucide:users" class="w-5 h-5 text-slate-400 mt-0.5" />
               <div>
-                <p class="metric-label">Peserta</p>
-                <p class="metric-value">
-                  {{ batch.participants.length }} Peserta
-                </p>
+                <p class="text-xs font-medium text-slate-500">Total Peserta</p>
+                <p class="font-semibold text-slate-700">{{ batch.participants?.length || 0 }} Orang</p>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- CARD: Aktivitas Terbaru -->
-      <section class="card">
-        <div class="card-section-header">
-          <div class="flex items-center gap-2">
-            <Icon name="lucide:history" class="w-4 h-4 text-gray-400" />
-            <span class="section-title">Aktivitas Terbaru</span>
-          </div>
-          <span class="text-[11px] text-gray-400">
-            {{ batch.recentActivities?.length || 0 }} log
-          </span>
-        </div>
-
-        <div class="px-5 pb-4 pt-2 relative">
-          <!-- Vertical line timeline -->
-          <div
-            class="absolute left-7 top-5 bottom-6 w-px bg-gradient-to-b from-teal-200 via-gray-200 to-transparent"
-          />
-
-          <template v-if="batch.recentActivities && batch.recentActivities.length">
-            <ul class="space-y-3">
-              <li
-                v-for="(activity, i) in batch.recentActivities"
-                :key="i"
-                class="flex items-start pl-8 relative"
-              >
-                <div class="timeline-dot">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full"
-                    :class="i === 0 ? 'bg-teal-500' : 'bg-gray-300'"
-                  />
-                </div>
-                <p
-                  class="text-xs text-gray-700"
-                  :class="i === 0 ? 'font-medium text-gray-900' : ''"
-                >
-                  {{ activity }}
-                </p>
-              </li>
-            </ul>
-          </template>
-
-          <template v-else>
-            <div class="pl-8 py-3 text-xs text-gray-400 italic">
-              Belum ada aktivitas tercatat.
-            </div>
-          </template>
         </div>
       </section>
 
       <!-- CARD ROW: Keuangan & Struktur -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- CARD: Ringkasan Keuangan -->
-        <section class="card">
-          <div class="card-section-header">
-            <div class="flex items-center gap-2">
-              <Icon name="lucide:banknote" class="w-4 h-4 text-gray-400" />
-              <span class="section-title">Ringkasan Keuangan</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Keuangan -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+            <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+              <Icon name="lucide:wallet" class="w-4 h-4" />
             </div>
+            <h3 class="font-semibold text-slate-800">Keuangan</h3>
           </div>
-
-          <div class="px-5 pb-4 pt-2 space-y-4">
-            <div class="stat-item">
-              <div class="stat-icon bg-emerald-50 ring-emerald-100">
-                <Icon name="lucide:wallet" class="w-4 h-4 text-emerald-700" />
+          <div class="p-6 flex-1 flex flex-col justify-center gap-6">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <p class="text-sm text-slate-500">Total Pemasukan</p>
+                <div v-if="batch.paymentsPending > 0" class="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                  <Icon name="lucide:hourglass" class="w-3 h-3" />
+                  <span>{{ formatCurrency(batch.paymentsPending) }}</span>
+                </div>
               </div>
-              <div>
-                <p class="metric-label">Total Pemasukan</p>
-                <p class="metric-value text-sm">
-                  {{ formatCurrency(batch.paymentsTotal) }}
-                </p>
-              </div>
+              <p class="text-2xl font-bold text-slate-900">{{ formatCurrency(batch.paymentsTotal || 0) }}</p>
             </div>
-
-            <div class="flex items-center justify-between gap-3">
-              <div class="stat-item">
-                <div class="stat-icon bg-sky-50 ring-sky-100">
-                  <Icon name="lucide:user-check" class="w-4 h-4 text-sky-700" />
-                </div>
-                <div>
-                  <p class="metric-label">Peserta Lunas</p>
-                  <p class="metric-value text-sm">
-                    {{ paidParticipantsCount }} / {{ batch.participants.length }}
-                  </p>
-                </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-slate-600">Peserta Lunas</span>
+                <span class="font-medium text-slate-900">{{ batch.paymentsUserPaid || 0 }} / {{ batch.participants?.length || 0 }}</span>
               </div>
-
-              <div
-                v-if="batch.participants.length"
-                class="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5"
-              >
-                {{
-                  Math.round((paidParticipantsCount / batch.participants.length) * 100)
-                }}%
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" :style="{ width: `${paymentPercentage}%` }"></div>
               </div>
+              <p v-if="batch.paymentsUserPending > 0" class="mt-2 text-xs text-amber-600 flex items-center gap-1.5">
+                <Icon name="lucide:alert-circle" class="w-3.5 h-3.5" />
+                <span>{{ batch.paymentsUserPending }} peserta menunggu pembayaran</span>
+              </p>
             </div>
           </div>
         </section>
 
-        <!-- CARD: Struktur Ujian -->
-        <section class="card">
-          <div class="card-section-header">
-            <div class="flex items-center gap-2">
-              <Icon name="lucide:file-text" class="w-4 h-4 text-gray-400" />
-              <span class="section-title">Struktur Ujian</span>
+        <!-- Struktur -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+            <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <Icon name="lucide:layers" class="w-4 h-4" />
             </div>
+            <h3 class="font-semibold text-slate-800">Struktur Ujian</h3>
           </div>
-
-          <div class="px-5 pb-4 pt-2 space-y-3">
-            <div class="stat-item">
-              <div class="stat-icon bg-indigo-50 ring-indigo-100">
-                <Icon name="lucide:layout-panel-top" class="w-4 h-4 text-indigo-700" />
+          <div class="p-6 flex-1 space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                  <Icon name="lucide:layout-list" class="w-4 h-4" />
+                </div>
+                <span class="text-sm font-medium text-slate-700">Section</span>
               </div>
-              <div>
-                <p class="metric-label">Section</p>
-                <p class="metric-value">
-                  {{ batch.sections.length }} Section
-                </p>
-              </div>
+              <span class="font-bold text-slate-900">{{ batch.sections?.length || 0 }}</span>
             </div>
 
-            <div class="stat-item">
-              <div class="stat-icon bg-teal-50 ring-teal-100">
-                <Icon name="lucide:layers" class="w-4 h-4 text-teal-700" />
+            <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+                  <Icon name="lucide:folder-open" class="w-4 h-4" />
+                </div>
+                <span class="text-sm font-medium text-slate-700">Group Soal</span>
               </div>
-              <div>
-                <p class="metric-label">Group Soal</p>
-                <p class="metric-value">
-                  {{ groupCount }} Group
-                </p>
-              </div>
+              <span class="font-bold text-slate-900">{{ groupCount }}</span>
             </div>
 
-            <div class="stat-item">
-              <div class="stat-icon bg-amber-50 ring-amber-100">
-                <Icon name="lucide:list-checks" class="w-4 h-4 text-amber-700" />
+            <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                  <Icon name="lucide:file-question" class="w-4 h-4" />
+                </div>
+                <span class="text-sm font-medium text-slate-700">Total Soal</span>
               </div>
-              <div>
-                <p class="metric-label">Total Soal</p>
-                <p class="metric-value">
-                  {{ totalQuestionsCount }} Soal
-                </p>
-              </div>
+              <span class="font-bold text-slate-900">{{ totalQuestionsCount }}</span>
             </div>
           </div>
         </section>
       </div>
-    </div>
 
-    <!-- KOLUMEN KANAN (aksi & chart) -->
-    <div class="space-y-5">
-      <!-- CARD: Aksi Cepat -->
-      <section class="card">
-        <div class="card-section-header">
+      <!-- CARD: Aktivitas Terbaru -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Icon name="lucide:zap" class="w-4 h-4 text-gray-400" />
-            <span class="section-title">Aksi Cepat</span>
+            <div class="p-2 bg-orange-50 rounded-lg text-orange-600">
+              <Icon name="lucide:history" class="w-4 h-4" />
+            </div>
+            <h3 class="font-semibold text-slate-800">Aktivitas Terbaru</h3>
+          </div>
+          <span class="text-xs text-slate-400">{{ batch.recentActivities?.length || 0 }} log</span>
+        </div>
+        <div class="p-6">
+          <div v-if="batch.recentActivities?.length" class="relative pl-4 border-l border-slate-200 space-y-6">
+            <div v-for="(activity, i) in batch.recentActivities" :key="i" class="relative">
+              <div class="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full border-2 border-white" :class="i === 0 ? 'bg-blue-500 ring-2 ring-blue-100' : 'bg-slate-300'"></div>
+              <p class="text-sm text-slate-600" :class="{ 'font-medium text-slate-900': i === 0 }">{{ activity }}</p>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-slate-400 text-sm italic">
+            Belum ada aktivitas tercatat.
           </div>
         </div>
+      </section>
+    </div>
 
-        <div class="px-5 pb-4 pt-3 space-y-2">
-          <button class="btn-action">
-            <div class="flex items-center gap-2">
-              <span class="btn-icon">
-                <Icon name="lucide:plus-circle" class="w-4 h-4" />
-              </span>
-              <span class="truncate text-xs">Tambah Soal</span>
+    <!-- RIGHT COLUMN (Actions & Charts) -->
+    <div class="space-y-6">
+      <!-- Aksi Cepat -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <div class="p-2 bg-rose-50 rounded-lg text-rose-600">
+            <Icon name="lucide:zap" class="w-4 h-4" />
+          </div>
+          <h3 class="font-semibold text-slate-800">Aksi Cepat</h3>
+        </div>
+
+        <div class="p-4 grid grid-cols-1 gap-3">
+          <button class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group text-left">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-slate-500 group-hover:text-blue-600 transition-colors">
+              <Icon name="lucide:plus" class="w-5 h-5" />
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 group-hover:text-blue-700">Tambah Soal</p>
+              <p class="text-xs text-slate-500">Buat pertanyaan baru</p>
             </div>
           </button>
 
-          <button class="btn-action" @click="$emit('requestAddParticipant')">
-            <div class="flex items-center gap-2">
-              <span class="btn-icon">
-                <Icon name="lucide:user-plus" class="w-4 h-4" />
-              </span>
-              <span class="truncate text-xs">Tambah Peserta</span>
+          <button @click="$emit('requestAddParticipant')" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group text-left">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-slate-500 group-hover:text-blue-600 transition-colors">
+              <Icon name="lucide:user-plus" class="w-5 h-5" />
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 group-hover:text-blue-700">Tambah Peserta</p>
+              <p class="text-xs text-slate-500">Undang siswa baru</p>
             </div>
           </button>
 
-          <button class="btn-action">
-            <div class="flex items-center gap-2">
-              <span class="btn-icon">
-                <Icon name="lucide:layers" class="w-4 h-4" />
-              </span>
-              <span class="truncate text-xs">Kelola Section</span>
+          <button class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group text-left">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-slate-500 group-hover:text-blue-600 transition-colors">
+              <Icon name="lucide:settings-2" class="w-5 h-5" />
             </div>
-          </button>
-
-          <button class="btn-action">
-            <div class="flex items-center gap-2">
-              <span class="btn-icon">
-                <Icon name="lucide:layout-grid" class="w-4 h-4" />
-              </span>
-              <span class="truncate text-xs">Kelola Group</span>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 group-hover:text-blue-700">Pengaturan</p>
+              <p class="text-xs text-slate-500">Konfigurasi batch</p>
             </div>
           </button>
         </div>
       </section>
 
       <!-- CARD: Chart Pembayaran -->
-      <section class="card">
-        <div class="card-section-header">
-          <div class="flex items-center gap-2">
-            <Icon name="lucide:pie-chart" class="w-4 h-4 text-gray-400" />
-            <span class="section-title">Status Pembayaran</span>
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
+            <Icon name="lucide:pie-chart" class="w-4 h-4" />
           </div>
+          <h3 class="font-semibold text-slate-800">Status Pembayaran</h3>
         </div>
-
-        <div class="px-4 pb-4 pt-3">
+        <div class="p-6">
           <PaymentStatusChart :participants="batch.participants" />
         </div>
       </section>
@@ -291,32 +229,37 @@ const props = defineProps({
   },
 });
 
-const statusClass = computed(() => {
-  const status = props.batch.status.toLowerCase();
-  switch (status) {
-    case 'upcoming': // Direncanakan
-      return 'bg-blue-50 text-blue-700';
-    case 'ongoing': // Sedang Berjalan
-      return 'bg-emerald-50 text-emerald-700';
-    case 'selesai': // Selesai
-      return 'bg-gray-100 text-gray-700';
+const statusBadgeClass = computed(() => {
+  const s = props.batch?.status?.toLowerCase();
+  switch (s) {
+    case 'open':
+    case 'upcoming':
+      return 'bg-green-50 text-green-700 border-green-200';
+    case 'closed':
+      return 'bg-red-50 text-red-700 border-red-200';
+    case 'full':
+      return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'ongoing':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
     default:
-      return 'bg-amber-50 text-amber-700';
+      return 'bg-gray-100 text-gray-600 border-gray-200';
   }
 });
 
-const paidParticipantsCount = computed(() => {
-  return props.batch.participants.filter((p) => p.paymentStatus === 'Paid').length;
+const paymentPercentage = computed(() => {
+  const total = props.batch.participants?.length || 0;
+  if (!total) return 0;
+  return Math.round(((props.batch.paymentsUserPaid || 0) / total) * 100);
 });
 
 const groupCount = computed(() => {
-  return props.batch.sections.reduce((total, section) => total + section.groups.length, 0);
+  return props.batch.sections?.reduce((total, section) => total + (section.groups?.length || 0), 0) || 0;
 });
 
 const totalQuestionsCount = computed(() => {
-  return props.batch.sections.reduce((total, section) => {
-    return total + section.groups.reduce((groupTotal, group) => groupTotal + group.questionsCount, 0);
-  }, 0);
+  return props.batch.sections?.reduce((total, section) => {
+    return total + (section.groups?.reduce((groupTotal, group) => groupTotal + (group.questionsCount || 0), 0) || 0);
+  }, 0) || 0;
 });
 
 const formatCurrency = (value) => {
@@ -327,43 +270,3 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 </script>
-
-<style scoped>
-.card-section-header {
-  @apply flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100;
-}
-
-.section-title {
-  @apply text-xs font-semibold tracking-wider text-gray-600 uppercase;
-}
-
-.metric-label {
-  @apply text-[11px] text-gray-500 uppercase tracking-wide;
-}
-
-.metric-value {
-  @apply font-semibold text-gray-900;
-}
-
-.stat-item {
-  @apply flex items-center gap-3;
-}
-
-.stat-icon {
-  @apply flex h-9 w-9 items-center justify-center rounded-lg ring-1;
-}
-
-.timeline-dot {
-  @apply absolute left-4 top-1.5 w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center ring-2 ring-white shadow-sm;
-}
-
-.btn-action {
-  @apply w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left text-xs font-medium text-gray-800 shadow-sm
-    transition-all duration-150 hover:-translate-y-0.5 hover:border-teal-200 hover:bg-teal-50/60 hover:shadow-md
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1;
-}
-
-.btn-icon {
-  @apply flex h-7 w-7 items-center justify-center rounded-md bg-white/80 ring-1 ring-gray-200;
-}
-</style>

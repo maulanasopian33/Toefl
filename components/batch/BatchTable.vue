@@ -21,7 +21,7 @@
             <!-- Batch Info -->
             <td class="px-6 py-4 align-top">
               <div class="flex flex-col gap-1">
-                <span class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                <span @click="$emit('view', batch)" class="font-semibold cursor-pointer text-gray-900 group-hover:text-blue-600 transition-colors">
                   {{ batch.name }}
                 </span>
                 <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed max-w-xs">
@@ -129,7 +129,7 @@ defineProps<{
   batches: any[]
 }>()
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'delete', 'view'])
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'

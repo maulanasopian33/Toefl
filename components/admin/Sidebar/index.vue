@@ -13,7 +13,7 @@
             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg text-white flex-shrink-0 overflow-hidden"
             :style="{ backgroundColor: settings.primaryColor || '#f97316' }"
           >
-            <img v-if="settings.logoUrl" :src="`${config.public.API_URL}${settings.logoUrl}`" alt="Logo" class="h-full w-full object-contain p-1.5" />
+            <img v-if="settings.logoUrl" :src="`${config.public.MEDIA_URL}${settings.logoUrl}`" alt="Logo" class="h-full w-full object-contain p-1.5" />
             <span v-else class="text-lg font-bold tracking-tighter">
               {{ appInitials }}
             </span>

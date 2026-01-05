@@ -35,7 +35,7 @@
         </thead>
         <tbody>
           <tr v-for="result in sortedResults" :key="result.id" class="border-t hover:bg-gray-50">
-            <td class="p-3 font-medium text-gray-800">{{ result.name }}</td>
+            <td class="p-3 font-medium text-gray-800">{{ result.user?.name || result.name || '-' }}</td>
             <td class="p-3 text-center font-semibold" :class="result.score ? 'text-gray-800' : 'text-gray-400'">
               {{ result.score ?? 'N/A' }}
             </td>
@@ -87,13 +87,19 @@ const sortOrder = ref('desc'); // Default descending
 
 const filteredResults = computed(() => {
   const query = q.value.toLowerCase();
-  if (!query) return props.batch.results;
+  const items = props.batch.results || [];
+  
+  if (!query) return items;
+  
+  return items.filter(r => {
+    const name = r.user?.name || r.name || '';
+    return name.toLowerCase().includes(query);
+  });
 });
 
 const showResultDetails = (result) => {
   selectedResult.value = result;
   isDetailModalOpen.value = true;
-  return props.batch.results.filter(r => r.name.toLowerCase().includes(query));
 };
 
 const sortedResults = computed(() => {
@@ -125,11 +131,5 @@ const sortBy = (key) => {
 const passStatusClass = (score) => {
   if (score >= 500) return 'bg-green-100 text-green-800';
   return 'bg-red-100 text-red-800';
-
-  // Dummy Data Attempts
-  props.batch.results.map((item) => {
-    item.attempts = [{ score: 450 }, { score: 480 }, { score: 500 }]
-    return item
-  })
 };
 </script>

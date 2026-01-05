@@ -25,6 +25,7 @@
       :batches="data || []"
       @edit="goEdit"
       @delete="confirmDelete"
+      @view="goView"
     />
   </div>
 </template>
@@ -45,7 +46,8 @@ const { data, pending, refresh } = await useBatchGet();
 const { showConfirm, showAlert } = useNotificationPopup();
 
 const goAdd = () => navigateTo('/admin/batch/add');
-const goEdit = (batch) => navigateTo(`/admin/batch/edit/${batch.idBatch}`);
+const goEdit = (batch : string) => navigateTo(`/admin/batch/edit/${batch.idBatch}`);
+const goView = (batch : string) => navigateTo(`/admin/batch/${batch.idBatch}`);
 const confirmDelete = async (batch : any) => {
   const confirmed = await showConfirm(`Hapus batch "${batch.namaBatch}"?`);
   if (confirmed) {

@@ -13,7 +13,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Variabel yang hanya tersedia di server (untuk API keys sensitif, dll.)
     // Tidak diperlukan untuk Firebase config karena akan diakses di client
-    test: '123',
     public: {
       // Variabel yang tersedia di client dan server
       firebaseApiKey: process.env.FIREBASE_API_KEY,
@@ -22,7 +21,8 @@ export default defineNuxtConfig({
       firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.FIREBASE_APP_ID,
-      API_URL: process.env.API_URL
+      API_URL: process.env.API_URL,
+      MEDIA_URL: process.env.MEDIA_URL
     }
   },
   nitro: {

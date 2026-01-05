@@ -149,7 +149,7 @@
                     <div
                       class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-slate-100 overflow-hidden"
                     >
-                      <img v-if="logoPreviewUrl" :src="logoPreviewUrl" alt="Logo Preview" class="h-full w-full object-contain p-1" />
+                      <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo Preview" class="h-full w-full object-contain p-1" />
                       <Icon v-else name="lucide:image" class="h-5 w-5" />
                     </div>
                     <div>
@@ -186,7 +186,7 @@
                     <div
                       class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-slate-100 overflow-hidden"
                     >
-                      <img v-if="faviconPreviewUrl" :src="faviconPreviewUrl" alt="Favicon Preview" class="h-full w-full object-contain p-1" />
+                      <img v-if="faviconPreviewUrl" :src="`${config.public.MEDIA_URL}${faviconPreviewUrl}`" alt="Favicon Preview" class="h-full w-full object-contain p-1" />
                       <Icon v-else name="lucide:square-dot" class="h-4 w-4" />
                     </div>
                     <div>
@@ -393,7 +393,7 @@
             <!-- Simulated Browser Tab -->
             <div class="bg-white/70 border-b border-slate-300/70 px-3 py-1.5 flex items-center gap-2">
               <div class="h-5 w-5 flex items-center justify-center">
-                <img v-if="faviconPreviewUrl" :src="faviconPreviewUrl" alt="Favicon" class="h-4 w-4 object-contain" />
+                <img v-if="faviconPreviewUrl" :src="`${config.public.MEDIA_URL}${faviconPreviewUrl}`" alt="Favicon" class="h-4 w-4 object-contain" />
                 <Icon v-else name="lucide:image" class="h-3.5 w-3.5 text-slate-400" />
               </div>
               <p class="text-[11px] font-medium text-slate-700 truncate">
@@ -409,7 +409,7 @@
                   class="flex h-12 w-12 items-center justify-center rounded-xl text-white flex-shrink-0"
                   :style="{ backgroundColor: form.primaryColor || '#0f172a' }"
                 >
-                  <img v-if="logoPreviewUrl" :src="logoPreviewUrl" alt="Logo preview" class="h-full w-full object-contain p-1.5" />
+                  <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo preview" class="h-full w-full object-contain p-1.5" />
                   <span v-else class="text-lg font-bold tracking-tighter">
                     {{ appInitials }}
                   </span>
@@ -518,6 +518,7 @@ const { settings, isLoading, isSaving, error, fetchSettings, updateSettings } = 
 // Local state for form and file handling
 const form = ref<AppSettings | null>(null)
 const logoFile = ref<File | null>(null)
+const config = useRuntimeConfig()
 const logoPreviewUrl = ref<string | null>(null)
 const faviconPreviewUrl = ref<string | null>(null) // New ref for favicon preview
 const selectedMediaType = ref<'logo' | 'favicon'>('logo')

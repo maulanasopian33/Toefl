@@ -9,7 +9,7 @@
       <!-- Left: Branding -->
       <NuxtLink to="/" class="flex items-center gap-2.5">
         <div v-if="settings?.logoUrl" class="flex h-8 w-8 items-center justify-center">
-          <img :src="settings.logoUrl" alt="App Logo" class="h-full w-full object-contain" />
+          <img :src="`${config.public.MEDIA_URL}${settings.logoUrl}`" alt="App Logo" class="h-full w-full object-contain" />
         </div>
         <div v-else class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-white">
           <span class="text-sm font-bold tracking-tighter" :class="isDarkMode && 'text-gray-200'">{{ appInitials }}</span>
@@ -28,7 +28,7 @@
             :aria-expanded="isMenuOpen"
             aria-haspopup="true"
           >
-                <img :src="getPhoto(userdb) || '/img/avatar.png'" alt="User Avatar" class="h-8 w-8 rounded-full object-cover" />
+                <img :src="`${config.public.MEDIA_URL}${userdb.picture}` || '/img/avatar.png'" alt="User Avatar" class="h-8 w-8 rounded-full object-cover" />
                 <span class="hidden sm:inline" :class="isDarkMode ? 'text-gray-300' : 'text-gray-800'">{{ getNamaLengkap(userdb) }}</span>
                 <Icon name="lucide:chevron-down" class="-mr-1 h-4 w-4 text-gray-400 transition-transform group-hover:text-gray-600" />
           </button>
