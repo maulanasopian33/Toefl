@@ -266,14 +266,14 @@ const summary = ref({
 
 // Dummy Recent Tests
 const dummyTests = ref([
-  { name: 'TOAFL Batch 12', date: '2 Jan 2026', score: 550, passed: true },
-  { name: 'Simulasi TOAFL Mandiri', date: '28 Des 2025', score: 480, passed: false },
+  { name: 'Batch 12', date: '2 Jan 2026', score: 550, passed: true },
+  { name: 'Simulasi Ujian Mandiri', date: '28 Des 2025', score: 480, passed: false },
   { name: 'Placement Test', date: '15 Des 2025', score: 510, passed: true },
 ]);
 
 // Dummy Certificates
 const dummyCertificates = ref([
-  { title: 'Sertifikat Kompetensi Bahasa Arab (TOAFL)', date: '03 Jan 2026', id: 'CERT-001' }
+  { title: 'Sertifikat Kompetensi Bahasa', date: '03 Jan 2026', id: 'CERT-001' }
 ]);
 
 const formatDate = (dateStr: string) => {

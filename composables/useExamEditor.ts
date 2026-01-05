@@ -34,7 +34,7 @@ const data = ref<Section[]>([]);
 const activeSectionId = ref<string | null>(null);
 const isSidebarOpen = ref(true);
 
-export function useToaflEditor() {
+export function useExamEditor() {
 
   // --- Computed Properties (dibuat murni read-only) ---
   const activeSection = computed(() => {
@@ -52,17 +52,17 @@ export function useToaflEditor() {
   };
 
   const saveSectionDetails = (payload: { id?: string; name: string; type: string; instructions: string }) => {
-    console.log("payload",payload);
-    
+    console.log("payload", payload);
+
     if (payload.id) { // Update
       const section = data.value.find(s => s.id === payload.id);
-      console.log("section",section);
+      console.log("section", section);
       console.log("data", data);
-      
+
       if (section) {
         section.name = payload.name;
         section.type = payload.type;
-      }else{
+      } else {
         data.value.push({
           id: payload.id,
           name: payload.name,
@@ -73,7 +73,7 @@ export function useToaflEditor() {
       }
     } else { // Create
       console.log("buat baru");
-      
+
       data.value.push({
         id: `section-${Date.now()}`,
         name: payload.name,

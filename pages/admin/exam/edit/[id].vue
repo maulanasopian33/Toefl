@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ToaflEditor from '@/components/ToaflEditor/ToaflEditor.vue';
+import ExamEditor from '@/components/ExamEditor/ExamEditor.vue';
 import NotificationPopup from '@/components/NotificationPopup.vue';
 definePageMeta({
   title: 'Editor Soal - Admin Panel',
@@ -11,7 +11,7 @@ definePageMeta({
 
 <template>
   <div class="min-h-screen">
-    <ToaflEditor />
+    <ExamEditor />
     <NotificationPopup />
   </div>
 </template>

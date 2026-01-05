@@ -108,17 +108,17 @@ function onSave() {
             v-model="form.id"
             :readonly="!!props.payload?.id"
             class="mt-1 w-full border rounded-lg p-3"
-            placeholder="mis. reading, istima"
+            placeholder="mis. reading, listening"
           />
           <p class="text-xs text-gray-500 mt-1">hanya huruf/angka/underscore (akan dinormalisasi)</p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Nama Bagian</label>
-          <input v-model="form.name" class="mt-1 w-full border rounded-lg p-3" placeholder="Qira'ah (Membaca)" />
+          <input v-model="form.name" class="mt-1 w-full border rounded-lg p-3" placeholder="Reading (Membaca)" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Tipe</label>
-          <input v-model="form.type" class="mt-1 w-full border rounded-lg p-3" placeholder="Qira'ah / Istima' / Tarkib" />
+          <input v-model="form.type" class="mt-1 w-full border rounded-lg p-3" placeholder="reading / listening / structure" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Instruksi</label>

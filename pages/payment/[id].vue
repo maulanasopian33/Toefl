@@ -49,7 +49,7 @@
               <h1 class="text-4xl font-bold text-slate-900 tracking-tight">{{ formatCurrency(payment.amount || payment.price) }}</h1>
             </div>
             <p class="mt-2 text-sm text-slate-600">
-              Pembayaran untuk <span class="font-semibold text-slate-900">{{ payment.participant?.batch?.namaBatch || 'Tes TOEFL' }}</span>
+              Pembayaran untuk <span class="font-semibold text-slate-900">{{ payment.participant?.batch?.namaBatch || 'Tes Bahasa' }}</span>
             </p>
           </div>
         </div>

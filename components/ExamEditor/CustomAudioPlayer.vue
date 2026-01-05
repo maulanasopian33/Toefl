@@ -97,36 +97,42 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex items-center space-x-3 w-full bg-gray-100 p-2 rounded-lg">
+  <div class="flex items-center gap-4 w-full bg-white border border-slate-200 p-3 rounded-xl shadow-sm transition-shadow hover:shadow-md">
     <audio ref="audio" :src="src" class="hidden"></audio>
 
-    <button @click="togglePlay" class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-colors shadow-sm">
-      <svg v-if="!isPlaying" class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
-      <svg v-else class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+    <button @click="togglePlay" class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm shadow-indigo-200 active:scale-95">
+      <Icon v-if="!isPlaying" name="lucide:play" class="w-5 h-5 ml-0.5" />
+      <Icon v-else name="lucide:pause" class="w-5 h-5" />
     </button>
 
-    <div class="flex-grow flex items-center space-x-3">
-      <span class="text-sm font-mono text-gray-600">{{ formatTime(currentTime) }}</span>
-      <div class="w-full bg-gray-300 rounded-full h-1.5 cursor-pointer" @click="seek">
-        <div class="bg-indigo-500 h-1.5 rounded-full" :style="{ width: `${progress}%` }"></div>
+    <div class="flex-grow flex flex-col justify-center gap-1.5">
+      <div class="flex items-center justify-between text-xs font-medium text-slate-500 font-mono px-0.5">
+        <span>{{ formatTime(currentTime) }}</span>
+        <span>{{ formatTime(duration) }}</span>
       </div>
-      <span class="text-sm font-mono text-gray-600">{{ formatTime(duration) }}</span>
+      <div class="relative w-full h-2 bg-slate-100 rounded-full cursor-pointer group" @click="seek">
+        <div class="absolute top-0 left-0 h-full bg-indigo-500 rounded-full transition-all duration-100 group-hover:bg-indigo-600" :style="{ width: `${progress}%` }"></div>
+        <div class="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white border-2 border-indigo-600 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" :style="{ left: `${progress}%`, transform: 'translate(-50%, -50%)' }"></div>
+      </div>
     </div>
 
-    <div class="flex items-center space-x-2 w-32">
-      <button @click="toggleMute" class="text-gray-500 hover:text-indigo-600">
-        <svg v-if="volume > 0.5 && !isMuted" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M20 4v16m-6-12a9 9 0 010 12.728M4 4v16h4l5-5V9L8 4H4z"></path></svg>
-        <svg v-else-if="volume > 0 && !isMuted" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h4l5-5V9L8 4H4zm11.536 4.464a5 5 0 010 7.072"></path></svg>
-        <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h4l5-5V9L8 4H4zm12 12l-6-6m0 6l6-6"></path></svg>
+    <div class="flex items-center gap-2 w-24 group/volume">
+      <button @click="toggleMute" class="text-slate-400 hover:text-indigo-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50">
+        <Icon v-if="volume > 0.5 && !isMuted" name="lucide:volume-2" class="w-5 h-5" />
+        <Icon v-else-if="volume > 0 && !isMuted" name="lucide:volume-1" class="w-5 h-5" />
+        <Icon v-else name="lucide:volume-x" class="w-5 h-5" />
       </button>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.01"
-        v-model="volume"
-        class="w-full h-1.5 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-      />
+      <div class="relative flex-grow h-1.5 bg-slate-100 rounded-full cursor-pointer">
+        <div class="absolute top-0 left-0 h-full bg-slate-400 rounded-full transition-colors group-hover/volume:bg-indigo-500" :style="{ width: `${volume * 100}%` }"></div>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          v-model="volume"
+          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+      </div>
     </div>
   </div>
 </template>

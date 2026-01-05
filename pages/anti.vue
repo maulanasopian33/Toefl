@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 select-none"
        @contextmenu.prevent="handleActionDetected">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Aplikasi TOAFL</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Aplikasi Ujian</h1>
     <p class="text-lg text-gray-600 text-center max-w-xl">
-      Selamat datang di aplikasi TOAFL. Untuk menjaga integritas ujian, beberapa fungsi telah dinonaktifkan.
+      Selamat datang di aplikasi ujian. Untuk menjaga integritas ujian, beberapa fungsi telah dinonaktifkan.
       Mohon fokus pada ujian Anda.
     </p>
     <!-- Tombol untuk masuk mode layar penuh -->

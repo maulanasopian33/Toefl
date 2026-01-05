@@ -488,7 +488,7 @@
   </div>
   <ClientOnly>
     <template #default>
-      <ToaflEditorMediaLibraryModal
+      <ExamEditorMediaLibraryModal
         v-model="showMediaModal"
         :media-type="'image'"
         @select="handleMediaSelect"
@@ -502,8 +502,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type { AppSettings } from '@/composables/useAppSettings';
 
 // Lazy load the component only on the client side
-const ToaflEditorMediaLibraryModal = defineAsyncComponent(() =>
-  import('@/components/ToaflEditor/MediaLibraryModal.vue')
+const ExamEditorMediaLibraryModal = defineAsyncComponent(() =>
+  import('@/components/ExamEditor/MediaLibraryModal.vue')
 )
 
 definePageMeta({

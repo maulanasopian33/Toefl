@@ -4,6 +4,11 @@ import { onMounted, ref, nextTick, watch } from 'vue'
 import Sidebar from './Sidebar.vue'
 import GroupCard from './GroupCard.vue'
 import SectionModal from './SectionModal.vue'
+import CustomAudioPlayer from './CustomAudioPlayer.vue'
+
+const EditorMediaLibraryModal = defineAsyncComponent(() =>
+  import('@/components/ExamEditor/MediaLibraryModal.vue')
+)
 
 const { $tinymceReady } = useNuxtApp() as any
 const { showNotification } = useNotification()
@@ -11,6 +16,7 @@ const { showNotification } = useNotification()
 // --- Pengambilan Data & State Management ---
 const config = useRuntimeConfig();
 const route = useRoute();
+const router = useRouter();
 const examId = route.params.id as string;
 const apiUrl = `${config.public.API_URL}/exams/${examId}`;
 const { $auth } = useNuxtApp();
@@ -32,7 +38,7 @@ const {
   addGroup, moveGroup, deleteGroup, toggleGroup, updateGroupMedia,
   addQuestion, deleteQuestion, moveQuestion,
   updateOption, addOption, deleteOption
-} = useToaflEditor();
+} = useExamEditor();
 
 // 3. Sinkronkan data dari fetch ke state editor
 watch(fetchedData, (newData) => {
@@ -102,6 +108,7 @@ async function saveAllChanges() {
 
 const showModal = ref(false)
 const modalPayload = ref<Partial<Section> & { batchId?: string }>()
+const showSectionMediaModal = ref(false)
 
 async function initTiny(selector: string, initialContent: string, onBlur: () => void) {
   await $tinymceReady()
@@ -192,77 +199,138 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col font-sans">
-    <header class="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200 sticky top-0 z-20">
-      <div class="flex items-center space-x-4">
-        <button class="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:hidden" @click="toggleSidebar()">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+  <div class="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20 px-4 sm:px-6 py-3 flex justify-between items-center shadow-sm">
+      <div class="flex items-center gap-4">
+        <button class="p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 md:hidden transition-colors" @click="toggleSidebar()">
+          <Icon name="lucide:menu" class="w-6 h-6" />
         </button>
-        <h1 class="font-bold text-xl text-gray-800">TOAFL Editor</h1>
+        <button @click="router.back()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors" title="Kembali">
+           <Icon name="lucide:arrow-left" class="w-5 h-5" />
+        </button>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-200">
+            <Icon name="lucide:edit-3" class="w-5 h-5" />
+          </div>
+          <div>
+            <h1 class="font-bold text-lg text-slate-900 leading-tight">Editor Soal</h1>
+            <p class="text-xs text-slate-500 font-medium">Kelola Soal & Struktur Ujian</p>
+          </div>
+        </div>
       </div>
-      <button @click="saveAllChanges" :disabled="isSaving" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200 flex items-center space-x-2 disabled:bg-indigo-400 disabled:cursor-wait">
-        <svg v-if="isSaving" class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-        <span>{{ isSaving ? 'Menyimpan...' : 'Simpan' }}</span>
+      <button @click="saveAllChanges" :disabled="isSaving" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-sm shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
+        <Icon v-if="isSaving" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+        <Icon v-else name="lucide:save" class="w-4 h-4" />
+        <span class="font-medium">{{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
       </button>
     </header>
 
     <main class="flex flex-1">
-      <Sidebar class="shadow-lg" :sections="data.map(s=>({id:s.id,name:s.name}))"
+      <Sidebar class="border-r border-slate-200 bg-white z-10" :sections="data.map(s=>({id:s.id,name:s.name}))"
                :active-id="activeSectionId || ''"
                :is-open="isSidebarOpen"
                @select="setActiveSection"
                @toggle="toggleSidebar"
                @add-section="openSectionModal()" />
 
-      <div class="flex-1 overflow-y-auto p-6">
-        <div v-if="isLoading" class="flex flex-col items-center justify-center h-full text-center p-8">
-          <svg class="w-16 h-16 text-gray-400 animate-spin mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <h3 class="text-xl font-semibold text-gray-700">Memuat Data Ujian...</h3>
+      <div class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="flex flex-col items-center justify-center h-full text-center">
+          <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
+            <Icon name="lucide:loader-2" class="w-8 h-8 text-indigo-600 animate-spin" />
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900">Memuat Data Ujian...</h3>
+          <p class="text-slate-500 text-sm mt-1">Mohon tunggu sebentar.</p>
         </div>
-        <div v-else-if="!activeSection" class="flex flex-col items-center justify-center h-full text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
-          <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-          <h3 class="text-xl font-semibold text-gray-700">Selamat Datang di Editor</h3>
-          <p class="text-gray-500 mt-2">Pilih bagian dari panel samping atau buat bagian baru untuk memulai.</p>
+
+        <!-- Empty State -->
+        <div v-else-if="!activeSection" class="flex flex-col items-center justify-center h-full text-center p-8">
+          <div class="w-24 h-24 bg-white rounded-3xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 rotate-3">
+            <Icon name="lucide:layout-dashboard" class="w-12 h-12 text-slate-300" />
+          </div>
+          <h3 class="text-xl font-bold text-slate-900">Selamat Datang di Editor</h3>
+          <p class="text-slate-500 mt-2 max-w-md mx-auto">Pilih bagian ujian dari panel samping atau buat bagian baru untuk mulai menyusun soal.</p>
+          <button @click="openSectionModal()" class="mt-6 btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl">
+            <Icon name="lucide:plus" class="w-4 h-4" />
+            <span>Buat Bagian Baru</span>
+          </button>
         </div>
 
         <div v-else-if="activeSection">
-          <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-            <h2 class="text-3xl font-bold text-gray-800">{{activeSection.name}}</h2>
-            <div class="space-x-2">
-              <button @click="openSectionModal(activeSection.id)" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">Edit</button>
-              <button @click="onDeleteSection(activeSection.id)" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">Hapus</button>
+          <!-- Section Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-wider border border-indigo-100">Section</span>
+                <span class="text-xs text-slate-400 font-mono">ID: {{ activeSection.id }}</span>
+              </div>
+              <h2 class="text-3xl font-bold text-slate-900 tracking-tight">{{activeSection.name}}</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="openSectionModal(activeSection.id)" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
+                <Icon name="lucide:settings-2" class="w-4 h-4" />
+                <span>Pengaturan</span>
+              </button>
+              <button @click="onDeleteSection(activeSection.id)" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-rose-200 text-rose-600 text-sm font-medium rounded-xl hover:bg-rose-50 hover:border-rose-300 transition-all shadow-sm">
+                <Icon name="lucide:trash-2" class="w-4 h-4" />
+                <span>Hapus</span>
+              </button>
             </div>
           </div>
 
           <!-- Gunakan :key untuk memaksa re-render saat activeSection berubah -->
           <!-- Ini cara yang lebih bersih daripada menggunakan watch untuk destroy/init editor -->
-          <div :key="activeSection.id" class="bg-white p-5 rounded-xl mb-6 shadow-sm border border-gray-200">
-            <label class="font-semibold text-gray-700 mb-2 block">Instruksi</label>
-            <div class="bg-gray-50 p-1 rounded-lg border border-gray-200">
+          <div :key="activeSection.id" class="bg-white p-6 rounded-2xl mb-8 shadow-sm border border-slate-200">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+                <Icon name="lucide:file-text" class="w-4 h-4" />
+              </div>
+              <label class="font-semibold text-slate-800">Instruksi Bagian</label>
+            </div>
+            <div class="bg-slate-50 p-1 rounded-xl border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
               <!-- Pindahkan ClientOnly ke luar textarea untuk stabilitas -->
               <ClientOnly>
                 <textarea :id="`section-${activeSection.id}`" @vue:mounted="initEditorFor(`section-${activeSection.id}`, () => activeSection.instructions, () => updateFromEditor(`section-${activeSection.id}`, html => activeSection.instructions = html))"></textarea>
               </ClientOnly>
             </div>
             <div class="flex justify-end mt-2">
-              <button @click="toggleDir(`section-${activeSection.id}`)" class="text-sm text-gray-600 hover:text-indigo-600 flex items-center space-x-1 p-1 rounded-md hover:bg-gray-100 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+              <button @click="toggleDir(`section-${activeSection.id}`)" class="text-xs font-medium text-slate-500 hover:text-indigo-600 flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors">
+                <Icon name="lucide:languages" class="w-3.5 h-3.5" />
                 <span>Ubah Arah Teks</span>
               </button>
             </div>
+
+            <!-- Audio Section for Section -->
+            <div class="mt-6 pt-6 border-t border-slate-100">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="p-1.5 bg-slate-100 rounded-lg text-slate-600">
+                  <Icon name="lucide:headphones" class="w-4 h-4" />
+                </div>
+                <label class="font-semibold text-slate-800">Audio Bagian</label>
+              </div>
+              
+              <div v-if="activeSection.audioUrl" class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <CustomAudioPlayer :src="`${config.public.MEDIA_URL}${activeSection.audioUrl}`" />
+                <button @click="updateSectionMedia(activeSection.id, 'audioUrl', null)" class="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0" title="Hapus Audio">
+                  <Icon name="lucide:trash-2" class="w-4 h-4" />
+                </button>
+              </div>
+              <div v-else>
+                 <button @click="showSectionMediaModal = true" class="w-full flex items-center justify-center px-4 py-4 bg-white text-slate-500 rounded-xl border-2 border-dashed border-slate-300 cursor-pointer hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all group">
+                  <div class="flex flex-col items-center gap-2">
+                    <Icon name="lucide:music" class="w-6 h-6 text-slate-400 group-hover:text-indigo-500" />
+                    <span class="text-sm font-medium">Pilih Audio Bagian</span>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
+          <div class="space-y-6">
           <GroupCard v-for="(g,i) in activeSection.groups" :key="i" :group="g"
                      :section-id="activeSection.id" :group-index="i"
                      :groups-length="activeSection.groups.length"
-                     class="mb-6"
                      @toggle="toggleGroup(activeSection.id,i)"
                      @moveGroup="d=>moveGroup(activeSection.id,i,d)"
                      @deleteGroup="deleteGroup(activeSection.id,i)"
@@ -276,13 +344,22 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                      @updateOption="(q,o,t)=>updateOption(activeSection.id,i,q,o,t)"
                      @addOption="qIndex=>addOption(activeSection.id,i,qIndex)"
                      @deleteOption="(q,o)=>deleteOption(activeSection.id,i,q,o)" />
-          <button @click="addGroup(activeSection.id)" class="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-all duration-200 flex items-center justify-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            <span>Tambah Grup Soal</span>
+          </div>
+
+          <button @click="addGroup(activeSection.id)" class="mt-8 w-full py-4 rounded-2xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all duration-200 flex items-center justify-center gap-2 group">
+            <div class="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors"><Icon name="lucide:plus" class="w-5 h-5" /></div>
+            <span class="font-medium">Tambah Grup Soal Baru</span>
           </button>
         </div>
       </div>
     </main>
     <SectionModal v-model="showModal" :payload="modalPayload" @save="onSaveSection" />
+    <ClientOnly>
+      <EditorMediaLibraryModal
+        v-model="showSectionMediaModal"
+        :media-type="'audio'"
+        @select="url => updateSectionMedia(activeSectionId, 'audioUrl', url)"
+      />
+    </ClientOnly>
   </div>
 </template>
