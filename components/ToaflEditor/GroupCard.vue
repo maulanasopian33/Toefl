@@ -7,6 +7,7 @@ import CustomAudioPlayer from './CustomAudioPlayer.vue';
 const ToaflEditorMediaLibraryModal = defineAsyncComponent(() =>
   import('@/components/ToaflEditor/MediaLibraryModal.vue')
 )
+const config = useRuntimeConfig()
 
 const props = defineProps<{sectionId:string,groupIndex:number,groupsLength:number,group:any}>()
 const emit = defineEmits(['toggle','moveGroup','deleteGroup','updateGroupMedia','initPassageEditor','initQuestionEditor','toggleDir',
@@ -66,7 +67,7 @@ const showMediaModal = ref(false);
         <div class="mb-6">
           <label class="font-semibold text-gray-700 mb-2 block">File Audio Grup</label>
           <div v-if="group.audioUrl" class="flex items-center space-x-3">
-            <CustomAudioPlayer :src="group.audioUrl" />
+            <CustomAudioPlayer :src="`${config.public.MEDIA_URL}${group.audioUrl}`" />
             <button @click="emit('updateGroupMedia', 'audioUrl', null)" class="p-1.5 rounded-md text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors flex-shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>

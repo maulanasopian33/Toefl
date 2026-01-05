@@ -12,6 +12,7 @@ const emit = defineEmits(['update:modelValue', 'select']);
 
 const isUploading = ref(false)
 const isLoadingMedia = ref(false)
+const config = useRuntimeConfig()
 
 const playingAudio = ref<HTMLAudioElement | null>(null);
 const activeTab = ref('library')
@@ -180,9 +181,9 @@ watch(() => props.modelValue, (isShowing) => {
                 <div v-for="item in mediaItems" :key="item.id" @click="selectMedia(item)"
                      class="relative group border rounded-lg cursor-pointer flex flex-col text-center aspect-square transition-all duration-200"
                      :class="selectedMediaUrl === item.url ? 'border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50' : 'border-gray-200 hover:shadow-md hover:border-indigo-300'">                  <div class="flex-grow flex items-center justify-center overflow-hidden bg-gray-100">
-                    <img v-if="item.mimeType?.startsWith('image/')" :src="item.url" :alt="item.originalName" class="w-full h-20 object-cover overflow-hidden">
+                    <img v-if="item.mimeType?.startsWith('image/')" :src="`${config.public.MEDIA_URL}${item.url}`" :alt="item.originalName" class="w-full h-20 object-cover overflow-hidden">
                     <Icon v-else-if="item.mimeType?.startsWith('audio/')" name="lucide:file-audio" class="w-10 h-10 text-indigo-400" />
-                    <audio v-else-if="item.mimeType?.startsWith('audio/')" ref="playingAudio" :src="item.url" controls class="w-full"></audio>
+                    <audio v-else-if="item.mimeType?.startsWith('audio/')" ref="playingAudio" :src="`${config.public.MEDIA_URL}${item.url}`" controls class="w-full"></audio>
                     <Icon v-else name="lucide:file" class="w-10 h-10 text-gray-400" /> <!-- Generic file icon -->
                   </div>
                   <div class="flex-shrink-0 border-t border-gray-200 p-2 w-full">
@@ -212,8 +213,8 @@ watch(() => props.modelValue, (isShowing) => {
           <!-- Preview Area -->
           <div class="w-full max-w-xs h-16 flex items-center">
             <template v-if="selectedMediaUrl">
-              <img v-if="selectedMediaMimeType?.startsWith('image/')" :src="selectedMediaUrl" alt="Preview" class="max-h-16 rounded-md object-contain shadow-sm border border-slate-200">
-              <audio v-else-if="selectedMediaMimeType?.startsWith('audio/')" :src="selectedMediaUrl" controls class="w-full h-10"></audio>
+              <img v-if="selectedMediaMimeType?.startsWith('image/')" :src="`${config.public.MEDIA_URL}${selectedMediaUrl}`" alt="Preview" class="max-h-16 rounded-md object-contain shadow-sm border border-slate-200">
+              <audio v-else-if="selectedMediaMimeType?.startsWith('audio/')" :src="`${config.public.MEDIA_URL}${selectedMediaUrl}`" controls class="w-full h-10"></audio>
               <div v-else class="flex items-center gap-2 text-slate-600">
                 <Icon name="lucide:file-check-2" class="h-8 w-8 text-slate-400" />
                 <span class="text-xs font-medium truncate">{{ selectedFileName }}</span>

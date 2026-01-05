@@ -6,7 +6,7 @@
         <h3 class="card-title mb-1">Manajemen Soal</h3>
         <p class="text-xs text-gray-500">Lihat ringkasan struktur soal dan akses editor untuk melakukan perubahan.</p>
       </div>
-      <button @click="goToEditor(batch.id)" class="btn-primary bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm">
+      <button @click="goToEditor(batch.idBatch)" class="btn-primary bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-sm">
         <Icon name="lucide:pencil-ruler" class="mr-1" />
         Buka Editor Soal Lengkap
       </button>
