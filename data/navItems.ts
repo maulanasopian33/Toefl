@@ -45,7 +45,7 @@ export default [
       <path d="M5 3h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-5l-4 3v-3H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4v2h10V7zm0 4v2h7v-2z"/>
     </svg>`,
     children: [
-      { name: 'Semua Soal', link: '/admin/questions' },
+      { name: 'Semua Soal', link: '/admin/bank-soal' },
       { name: 'Section', link: '/admin/sections' },
       { name: 'Group Soal', link: '/admin/groups' },
       { name: 'Tambah Soal', link: '/admin/questions/add' },
