@@ -85,8 +85,8 @@
         </div>
       </nav>
       
-      <!-- Promo/Recommendation Section -->
-      <div class="mt-auto pt-8"> <!-- Use mt-auto to push it to the bottom -->
+      <!-- Promo/Recommendation Section
+      <div class="mt-auto pt-8">
         <div class="mb-4 flex items-center justify-between text-gray-400">
           <h3 class="text-xs font-semibold uppercase tracking-wider">Rekomendasi & Promo</h3>
           <NuxtLink to="/admin/promos" class="text-xs hover:text-white transition-colors">
@@ -97,7 +97,7 @@
           <PromoCard :discount="65" />
           <PromoCard :discount="55" />
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

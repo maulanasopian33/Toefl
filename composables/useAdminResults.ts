@@ -6,15 +6,15 @@ import { useFirebaseToken } from './FirebaseToken';
  * @description Mendefinisikan struktur data untuk hasil tes dari perspektif admin.
  */
 export interface AdminTestResult {
-  id: string;
+  id?: string;
   userId: string;
   userName: string;
   userEmail: string;
+  namaLengkap: string;
   nim: string;
-  batchName: string;
-  completedDate: string;
   score: number;
   sectionScores: Record<string, number>;
+  submittedAt: string;
 }
 
 /**
@@ -53,51 +53,7 @@ export interface AdminBatch {
   name: string;
 }
 
-// --- Data Mockup untuk Admin ---
-const mockAdminResults: AdminTestResult[] = [
-  {
-    id: 'res-001',
-    userId: 'user-abc',
-    userName: 'Ahmad Subarjo',
-    userEmail: 'ahmad.s@example.com',
-    batchName: 'TOAFL September',
-    completedDate: '2025-12-05T01:38:25.000Z',
-    score: 450,
-    sectionScores: { 
-      "Istima'": 45, 
-      "Tarakib": 44, 
-      "Qira'ah": 46 
-    },
-  },
-  {
-    id: 'res-002',
-    userId: 'user-def',
-    userName: 'Siti Aminah',
-    userEmail: 'siti.a@example.com',
-    batchName: 'TOAFL September',
-    completedDate: '2025-12-05T01:30:20.000Z',
-    score: 520,
-    sectionScores: { 
-      "Istima'": 52, 
-      "Tarakib": 51, 
-      "Qira'ah": 53 
-    },
-  },
-  {
-    id: 'res-003',
-    userId: 'user-ghi',
-    userName: 'Budi Santoso',
-    userEmail: 'budi.s@example.com',
-    batchName: 'TOAFL Oktober',
-    completedDate: '2025-10-20T10:15:00.000Z',
-    score: 495,
-    sectionScores: { 
-      "Istima'": 50, 
-      "Tarakib": 49, 
-      "Qira'ah": 50
-    },
-  },
-];
+
 
 const mockBatches: AdminBatch[] = [
   { id: 'toafl-september', name: 'TOAFL September' },
@@ -127,7 +83,7 @@ export const useAdminBatches = () => {
       });
 
       // Transformasi data dari { idBatch, namaBatch } menjadi { id, name }
-      return response.data.map(batch => ({ id: batch.idBatch, name: batch.namaBatch }));
+      return response.data.map(batch => ({ id: batch.idBatch, name: batch.name }));
     },
     {
       default: () => [],
@@ -155,43 +111,11 @@ export const useAdminResults = (batchId: Ref<string>) => {
       const token = await useFirebaseToken();
       if (!token) throw new Error('Autentikasi pengguna gagal.');
 
-      // Mengambil data hasil tes berdasarkan ID batch
-      // Tipe untuk respons API /results/{id} yang baru
-      type ApiUserResult = {
-        userId: string;
-        userName: string;
-        userEmail: string;
-        namaLengkap: string;
-        nim: string;
-        results: AdminTestResult[];
-      };
-
-      const response = await $fetch<ApiUserResult[]>(`${useRuntimeConfig().public.API_URL}/results/${batchId.value}`, {
+      const response = await $fetch<AdminTestResult[]>(`${useRuntimeConfig().public.API_URL}/results/${batchId.value}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Transformasi data: ambil skor tertinggi untuk setiap user
-      const processedResults = response.map(user => {
-        if (!user.results || user.results.length === 0) {
-          return null; // Abaikan user tanpa hasil tes
-        }
-
-        // Cari hasil dengan skor tertinggi
-        const highestScoreResult = user.results.reduce((max, current) => 
-          current.score > max.score ? current : max
-        );
-
-        // Gabungkan info user dengan hasil skor tertingginya, dan petakan namaLengkap ke userName
-        return { 
-          ...highestScoreResult, 
-          userId: user.userId,
-          userName: user.namaLengkap, // Menggunakan namaLengkap sebagai userName
-          userEmail: user.userEmail,
-          nim: user.nim };
-
-      }).filter(Boolean) as AdminTestResult[]; // Filter null dan pastikan tipe data benar
-
-      results.value = processedResults;
+      results.value = response;
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -200,7 +124,7 @@ export const useAdminResults = (batchId: Ref<string>) => {
   };
 
   watch(batchId, fetchData, { immediate: true });
-  return { results, isLoading, error };
+  return { results, isLoading, error, refresh: fetchData };
 };
 
 /**
@@ -228,6 +152,9 @@ export const useAdminResultDetail = (userId: Ref<string>, batchId: Ref<string>) 
       return response;
     }
   );
+
+  console.log("data", data);
+  
 
   return { result: data, isLoading: pending, error, refresh };
 };

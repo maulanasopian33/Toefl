@@ -197,6 +197,9 @@ const batchId = computed(() => route.params.batchId as string);
 
 const { result, isLoading, error } = useAdminResultDetail(userId, batchId);
 
+console.log("result detail",result.value);
+
+
 // --- State untuk Modal Detail Jawaban ---
 const isModalOpen = ref(false);
 const selectedAttempt = ref<{id: string, attemptNumber: number} | null>(null);

@@ -50,8 +50,8 @@
           <p class="text-red-700 max-w-md">Terjadi kesalahan saat mengambil data. Silakan segarkan halaman atau coba lagi nanti.</p>
         </div>
 
-        <!-- Empty States (Combined) -->
-        <div v-else-if="results.length === 0 || filteredResults.length === 0" class="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-lg">
+        <!-- Empty States -->
+        <div v-else-if="results.length === 0 || filteredAndSortedResults.length === 0" class="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-lg">
           <Icon :name="searchQuery ? 'lucide:search-x' : 'lucide:folder-open'" class="w-12 h-12 text-slate-400 mb-4" />
           <h3 class="text-lg font-semibold text-slate-700">
             {{ searchQuery ? 'Tidak Ada Hasil' : 'Belum Ada Data' }}
@@ -71,44 +71,42 @@
             <thead class="text-xs text-slate-700 uppercase bg-slate-50">
               <tr>
                 <th scope="col" class="px-6 py-3">
-                  <button @click="sortBy('userName')" class="flex items-center gap-1">
-                    Nama Peserta <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="userName" />
+                  <button @click="handleSort('namaLengkap')" class="flex items-center gap-1">
+                    Nama Peserta <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="namaLengkap" />
                   </button>
                 </th>
                 <th scope="col" class="px-6 py-3">
-                   <button @click="sortBy('userEmail')" class="flex items-center gap-1">
+                   <button @click="handleSort('userEmail')" class="flex items-center gap-1">
                     Email <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="userEmail" />
                   </button>
                 </th>
                 <th scope="col" class="px-6 py-3">
-                   <button @click="sortBy('nim')" class="flex items-center gap-1">
+                   <button @click="handleSort('nim')" class="flex items-center gap-1">
                     NIM <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="nim" />
                   </button>
                 </th>
                 <th scope="col" class="px-6 py-3 text-center">
-                  <button @click="sortBy('score')" class="mx-auto flex items-center gap-1">
+                  <button @click="handleSort('score')" class="mx-auto flex items-center gap-1">
                     Skor Total <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="score" />
                   </button>
                 </th>
                 <th v-for="sectionName in sectionNames" :key="sectionName" scope="col" class="px-6 py-3 text-center capitalize">
-                  <button @click="sortBy(`sectionScores.${sectionName}`)" class="mx-auto flex items-center gap-1">
+                  <button @click="handleSort(`sectionScores.${sectionName}`)" class="mx-auto flex items-center gap-1">
                     {{ sectionName }} <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" :currentKey="`sectionScores.${sectionName}`" />
                   </button>
                 </th>
                 <th scope="col" class="px-6 py-3">
-                  <button @click="sortBy('completedDate')" class="flex items-center gap-1">
-                    Tanggal Selesai <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="completedDate" />
+                  <button @click="handleSort('submittedAt')" class="flex items-center gap-1">
+                    Tanggal Selesai <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="submittedAt" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3">
-                  <span class="sr-only">Aksi</span>
-                </th>
+                <th scope="col" class="px-6 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="result in paginatedResults" :key="result.id" class="bg-white border-b hover:bg-slate-50">
+              <tr v-for="result in paginatedResults" :key="`${result.userId}-${result.submittedAt}`" class="bg-white border-b hover:bg-slate-50">
                 <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
-                  {{ result.userName }}
+                  {{ result.namaLengkap || result.userName }}
                 </th>
                 <td class="px-6 py-4">
                   {{ result.userEmail }}
@@ -119,14 +117,14 @@
                 <td class="px-6 py-4 text-center font-bold text-green-600">
                   {{ result.score }}
                 </td>
-                <td v-for="sectionName in sectionNames" :key="`${result.id}-${sectionName}`" class="px-6 py-4 text-center">
+                <td v-for="sectionName in sectionNames" :key="`${result.userId}-${sectionName}`" class="px-6 py-4 text-center">
                   {{ result.sectionScores[sectionName] ?? '-' }}
                 </td>
                 <td class="px-6 py-4">
-                  {{ formatDate(result.completedDate) }}
+                  {{ formatDate(result.submittedAt) }}
                 </td>
                 <td class="px-6 py-4 text-right">
-                  <NuxtLink :to="`/admin/results/${result.userId}/${selectedBatchId}`" class="font-medium text-indigo-600 hover:underline">
+                  <NuxtLink :to="`/admin/results/${result.userId}/${selectedBatchId}`" class="font-medium text-indigo-600 hover:text-indigo-900 transition-colors">
                     Detail
                   </NuxtLink>
                 </td>
@@ -137,15 +135,23 @@
       </div>
 
       <!-- Pagination Controls -->
-      <div v-if="sortedResults.length > itemsPerPage" class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div v-if="filteredAndSortedResults.length > itemsPerPage" class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
         <span class="text-sm text-slate-600">
-          Menampilkan <span class="font-semibold">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>-<span class="font-semibold">{{ Math.min(currentPage * itemsPerPage, sortedResults.length) }}</span> dari <span class="font-semibold">{{ sortedResults.length }}</span> hasil
+          Menampilkan <span class="font-semibold">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>-<span class="font-semibold">{{ Math.min(currentPage * itemsPerPage, filteredAndSortedResults.length) }}</span> dari <span class="font-semibold">{{ filteredAndSortedResults.length }}</span> hasil
         </span>
         <div class="flex gap-2">
-          <button @click="prevPage" :disabled="currentPage === 1" class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button 
+            @click="currentPage--" 
+            :disabled="currentPage === 1" 
+            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
             Sebelumnya
           </button>
-          <button @click="nextPage" :disabled="currentPage === totalPages" class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button 
+            @click="currentPage++" 
+            :disabled="currentPage >= totalPages" 
+            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
             Berikutnya
           </button>
         </div>
@@ -157,8 +163,9 @@
 <script setup lang="ts">
 import SortIcon from '@/components/admin/SortIcon.vue';
 import { useAdminResults, useAdminBatches } from '@/composables/useAdminResults';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
+// --- Page Meta ---
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role-check'],
@@ -166,97 +173,97 @@ definePageMeta({
   title: 'Hasil Tes per Batch'
 });
 
-
-
-
-// 1. Mengambil daftar semua batch untuk dropdown
+// --- State & Composables ---
 const { batches, isLoading: isBatchesLoading } = useAdminBatches();
+const selectedBatchId = ref("");
+const { results, isLoading, error, refresh } = useAdminResults(selectedBatchId);
 
-console.log("admin", batches);
-// 2. State untuk menyimpan ID batch yang dipilih
-const selectedBatchId = computed(() => {
-  if (batches.value.length > 0) return batches.value[0].id;
-  return "";
-})
-
-// 3. Mengambil hasil tes berdasarkan batch yang dipilih (reaktif)
-const { results, isLoading, error } = useAdminResults(selectedBatchId);
-
-// 4. State untuk query pencarian
+// Search & Pagination State
 const searchQuery = ref('');
-
-// 5. State untuk pagination
 const currentPage = ref(1);
-const itemsPerPage = ref(10); // Tampilkan 10 item per halaman
+const itemsPerPage = ref(10);
 
-// 6. State untuk sorting
-const sortKey = ref('completedDate'); // Default sort key
-const sortOrder = ref('desc'); // Default sort order (newest first)
+// Sorting State
+const sortKey = ref('submittedAt');
+const sortOrder = ref('desc' as 'asc' | 'desc');
 
-// Computed property untuk mendapatkan nama batch yang sedang dipilih
-const selectedBatchName = computed(() => batches.value.find(b => b.id === selectedBatchId.value)?.name || '...');
- 
-// Membuat daftar nama sesi secara dinamis dari data hasil pertama.
-// Ini mengasumsikan semua hasil dalam satu batch memiliki sesi yang sama.
-const sectionNames = computed(() => {
-  if (!results.value || results.value.length === 0) return [];
-  return Object.keys(results.value[0].sectionScores);
-});
-
-// Computed property untuk memfilter hasil berdasarkan query pencarian
-const filteredResults = computed(() => {
-  // Reset ke halaman pertama setiap kali filter berubah
-  currentPage.value = 1;
-  if (!searchQuery.value) {
-    return results.value;
+// --- Watchers ---
+// Set initial batch
+watch(batches, (newBatches) => {
+  if (newBatches?.length > 0 && !selectedBatchId.value) {
+    selectedBatchId.value = newBatches[0].id;
   }
-  const lowerCaseQuery = searchQuery.value.toLowerCase();
-  return results.value.filter(result => 
-    result.userName.toLowerCase().includes(lowerCaseQuery) ||
-    result.userEmail.toLowerCase().includes(lowerCaseQuery) ||
-    result.nim.toLowerCase().includes(lowerCaseQuery)
-  );
+}, { immediate: true });
+
+// Reset pagination on search or batch change
+watch([searchQuery, selectedBatchId], () => {
+  currentPage.value = 1;
 });
 
-// Computed property untuk mengurutkan hasil yang sudah difilter
-const sortedResults = computed(() => {
-  return [...filteredResults.value].sort((a, b) => {
-    const key = sortKey.value;
-    
-    // Helper untuk mengambil nilai, termasuk dari nested object
-    const getValue = (obj: any, path: string) => path.split('.').reduce((o, i) => o?.[i], obj);
+// Refresh data on batch change (handled by composable watch, but manually here just in case)
+watch(selectedBatchId, () => {
+  if (refresh) refresh();
+});
 
-    let valA = getValue(a, key);
-    let valB = getValue(b, key);
+// --- Computed Logic ---
+const selectedBatchName = computed(() => 
+  batches.value.find(b => b.id === selectedBatchId.value)?.name || '...'
+);
 
-    // Handle null/undefined values
+const sectionNames = computed(() => {
+  if (!results.value?.length) return [];
+  // Get all unique section names from all results
+  const names = new Set<string>();
+  results.value.forEach(res => {
+    Object.keys(res.sectionScores || {}).forEach(k => names.add(k));
+  });
+  return Array.from(names);
+});
+
+const filteredAndSortedResults = computed(() => {
+  let list = [...(results.value || [])];
+
+  // 1. Filter
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter(r => 
+      r.userName?.toLowerCase().includes(q) ||
+      r.namaLengkap?.toLowerCase().includes(q) ||
+      r.userEmail?.toLowerCase().includes(q) ||
+      r.nim?.toLowerCase().includes(q)
+    );
+  }
+
+  // 2. Sort
+  list.sort((a, b) => {
+    const getValue = (obj: any, path: string) => 
+      path.split('.').reduce((o, i) => o?.[i], obj);
+
+    const valA = getValue(a, sortKey.value);
+    const valB = getValue(b, sortKey.value);
+
+    if (valA === valB) return 0;
     if (valA == null) return 1;
     if (valB == null) return -1;
 
-    if (valA < valB) {
-      return sortOrder.value === 'asc' ? -1 : 1;
-    }
-    if (valA > valB) {
-      return sortOrder.value === 'asc' ? 1 : -1;
-    }
-    return 0;
+    const modifier = sortOrder.value === 'asc' ? 1 : -1;
+    return valA < valB ? -1 * modifier : 1 * modifier;
   });
+
+  return list;
 });
 
-// Computed property untuk total halaman
-const totalPages = computed(() => {
-  return Math.ceil(sortedResults.value.length / itemsPerPage.value);
-});
+const totalPages = computed(() => 
+  Math.ceil(filteredAndSortedResults.value.length / itemsPerPage.value)
+);
 
-// Computed property untuk mendapatkan data pada halaman saat ini
 const paginatedResults = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-  return sortedResults.value.slice(startIndex, endIndex);
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  return filteredAndSortedResults.value.slice(start, start + itemsPerPage.value);
 });
 
-// Fungsi untuk mengubah sort key dan order
-const sortBy = (key: string) => {
+// --- Methods ---
+const handleSort = (key: string) => {
   if (sortKey.value === key) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
   } else {
@@ -265,33 +272,23 @@ const sortBy = (key: string) => {
   }
 };
 
-// Fungsi untuk navigasi halaman
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-};
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-/**
- * @function formatDate
- * @description Memformat tanggal dari string ISO ke format lokal (Indonesia).
- * @param {string} isoString - Tanggal dalam format ISO.
- * @returns {string} Tanggal yang sudah diformat.
- */
-const formatDate = (isoString: string): string => {
+const formatDate = (isoString?: string): string => {
   if (!isoString) return '-';
-  return new Date(isoString).toLocaleString('id-ID', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  try {
+    return new Date(isoString).toLocaleString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return isoString;
+  }
 };
 </script>
 
 <style scoped>
-/* Menambahkan sedikit padding pada sel tabel untuk keterbacaan */
 th, td {
   vertical-align: middle;
 }
