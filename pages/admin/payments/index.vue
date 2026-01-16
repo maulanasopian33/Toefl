@@ -9,10 +9,10 @@
 
     <!-- FILTER + TABEL -->
     <section
-      class="card overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-sm"
+      class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5"
     >
       <!-- Toolbar filter -->
-      <div class="border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-6">
+      <div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
         <PaymentsToolbar
           v-model:q="q"
           v-model:selectedStatus="selectedStatus"

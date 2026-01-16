@@ -17,115 +17,128 @@
     </header>
 
     <!-- Card Utama untuk Tabel -->
-    <div class="bg-white rounded-2xl shadow-lg border border-slate-200/80">
-      <header class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 class="font-semibold text-slate-800 whitespace-nowrap">
-          Hasil untuk: <span class="font-bold">{{ selectedBatchName }}</span>
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+      <header class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 class="font-bold text-gray-800 whitespace-nowrap flex items-center gap-2">
+          <div class="p-1.5 bg-blue-50 rounded-lg text-blue-600">
+             <Icon name="lucide:file-bar-chart-2" class="w-5 h-5" />
+          </div>
+          Hasil untuk: <span class="text-blue-600">{{ selectedBatchName }}</span>
         </h2>
         <!-- Input Pencarian -->
         <div class="w-full sm:max-w-xs">
           <label for="search-filter" class="sr-only">Cari Peserta</label>
-          <div class="relative">
+          <div class="relative group">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon name="lucide:search" class="h-5 w-5 text-slate-400" />
+              <Icon name="lucide:search" class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
             </div>
-            <input type="text" id="search-filter" v-model="searchQuery" placeholder="Cari nama atau email..." class="w-full pl-10 pr-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            <input type="text" id="search-filter" v-model="searchQuery" placeholder="Cari nama atau email..." class="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
           </div>
         </div>
       </header>
 
       <!-- Container untuk State dan Tabel -->
-      <div class="p-4 sm:p-6">
+      <div class="overflow-x-auto relative">
         <!-- Loading State -->
-        <div v-if="isLoading" class="flex flex-col items-center justify-center py-16 text-center">
-          <Icon name="lucide:loader-2" class="w-10 h-10 text-slate-400 animate-spin mb-4" />
-          <h3 class="text-lg font-semibold text-slate-700">Memuat Hasil Tes</h3>
-          <p class="text-slate-500">Mohon tunggu sebentar...</p>
+        <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-center">
+          <Icon name="lucide:loader-2" class="w-10 h-10 text-blue-500 animate-spin mb-4" />
+          <h3 class="text-sm font-semibold text-gray-700">Memuat Hasil Tes...</h3>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="flex flex-col items-center justify-center py-16 text-center bg-red-50 rounded-lg">
-          <Icon name="lucide:server-crash" class="w-12 h-12 text-red-500 mb-4" />
-          <h3 class="text-lg font-semibold text-red-800">Gagal Memuat Data</h3>
-          <p class="text-red-700 max-w-md">Terjadi kesalahan saat mengambil data. Silakan segarkan halaman atau coba lagi nanti.</p>
+        <div v-else-if="error" class="flex flex-col items-center justify-center py-16 text-center bg-red-50/50 m-6 rounded-xl border border-red-100">
+          <Icon name="lucide:server-crash" class="w-10 h-10 text-red-500 mb-3" />
+          <h3 class="text-sm font-semibold text-red-800">Gagal Memuat Data</h3>
+          <p class="text-xs text-red-600 mt-1">Silakan coba lagi nanti.</p>
         </div>
 
         <!-- Empty States -->
-        <div v-else-if="results.length === 0 || filteredAndSortedResults.length === 0" class="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-lg">
-          <Icon :name="searchQuery ? 'lucide:search-x' : 'lucide:folder-open'" class="w-12 h-12 text-slate-400 mb-4" />
-          <h3 class="text-lg font-semibold text-slate-700">
+        <div v-else-if="results.length === 0 || filteredAndSortedResults.length === 0" class="flex flex-col items-center justify-center py-20 text-center text-gray-500">
+          <div class="p-4 bg-gray-50 rounded-full mb-3">
+             <Icon :name="searchQuery ? 'lucide:search-x' : 'lucide:inbox'" class="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 class="text-sm font-semibold text-gray-900">
             {{ searchQuery ? 'Tidak Ada Hasil' : 'Belum Ada Data' }}
           </h3>
-          <p class="text-slate-500 max-w-md">
+          <p class="text-xs mt-1 max-w-xs mx-auto">
             {{ 
               searchQuery 
-                ? `Tidak ada peserta yang cocok dengan pencarian "${searchQuery}".` 
-                : 'Belum ada hasil tes yang tercatat untuk batch ini.' 
+                ? `Tidak ada peserta yang cocok dengan "${searchQuery}".` 
+                : 'Belum ada hasil tes tercatat untuk batch ini.' 
             }}
           </p>
         </div>
 
         <!-- Tabel Hasil Tes -->
-        <div v-else class="overflow-x-auto">
-          <table class="w-full text-sm text-left text-slate-500">
-            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-              <tr>
-                <th scope="col" class="px-6 py-3">
-                  <button @click="handleSort('namaLengkap')" class="flex items-center gap-1">
+        <div v-else>
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                <th scope="col" class="px-6 py-4">
+                  <button @click="handleSort('namaLengkap')" class="flex items-center gap-1 hover:text-blue-600 transition-colors group">
                     Nama Peserta <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="namaLengkap" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3">
-                   <button @click="handleSort('userEmail')" class="flex items-center gap-1">
+                <th scope="col" class="px-6 py-4">
+                   <button @click="handleSort('userEmail')" class="flex items-center gap-1 hover:text-blue-600 transition-colors group">
                     Email <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="userEmail" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3">
-                   <button @click="handleSort('nim')" class="flex items-center gap-1">
+                <th scope="col" class="px-6 py-4">
+                   <button @click="handleSort('nim')" class="flex items-center gap-1 hover:text-blue-600 transition-colors group">
                     NIM <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="nim" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3 text-center">
-                  <button @click="handleSort('score')" class="mx-auto flex items-center gap-1">
+                <th scope="col" class="px-6 py-4 text-center">
+                  <button @click="handleSort('score')" class="mx-auto flex items-center gap-1 hover:text-blue-600 transition-colors group">
                     Skor Total <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="score" />
                   </button>
                 </th>
-                <th v-for="sectionName in sectionNames" :key="sectionName" scope="col" class="px-6 py-3 text-center capitalize">
-                  <button @click="handleSort(`sectionScores.${sectionName}`)" class="mx-auto flex items-center gap-1">
+                <th v-for="sectionName in sectionNames" :key="sectionName" scope="col" class="px-6 py-4 text-center capitalize">
+                  <button @click="handleSort(`sectionScores.${sectionName}`)" class="mx-auto flex items-center gap-1 hover:text-blue-600 transition-colors group">
                     {{ sectionName }} <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" :currentKey="`sectionScores.${sectionName}`" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3">
-                  <button @click="handleSort('submittedAt')" class="flex items-center gap-1">
-                    Tanggal Selesai <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="submittedAt" />
+                <th scope="col" class="px-6 py-4">
+                  <button @click="handleSort('submittedAt')" class="flex items-center gap-1 hover:text-blue-600 transition-colors group">
+                    Selesai <SortIcon :sortKey="sortKey" :sortOrder="sortOrder" currentKey="submittedAt" />
                   </button>
                 </th>
-                <th scope="col" class="px-6 py-3 text-right">Aksi</th>
+                <th scope="col" class="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="result in paginatedResults" :key="`${result.userId}-${result.submittedAt}`" class="bg-white border-b hover:bg-slate-50">
-                <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="result in paginatedResults" :key="`${result.userId}-${result.submittedAt}`" class="group hover:bg-gray-50 transition-colors">
+                <th scope="row" class="px-6 py-4 font-bold text-gray-900 whitespace-nowrap group-hover:text-blue-600 transition-colors">
                   {{ result.namaLengkap || result.userName }}
                 </th>
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 text-xs text-gray-500">
                   {{ result.userEmail }}
                 </td>
-                <td class="px-6 py-4">
-                  {{ result.nim }}
+                <td class="px-6 py-4 text-sm text-gray-700 font-mono">
+                  {{ result.nim || '-' }}
                 </td>
-                <td class="px-6 py-4 text-center font-bold text-green-600">
-                  {{ result.score }}
+                <td class="px-6 py-4 text-center">
+                   <span class="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold border border-emerald-100 min-w-[3rem]">
+                      {{ result.score }}
+                   </span>
                 </td>
-                <td v-for="sectionName in sectionNames" :key="`${result.userId}-${sectionName}`" class="px-6 py-4 text-center">
+                <td v-for="sectionName in sectionNames" :key="`${result.userId}-${sectionName}`" class="px-6 py-4 text-center text-sm text-gray-600">
                   {{ result.sectionScores[sectionName] ?? '-' }}
                 </td>
-                <td class="px-6 py-4">
-                  {{ formatDate(result.submittedAt) }}
+                <td class="px-6 py-4 text-xs text-gray-500">
+                   <div class="flex items-center gap-1.5">
+                      <Icon name="lucide:calendar" class="w-3 h-3 text-gray-400" />
+                      {{ formatDate(result.submittedAt) }}
+                   </div>
                 </td>
                 <td class="px-6 py-4 text-right">
-                  <NuxtLink :to="`/admin/results/${result.userId}/${selectedBatchId}`" class="font-medium text-indigo-600 hover:text-indigo-900 transition-colors">
-                    Detail
+                  <NuxtLink 
+                    :to="`/admin/results/${result.userId}/${selectedBatchId}`" 
+                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all inline-flex items-center justify-center"
+                    title="Lihat Detail"
+                  >
+                    <Icon name="lucide:eye" class="w-4 h-4" />
                   </NuxtLink>
                 </td>
               </tr>
@@ -135,22 +148,22 @@
       </div>
 
       <!-- Pagination Controls -->
-      <div v-if="filteredAndSortedResults.length > itemsPerPage" class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span class="text-sm text-slate-600">
-          Menampilkan <span class="font-semibold">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>-<span class="font-semibold">{{ Math.min(currentPage * itemsPerPage, filteredAndSortedResults.length) }}</span> dari <span class="font-semibold">{{ filteredAndSortedResults.length }}</span> hasil
+      <div v-if="filteredAndSortedResults.length > itemsPerPage" class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span class="text-sm text-gray-500">
+          Menampilkan <span class="font-bold text-gray-800">{{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, filteredAndSortedResults.length) }}</span> dari <span class="font-bold text-gray-800">{{ filteredAndSortedResults.length }}</span> hasil
         </span>
         <div class="flex gap-2">
           <button 
             @click="currentPage--" 
             :disabled="currentPage === 1" 
-            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-4 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm font-medium"
           >
             Sebelumnya
           </button>
           <button 
             @click="currentPage++" 
             :disabled="currentPage >= totalPages" 
-            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-4 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm font-medium"
           >
             Berikutnya
           </button>
