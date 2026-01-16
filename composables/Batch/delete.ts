@@ -1,4 +1,5 @@
 import type { Batch } from '@/types/batch';
+import { useLogger } from '../useLogger';
 export const useBatchDelete = async (idBatch: string) => {
   // Dapatkan token otorisasi dari composable yang sudah ada
   const authToken = await useFirebaseToken();
@@ -20,6 +21,17 @@ export const useBatchDelete = async (idBatch: string) => {
     headers: {
       Authorization: `Bearer ${authToken}`,
       'Content-Type': 'application/json',
+    }
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to delete batch',
+        metadata: { idBatch, error: newErr.message }
+      });
     }
   });
 

@@ -17,8 +17,20 @@ export const useMediaDelete = async (id: string) => {
         'Authorization': `Bearer ${authToken}`,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting media:', error);
+    
+    const { logToServer } = useLogger();
+    logToServer({
+      level: 'error',
+      message: 'Failed to delete media',
+      metadata: {
+        id,
+        error: error.message,
+        stack: error.stack
+      }
+    });
+
     throw error;
   }
 }

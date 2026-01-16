@@ -1,5 +1,6 @@
 import { ref, readonly } from 'vue'
 import type { User as FirebaseUser } from 'firebase/auth'
+import { useLogger } from './useLogger'
 
 // Definisikan tipe untuk custom claims yang kita harapkan
 interface CustomClaims {
@@ -52,8 +53,18 @@ export const useAuth = () => {
     isLoading: readonly(isLoading),
     // Fungsi untuk memaksa refresh token dan claims
     forceRefreshUserToken: async () => {
-      if ($auth.currentUser) await $auth.currentUser.getIdToken(true)
-      await updateUserState($auth.currentUser)
+      try {
+        if ($auth.currentUser) await $auth.currentUser.getIdToken(true)
+        await updateUserState($auth.currentUser)
+      } catch (e: any) {
+        const { logToServer } = useLogger()
+        logToServer({
+          level: 'error',
+          message: 'Failed to force refresh user token',
+          metadata: { error: e.message }
+        })
+        throw e
+      }
     }
   }
 }

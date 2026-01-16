@@ -1,5 +1,6 @@
 import type { ReqUserDetails, ResUserDetail } from '@/types/UserDetails';
 import { v4 as uuidv4 } from 'uuid';
+import { useLogger } from '../useLogger';
 export const useUserDetailsPost = async (userData: Omit<ReqUserDetails, 'uid'>) => {
   // Dapatkan token otorisasi dari composable yang sudah ada
   const authToken = await useFirebaseToken();
@@ -29,6 +30,17 @@ export const useUserDetailsPost = async (userData: Omit<ReqUserDetails, 'uid'>) 
       'Content-Type': 'application/json',
     },
     body: postData, // Data yang akan dikirim dalam body permintaan
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to post user details',
+        metadata: { error: newErr.message }
+      });
+    }
   });
 
   return {

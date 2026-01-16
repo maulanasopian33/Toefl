@@ -1,5 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useFirebaseToken } from './FirebaseToken' // Asumsi untuk otentikasi
+import { useLogger } from './useLogger'
 
 export type Role = 'admin' | 'peserta' | 'panitia'
 
@@ -54,29 +55,29 @@ export function useUsers() {
   const fetchUsers = async () => {
     isLoading.value = true
     error.value = null
+    const params = {
+      page: page.value,
+      limit: pageSize.value,
+      search: search.value,
+      faculty: faculty.value,
+      program: program.value,
+      role: role.value,
+      email_verified: email_verified.value,
+      status: accountStatus.value,
+      sortBy: sortBy.value,
+      sortOrder: sortOrder.value,
+    }
+
+    // Hapus parameter kosong agar URL lebih bersih
+    Object.keys(params).forEach(key => {
+      if (!params[key as keyof typeof params]) {
+        delete params[key as keyof typeof params]
+      }
+    })
+
     try {
       const token = await useFirebaseToken()
       if (!token) throw new Error('Authentication token not found.')
-
-      const params = {
-        page: page.value,
-        limit: pageSize.value,
-        search: search.value,
-        faculty: faculty.value,
-        program: program.value,
-        role: role.value,
-        email_verified: email_verified.value,
-        status: accountStatus.value,
-        sortBy: sortBy.value,
-        sortOrder: sortOrder.value,
-      }
-
-      // Hapus parameter kosong agar URL lebih bersih
-      Object.keys(params).forEach(key => {
-        if (!params[key as keyof typeof params]) {
-          delete params[key as keyof typeof params]
-        }
-      })
 
       const response = await $fetch<{
         data: User[]
@@ -116,6 +117,12 @@ export function useUsers() {
       }
     } catch (e: any) {
       error.value = e
+      const { logToServer } = useLogger()
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch users',
+        metadata: { error: e.message, params }
+      })
     } finally {
       isLoading.value = false
     }
@@ -157,6 +164,12 @@ export function useUsers() {
       }
     } catch (e: any) {
       console.error('Gagal mengubah status pengguna:', e)
+      const { logToServer } = useLogger()
+      logToServer({
+        level: 'error',
+        message: 'Failed to toggle user status',
+        metadata: { uid, newStatus, error: e.message }
+      })
       throw e // Lemparkan kembali error agar bisa ditangani oleh komponen pemanggil
     }
   }

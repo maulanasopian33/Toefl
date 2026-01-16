@@ -42,10 +42,27 @@ export const useExamData = (examId: string) => {
           Authorization: `Bearer ${token}`,
         };
       }
-      catch (e) {
+      catch (e: any) {
         showNotification('Terjadi kesalahan saat otentikasi.', 'error');
+        const { logToServer } = useLogger();
+        logToServer({
+          level: 'error',
+          message: 'Auth error in useExamData onRequest',
+          metadata: { examId, error: e.message }
+        });
       }
     },
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+       logToServer({
+         level: 'error',
+         message: 'Failed to fetch exam data in useExamData',
+         metadata: { examId, error: newErr.message }
+       });
+    }
   });
 
   return { data, pending, error };

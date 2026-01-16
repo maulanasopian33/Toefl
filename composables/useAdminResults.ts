@@ -1,5 +1,6 @@
 import { ref, watch, type Ref } from 'vue';
 import { useFirebaseToken } from './FirebaseToken';
+import { useLogger } from './useLogger';
 
 /**
  * @interface AdminTestResult
@@ -118,6 +119,12 @@ export const useAdminResults = (batchId: Ref<string>) => {
       results.value = response;
     } catch (e: any) {
       error.value = e;
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch admin results data',
+        metadata: { batchId: batchId.value, error: e.message }
+      });
     } finally {
       isLoading.value = false;
     }

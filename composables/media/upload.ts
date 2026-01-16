@@ -21,8 +21,19 @@ export const useMediaUpload = async (formData: FormData, signal?: AbortSignal) =
       signal, // Menambahkan AbortSignal ke request
     });
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading media:', error);
+    
+    const { logToServer } = useLogger();
+    logToServer({
+      level: 'error',
+      message: 'Failed to upload media',
+      metadata: {
+        error: error.message,
+        stack: error.stack
+      }
+    });
+
     // Melempar kembali error agar bisa ditangani di komponen
     throw error;
   }

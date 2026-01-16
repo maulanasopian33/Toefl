@@ -1,6 +1,7 @@
 
 import { ref } from 'vue'
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 
 export interface CandidateResult {
   id: string
@@ -112,6 +113,8 @@ export function useCandidateResults() {
     }
   ]
 
+  const { logToServer } = useLogger()
+
   const fetchCandidateResults = async (params: FetchParams = {}) => {
     isLoading.value = true
     error.value = null
@@ -135,6 +138,16 @@ export function useCandidateResults() {
     } catch (e: any) {
       error.value = e
       console.error('Failed to fetch candidate results:', e)
+      
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch candidate results',
+        metadata: {
+          error: e.message,
+          stack: e.stack,
+          params
+        }
+      })
     } finally {
       isLoading.value = false
     }

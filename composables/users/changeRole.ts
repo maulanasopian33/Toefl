@@ -1,4 +1,5 @@
 import { useNuxtApp } from '#app'
+import { useLogger } from '../useLogger'
 
 /**
  * Composable untuk mengubah role pengguna.
@@ -22,6 +23,12 @@ export const useUserChangeRole = async (uid: string, role: string) => {
       body: { role },
     })
   } catch (error: any) {
+    const { logToServer } = useLogger()
+    logToServer({
+      level: 'error',
+      message: 'Failed to change user role',
+      metadata: { uid, role, error: error.message }
+    })
     throw new Error(error.data?.message || 'Terjadi kesalahan saat mengubah role pengguna.')
   }
 }

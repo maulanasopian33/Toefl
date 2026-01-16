@@ -6,6 +6,7 @@ import {
 } from 'firebase/auth';
 import { useAuth as useAuthState } from './useAuth'; // Impor state manager
 import { useNotification } from './useNotification'; // Impor useNotification
+import { useLogger } from './useLogger';
 
 const { startLoading, stopLoading } = useLoading();
 const { showNotification } = useNotification(); // Ganti showAlert dengan showNotification
@@ -118,6 +119,8 @@ export const useAuthActions = () => {
     }
   };
 
+  const { logToServer } = useLogger();
+
   const errorHandler = (e: any) => {
     let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
 
@@ -141,6 +144,19 @@ export const useAuthActions = () => {
         // Penanganan untuk error yang tidak terduga
         console.error('Error Firebase Auth:', e);
         errorMessage = e.message || `Terjadi kesalahan. Kode error: ${e.code}`;
+    }
+
+    // Capture error to server for non-user-cancellation errors
+    if (e.code !== 'auth/popup-closed-by-user') {
+      logToServer({
+        level: 'error',
+        message: `Auth Error: ${errorMessage}`,
+        metadata: {
+          code: e.code,
+          message: e.message,
+          stack: e.stack
+        }
+      });
     }
 
     // Tampilkan pesan dan perbarui nilai error

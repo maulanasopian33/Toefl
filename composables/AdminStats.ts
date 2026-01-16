@@ -1,4 +1,5 @@
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 
 export const useAdminStats = () => {
   const config = useRuntimeConfig()
@@ -18,6 +19,17 @@ export const useAdminStats = () => {
       })
     }
   )
+
+  const { logToServer } = useLogger()
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch admin stats',
+        metadata: { error: newErr.message }
+      })
+    }
+  })
 
   return { data, pending, error, refresh }
 }

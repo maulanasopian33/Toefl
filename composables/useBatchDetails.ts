@@ -1,4 +1,5 @@
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 
 export function useBatchDetails(batchId: string) {
   const config = useRuntimeConfig()

@@ -1,5 +1,6 @@
 import { type Ref } from 'vue';
 import { useFirebaseToken } from './FirebaseToken';
+import { useLogger } from './useLogger';
 
 export interface UserDetail {
   uid: string;
@@ -56,6 +57,17 @@ export const useUserMe = async (): Promise<UserMeResult> => {
   );
 
   const dataValue = computed(() => (data.value ? data.value.data : null));
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch /users/me',
+        metadata: { error: newErr.message }
+      });
+    }
+  });
 
   return {
     data: dataValue as Ref<UserData | null>,

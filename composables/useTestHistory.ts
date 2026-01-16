@@ -1,4 +1,5 @@
 import { useFirebaseToken } from './FirebaseToken';
+import { useLogger } from './useLogger';
 
 /**
  * @interface TestHistory
@@ -28,21 +29,31 @@ export interface TestHistory {
  */
 export const useTestHistory = () => {
   const config = useRuntimeConfig();
+  const { logToServer } = useLogger();
+
   const { data, pending, error, refresh } = useAsyncData<TestHistory[]>(
     'test-history-list',
     async () => {
       const token = await useFirebaseToken();
       if (!token) throw new Error('Autentikasi pengguna gagal.');
-      // Langsung mengembalikan hasil fetch karena API mengembalikan array, bukan objek {data: ...}
       return await $fetch<TestHistory[]>(`${config.public.API_URL}/exams/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     },
     {
-      // Memberikan nilai default array kosong untuk mencegah error 'length' of undefined
       default: () => [],
     }
   );
+
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch test history list',
+        metadata: { error: newErr.message }
+      });
+    }
+  });
 
   return {
     histories: data,
@@ -59,21 +70,31 @@ export const useTestHistory = () => {
  */
 export const useTestHistoryDetail = (historyId: string) => {
   const config = useRuntimeConfig();
+  const { logToServer } = useLogger();
+
   const { data, pending, error, refresh } = useAsyncData<TestHistory>(
     `test-history-detail-${historyId}`,
     async () => {
       const token = await useFirebaseToken();
       if (!token) throw new Error('Autentikasi pengguna gagal.');
-      // Langsung mengembalikan hasil fetch, dengan asumsi API detail juga mengembalikan objek langsung
       return await $fetch<TestHistory>(`${config.public.API_URL}/exams/history/${historyId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     },
     {
-      // Memberikan nilai default null untuk detail, karena ini adalah objek tunggal
       default: () => null,
     }
   );
+
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: `Failed to fetch test history detail for ${historyId}`,
+        metadata: { error: newErr.message, historyId }
+      });
+    }
+  });
 
   return {
     history: data,

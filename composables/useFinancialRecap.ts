@@ -1,5 +1,7 @@
 import { ref, computed, watch } from 'vue';
 import type { Payment } from './usePayments';
+import { useLogger } from './useLogger';
+import { useFirebaseToken } from './FirebaseToken';
 
 interface RecapStats {
   totalRevenue: number;
@@ -28,6 +30,7 @@ interface Batch {
 
 export const useFinancialRecap = () => {
   const config = useRuntimeConfig();
+  const { logToServer } = useLogger();
 
   // --- STATE ---
   const startDate = ref<string | null>(null);
@@ -75,12 +78,13 @@ export const useFinancialRecap = () => {
     'all-batches-for-recap',
     async () => {
       const authToken = await useFirebaseToken();
-      if (!authToken) return { data: [] }; // Return empty if no token
+      if (!authToken) return { data: [] };
       return $fetch(`${config.public.API_URL}/batch`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
     }
   );
+
   // --- API 2: PAYMENTS TABLE ---
   const { data: paymentsData, pending: paymentsLoading, error: paymentsError, refresh: refreshPayments } = useAsyncData<PaymentsApiResponse>(
     'financial-recap-payments',
@@ -108,12 +112,32 @@ export const useFinancialRecap = () => {
     }
   );
 
-  const stats = computed<RecapStats>(() => {
-    // Ensure statsData.value and statsData.value.data are not null/undefined
-    return statsData.value?.data ?? { totalRevenue: 0, totalPaid: 0, totalPending: 0, totalFailed: 0, totalRefunded: 0 };
+  // --- WATCHERS FOR LOGGING ---
+  watch(statsError, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch financial recap stats',
+        metadata: { error: newErr.message, startDate: startDate.value, endDate: endDate.value }
+      });
+    }
+  });
+
+  watch(paymentsError, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch financial recap payments',
+        metadata: { error: newErr.message, page: currentPage.value }
+      });
+    }
   });
 
   // --- COMPUTED PROPERTIES ---
+  const stats = computed<RecapStats>(() => {
+    return statsData.value?.data ?? { totalRevenue: 0, totalPaid: 0, totalPending: 0, totalFailed: 0, totalRefunded: 0 };
+  });
+
   const payments = computed<Payment[]>(() => {
     return (paymentsData.value?.data ?? []).map((p: any) => ({
       id: p.id,
@@ -121,7 +145,7 @@ export const useFinancialRecap = () => {
       email: p.participant?.user?.email ?? 'N/A',
       batchName: p.participant?.batch?.namaBatch ?? '-',
       amount: parseFloat(p.amount) || 0,
-      status: p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : 'Unpaid',
+      status: p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : 'Unpaid' as any,
       date: p.createdAt,
       payment_proof: p.payment_proof,
     }));
@@ -129,7 +153,6 @@ export const useFinancialRecap = () => {
 
   const totalItems = computed(() => paymentsData.value?.totalItems ?? 0);
   const totalPages = computed(() => paymentsData.value?.totalPages ?? 1);
-
   const batches = computed(() => batchesData.value?.data ?? []);
 
   // --- METHODS ---

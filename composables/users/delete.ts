@@ -1,4 +1,5 @@
 import { useNuxtApp } from '#app'
+import { useLogger } from '../useLogger'
 
 /**
  * Composable untuk menghapus pengguna berdasarkan UID.
@@ -22,6 +23,12 @@ export const useUserDelete = async (uid: string) => {
       },
     })
   } catch (error: any) {
+    const { logToServer } = useLogger()
+    logToServer({
+      level: 'error',
+      message: 'Failed to delete user',
+      metadata: { uid, error: error.message }
+    })
     throw new Error(error.data?.message || 'Terjadi kesalahan saat menghapus pengguna dari server.')
   }
 }

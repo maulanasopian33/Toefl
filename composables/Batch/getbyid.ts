@@ -1,6 +1,7 @@
 import { type Ref } from 'vue';
 import type { Batch, BatchRes } from "@/types/batch";
 import { useFirebaseToken } from '../FirebaseToken';
+import { useLogger } from '../useLogger';
 
 interface BatchDetailResult {
   data: Ref<Batch[] | null>;
@@ -28,6 +29,17 @@ export const useBatchGetById = async (idBatch: string): Promise<BatchDetailResul
       Authorization: `Bearer ${authToken}`,
       'Content-Type': 'application/json',
     },
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch batch by ID (useBatchGetById)',
+        metadata: { idBatch, error: newErr.message }
+      });
+    }
   });
 
   const dataValue = computed(() => {

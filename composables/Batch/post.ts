@@ -1,4 +1,5 @@
 import type { Batch } from '@/types/batch';
+import { useLogger } from '../useLogger';
 export const useBatchPost = async (batchData: Batch) => {
   // Dapatkan token otorisasi dari composable yang sudah ada
   const authToken = await useFirebaseToken();
@@ -22,6 +23,17 @@ export const useBatchPost = async (batchData: Batch) => {
       'Content-Type': 'application/json',
     },
     body: batchData, // Data yang akan dikirim dalam body permintaan
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to create batch',
+        metadata: { error: newErr.message }
+      });
+    }
   });
 
   return {

@@ -1,4 +1,5 @@
 import type { ResUserDetail } from "@/types/UserDetails";
+import { useLogger } from "../useLogger";
 
 export const useUserDetailsGet = async () => {
   // Panggil composable untuk mendapatkan token
@@ -22,6 +23,17 @@ export const useUserDetailsGet = async () => {
       Authorization: `Bearer ${authToken}`, // Menggunakan token dari Firebase
       'Content-Type': 'application/json',
     },
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch user details (useUserDetailsGet)',
+        metadata: { error: newErr.message }
+      });
+    }
   });
 
   return {

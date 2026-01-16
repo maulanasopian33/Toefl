@@ -1,5 +1,6 @@
 import { ref, onMounted } from 'vue';
 import { useFirebaseToken } from './FirebaseToken';
+import { useLogger } from './useLogger';
 
 // --- Interfaces ---
 export interface Option {
@@ -86,6 +87,12 @@ export function useTestSession(testId: string) {
 
     } catch (e: any) {
       error.value = e;
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch test metadata',
+        metadata: { testId, error: e.message }
+      });
     } finally {
       isLoadingMetadata.value = false;
     }
@@ -121,6 +128,12 @@ export function useTestSession(testId: string) {
       sectionsData.value = newSectionsData;
     } catch (e: any) {
       error.value = e;
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch section data',
+        metadata: { testId, sectionId, error: e.message }
+      });
     } finally {
       isLoadingSection.value = false;
     }
@@ -143,6 +156,12 @@ export function useTestSession(testId: string) {
       finalScore.value = response;
     } catch (e: any) {
       error.value = e;
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to submit answers',
+        metadata: { testId, error: e.message }
+      });
     } finally {
       isSubmitting.value = false;
     }

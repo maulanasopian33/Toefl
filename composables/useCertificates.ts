@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 
 export interface Certificate {
   id: string
@@ -48,6 +49,8 @@ export function useCertificates() {
   const totalPages = ref(0)
   const currentPage = ref(1)
 
+  const { logToServer } = useLogger()
+
   const fetchCertificates = async (page = 1, limit = 10) => {
     isLoading.value = true
     error.value = null
@@ -76,6 +79,11 @@ export function useCertificates() {
     } catch (e: any) {
       error.value = e
       console.error('Failed to fetch certificates:', e)
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch certificates',
+        metadata: { page, limit, error: e.message }
+      })
     } finally {
       isLoading.value = false
     }
@@ -101,6 +109,11 @@ export function useCertificates() {
     } catch (e: any) {
       error.value = e
       console.error('Failed to generate certificates:', e)
+      logToServer({
+        level: 'error',
+        message: 'Failed to generate certificates',
+        metadata: { requestCount: requests.length, error: e.message }
+      })
       throw e
     } finally {
       isLoading.value = false

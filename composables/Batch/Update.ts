@@ -1,4 +1,5 @@
 import type { Batch } from '@/types/batch'
+import { useLogger } from '../useLogger'
 
 export const useBatchUpdate = async (id: number, batchData: Batch) => {
   // Ambil token autentikasi dari composable Firebase
@@ -23,6 +24,17 @@ export const useBatchUpdate = async (id: number, batchData: Batch) => {
       'Content-Type': 'application/json',
     },
     body: batchData,
+  })
+
+  const { logToServer } = useLogger()
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to update batch',
+        metadata: { id, error: newErr.message }
+      })
+    }
   })
 
   return {

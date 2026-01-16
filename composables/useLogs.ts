@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+import { useLogger } from './useLogger';
 
 interface Log {
   action: string;
@@ -56,20 +57,33 @@ export const useLogs = () => {
       return $fetch(apiUrl, {
         headers: { Authorization: `Bearer ${authToken}` },
         params,
-      });
+      }) as Promise<ApiResponse>;
     },
-    { watch: [selectedDate] } // Otomatis fetch ulang saat tanggal berubah
+    { 
+      watch: [selectedDate]
+    }
   );
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch logs',
+        metadata: { error: newErr.message, date: selectedDate.value }
+      });
+    }
+  });
 
   // Memproses data mentah dan menambahkan fallback untuk 'action'
   const processedLogs = computed<Log[]>(() => {
-    const logs = (data.value?.data ?? []).map(log => ({
+    const logs = (data.value?.data ?? []).map((log: Log) => ({
       ...log,
       action: log.action || 'Sistem', // Jika action tidak ada, beri nilai 'Sistem'
     }));
 
     // Urutkan log berdasarkan timestamp, data terbaru di atas
-    return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return logs.sort((a: Log, b: Log) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   });
 
   // Opsi dinamis untuk filter action

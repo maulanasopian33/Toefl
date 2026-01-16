@@ -1,6 +1,7 @@
 import { type Ref } from 'vue';
 import type { Batch, BatchRes } from "@/types/batch";
 import { useFirebaseToken } from '../FirebaseToken';
+import { useLogger } from '../useLogger';
 
 // Gunakan tipe yang lebih spesifik untuk composable
 interface BatchGetResult {
@@ -30,6 +31,17 @@ export const useBatchGet = async (): Promise<BatchGetResult> => {
       Authorization: `Bearer ${authToken}`,
       'Content-Type': 'application/json',
     },
+  });
+
+  const { logToServer } = useLogger();
+  watch(error, (newErr) => {
+    if (newErr) {
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch batches (useBatchGet)',
+        metadata: { error: newErr.message }
+      });
+    }
   });
 
   const dataValue = computed(() => {

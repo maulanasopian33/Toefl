@@ -1,6 +1,7 @@
 import { ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 
 /**
  * Interface untuk struktur data pengaturan aplikasi (internal, camelCase).
@@ -157,6 +158,12 @@ export function useAppSettings() {
     } catch (e: any) {
       showNotification('Gagal menyimpan pengaturan ke server.', 'error')
       console.error(e)
+      const { logToServer } = useLogger()
+      logToServer({
+        level: 'error',
+        message: 'Failed to update app settings',
+        metadata: { error: e.message }
+      })
     }
   }
 

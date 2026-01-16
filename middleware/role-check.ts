@@ -42,8 +42,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       if (data) {
         rbacRoles.value = data
       }
-    } catch (e) {
-      console.error("Gagal memuat data permission:", e)
+    } catch (e: any) {
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch RBAC roles in role-check middleware',
+        metadata: { error: e.message }
+      });
       showNotification('Gagal memverifikasi izin akses.', 'error')
       return navigateTo('/forbidden')
     }

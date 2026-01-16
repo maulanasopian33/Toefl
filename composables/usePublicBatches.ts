@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useFirebaseToken } from './FirebaseToken'
+import { useLogger } from './useLogger'
 import type { Batch } from './useActiveBatches' // Menggunakan interface Batch yang sama
 
 export function usePublicBatches() {
@@ -25,6 +26,12 @@ export function usePublicBatches() {
       publicBatches.value = response.data
     } catch (e: any) {
       publicError.value = e
+      const { logToServer } = useLogger()
+      logToServer({
+        level: 'error',
+        message: 'Failed to fetch public batches',
+        metadata: { error: e.message }
+      })
     } finally {
       isPublicLoading.value = false
     }
