@@ -210,9 +210,6 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
         <button class="p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 md:hidden transition-colors" @click="toggleSidebar()">
           <Icon name="lucide:menu" class="w-6 h-6" />
         </button>
-        <button @click="router.back()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors" title="Kembali">
-           <Icon name="lucide:arrow-left" class="w-5 h-5" />
-        </button>
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-200">
             <Icon name="lucide:edit-3" class="w-5 h-5" />
@@ -223,10 +220,13 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
           </div>
         </div>
       </div>
+      <button @click="router.back()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors" title="Kembali">
+           <Icon name="lucide:arrow-left" class="w-5 h-5" />
+        </button>
       <button @click="saveAllChanges" :disabled="isSaving" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-sm shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
         <Icon v-if="isSaving" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
         <Icon v-else name="lucide:save" class="w-4 h-4" />
-        <span class="font-medium">{{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
+        <span class="font-medium hidden md:block">{{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
       </button>
     </header>
 

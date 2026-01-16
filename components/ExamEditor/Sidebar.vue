@@ -9,7 +9,7 @@ const emit = defineEmits(['select','toggle','add-section'])
     <div v-if="isOpen" class="fixed inset-0 bg-black/60 z-40 md:hidden" @click="emit('toggle', true)"></div>
     
     <!-- Sidebar Navigation -->
-    <nav class="w-72 bg-white border-r border-slate-200 p-4 fixed inset-y-0 left-0 z-50 md:static transform transition-transform duration-300 ease-in-out flex flex-col h-full"
+    <nav class="w-72 bg-white border-r border-slate-200 pt-24 md:pt-0  p-4 fixed inset-y-0 left-0 z-50 md:static transform transition-transform duration-300 ease-in-out flex flex-col h-full"
          :class="isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'">
       
       <!-- Sidebar Header -->
