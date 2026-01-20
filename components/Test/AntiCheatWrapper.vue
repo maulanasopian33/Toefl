@@ -2,20 +2,30 @@
   <div class="select-none" @contextmenu.prevent="handleContextMenu">
     <slot />
 
-    <!-- Popup Peringatan -->
-    <div v-if="showPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
-      <div class="bg-white p-8 rounded-lg shadow-2xl text-center max-w-sm w-full transform transition-all duration-300 scale-105">
-        <Icon name="lucide:alert-triangle" class="mx-auto mb-4 h-16 w-16 text-red-500" />
-        <h2 class="text-2xl font-bold text-gray-800 mb-3">Tindakan Tidak Diizinkan!</h2>
-        <p class="text-gray-700 mb-6">
-          {{ warningMessage }}
-        </p>
-        <button @click="closePopup"
-                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors duration-200">
-          Saya Mengerti
-        </button>
+    <!-- Popup Peringatan Modern -->
+    <Transition name="fade">
+      <div v-if="showPopup" class="fixed inset-0 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm z-[100] px-4">
+        <div class="bg-white/90 backdrop-blur-md p-8 rounded-[2rem] shadow-2xl shadow-red-500/10 text-center max-w-sm w-full border border-white transform transition-all duration-500 scale-100 animate-bounce-in">
+          <div class="mb-6 relative inline-flex">
+            <div class="absolute inset-0 bg-red-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
+            <div class="relative w-20 h-20 bg-red-50 rounded-full flex items-center justify-center border border-red-100">
+              <Icon name="heroicons:exclamation-triangle-solid" class="h-10 w-10 text-red-500" />
+            </div>
+          </div>
+          
+          <h2 class="text-2xl font-black text-gray-900 mb-3 tracking-tight">Eits, Gak Boleh!</h2>
+          <p class="text-gray-500 mb-8 font-medium leading-relaxed">
+            {{ warningMessage }}
+          </p>
+          
+          <button @click="closePopup"
+                  class="w-full px-6 py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95 flex items-center justify-center space-x-2">
+            <Icon name="heroicons:check-badge" class="w-5 h-5" />
+            <span>Saya Mengerti</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -120,7 +130,24 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+@keyframes bounce-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .select-none {
   user-select: none;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>

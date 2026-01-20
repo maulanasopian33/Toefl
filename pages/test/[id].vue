@@ -1,138 +1,209 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gray-50/50 flex flex-col">
     <!-- Anti-Cheating Wrapper -->
     <AntiCheatWrapper @action-detected="handleCheatingAction">
 
-    <!-- Section Navigation Bar -->
-    <nav v-if="testMetadata && testMetadata.sectionOrder.length > 0" id="sectionNavBar" class="bg-gray-800 flex justify-center space-x-4 md:space-x-8 pt-4">
-      <button v-for="(item, index) in testMetadata.sectionOrder" :key="item.id" @click="goToSection(index)" :class="currentSectionIndex === index ? 'active-section' : ''" class="section-nav-button text-white text-lg font-medium px-4 py-2 rounded-t-lg hover:bg-accent focus:outline-none focus:ring-2 focus:ring-accent">{{item.name}}</button>
-    </nav>
-    <!-- Konten Utama Aplikasi -->
-    <main class="flex-grow container mx-auto p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Sophisticated Sticky Navigation Bar -->
+      <nav v-if="testMetadata && testMetadata.sectionOrder.length > 0" id="sectionNavBar" 
+           class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4">
+        <div class="max-w-7xl mx-auto flex justify-center">
+          <div class="flex space-x-1 md:space-x-4">
+            <button v-for="(item, index) in testMetadata.sectionOrder" 
+                    :key="item.id" 
+                    @click="goToSection(index)" 
+                    :class="[
+                      currentSectionIndex === index 
+                        ? 'text-emerald-600 border-emerald-600 bg-emerald-50/50' 
+                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+                    ]" 
+                    class="relative px-6 py-4 text-sm font-bold transition-all duration-300 border-b-2 outline-none">
+              {{ item.name }}
+              <div v-if="currentSectionIndex === index" class="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-600 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+            </button>
+          </div>
+        </div>
+      </nav>
 
-        <!-- Sidebar / Ringkasan Tes (Dapat dilipat) -->
-        <aside id="sidebar" class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit top-4 sidebar-transition">
-            <div id="sidebarContent">
-                <h2 class="text-2xl font-semibold mb-6 text-gray-800">Ringkasan Tes</h2>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-gray-600">Waktu Ujian:</span>
-                    <span id="timer" class="text-indigo-600 font-bold text-lg">{{ formattedTime }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-gray-600">Progress:</span>
-                    <span id="progressText" class="text-indigo-600 font-bold text-lg">{{ answeredQuestionsCount }} / {{ totalQuestionsCount }}</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full" :style="{ width: `${progressPercentage}%` }"></div>
-                </div>
+      <!-- Main Application Content -->
+      <main class="flex-grow container mx-auto p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
 
-                <div class="mt-8 pt-6 border-t border-gray-200">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Navigasi Pertanyaan</h3>
-                    <div id="questionNavigationGrid" class="grid grid-cols-5 gap-2">
-                        <button 
-                            v-for="(question, index) in currentSectionQuestions" 
-                            :key="question.id"
-                            @click="goToQuestion(question.groupIndex, question.questionIndexInGroup)"
-                            :class="getNavButtonClass(question, index)"
-                            class="p-2 rounded-md font-semibold text-sm transition duration-200 ease-in-out"
-                        >{{ index + 1 }}</button>
-                    </div>
-                </div>
-            </div>
+        <!-- Sidebar / Ringkasan Ujian (Hidden on mobile, sticky on desktop) -->
+        <aside id="sidebar" class="hidden lg:block lg:col-span-3 space-y-6">
+          <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden sticky top-24">
+            <SidebarContent 
+              :item-count="totalQuestionsCount"
+              :answered-count="answeredQuestionsCount"
+              :progress="progressPercentage"
+              :formatted-time="formattedTime"
+              :questions="currentSectionQuestions"
+              :get-nav-button-class="getNavButtonClass"
+              @go-to-question="goToQuestion"
+            />
+          </div>
         </aside>
 
         <!-- Area Konten Utama -->
-        <section id="mainContentArea" class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg sidebar-transition">
-            <!-- Loading State -->
-            <div v-if="isLoadingMetadata || isLoadingSection" class="flex flex-col items-center justify-center h-full text-center p-8">
-              <Icon name="lucide:loader-2" class="h-16 w-16 animate-spin text-gray-400 mb-4" />
-              <h3 class="text-xl font-semibold text-gray-700">Memuat Data Ujian...</h3>
-              <p class="text-gray-500 mt-2">Mohon tunggu sebentar.</p>
+        <section id="mainContentArea" class="lg:col-span-9">
+          <!-- Floating Button for Mobile Sidebar -->
+          <button 
+            @click="isSidebarOpen = true"
+            class="lg:hidden fixed bottom-6 right-6 z-40 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-2xl shadow-emerald-600/40 flex items-center justify-center hover:bg-emerald-700 active:scale-90 transition-all border-4 border-white"
+          >
+            <Icon name="heroicons:list-bullet-solid" class="w-6 h-6" />
+            <div v-if="answeredQuestionsCount > 0" class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white">
+              {{ answeredQuestionsCount }}
             </div>
-            <!-- Error State -->
-            <div v-else-if="error" class="flex flex-col items-center justify-center h-full text-center text-red-600 text-xl font-semibold p-8">
-              <Icon name="lucide:alert-triangle" class="h-16 w-16 text-red-500 mb-4" />
-              <p>Terjadi kesalahan: {{ error.message }}</p>
-              <p class="text-gray-500 text-base mt-2">Silakan coba muat ulang halaman.</p>
+          </button>
+
+          <!-- Mobile Sidebar Modal Overlay -->
+          <Transition name="fade">
+            <div v-if="isSidebarOpen" 
+                 @click.self="isSidebarOpen = false"
+                 class="lg:hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[50] flex items-end justify-center p-4">
+              <Transition name="slide-up">
+                <div v-if="isSidebarOpen" class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+                  <div class="absolute top-4 right-4 z-10">
+                    <button @click="isSidebarOpen = false" class="p-2 w-10 h-10 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
+                      <Icon name="heroicons:x-mark" class="w-6 h-6" />
+                    </button>
+                  </div>
+                  <SidebarContent 
+                    :item-count="totalQuestionsCount"
+                    :answered-count="answeredQuestionsCount"
+                    :progress="progressPercentage"
+                    :formatted-time="formattedTime"
+                    :questions="currentSectionQuestions"
+                    :get-nav-button-class="getNavButtonClass"
+                    @go-to-question="(g, q) => { goToQuestion(g, q); isSidebarOpen = false; }"
+                  />
+                </div>
+              </Transition>
+            </div>
+          </Transition>
+
+          <div class="bg-white min-h-[600px] rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 relative overflow-hidden">
+            <!-- Decorative Elements -->
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-50 rounded-full opacity-50 blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-50 rounded-full opacity-50 blur-3xl"></div>
+
+            <!-- Loading State -->
+            <div v-if="isLoadingMetadata || isLoadingSection" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-8 space-y-4">
+              <div class="relative">
+                <Icon name="svg-spinners:ring-resize" class="h-20 w-20 text-emerald-500" />
+                <Icon name="heroicons:document-text" class="absolute inset-0 m-auto h-8 w-8 text-emerald-600" />
+              </div>
+              <h3 class="text-2xl font-black text-gray-800">Menyiapkan Ujian</h3>
+              <p class="text-gray-400 font-medium">Memastikan data sinkron dan aman...</p>
             </div>
 
-            <!-- Waiting for Exam Start (Dummy Data) -->
-            <div v-else-if="!isTestOpen" class="flex flex-col items-center justify-center min-h-[50vh] py-12 px-4 text-center space-y-8">
-              <!-- Icon Wrapper -->
+            <!-- Error State -->
+            <div v-else-if="error" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-12 space-y-6">
+              <div class="p-4 bg-red-50 rounded-full border border-red-100">
+                <Icon name="heroicons:exclamation-triangle" class="h-16 w-16 text-red-500" />
+              </div>
+              <div class="space-y-2">
+                <h2 class="text-2xl font-black text-gray-800">Ups! Terjadi Kesalahan</h2>
+                <p class="text-gray-500 font-medium max-w-sm mx-auto">{{ error.message }}</p>
+              </div>
+              <button @click="fetchTestMetadata" class="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-95 flex items-center space-x-2">
+                <Icon name="heroicons:arrow-path" class="w-5 h-5" />
+                <span>Coba Lagi</span>
+              </button>
+            </div>
+
+            <!-- Waiting for Exam Start -->
+            <div v-else-if="!isTestOpen" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-12">
               <div class="relative">
-                <div class="absolute -inset-4 bg-indigo-100 rounded-full opacity-50 blur-lg animate-pulse"></div>
-                <div class="relative bg-white p-5 rounded-full shadow-lg border border-indigo-50">
-                  <Icon name="lucide:calendar-clock" class="h-16 w-16 text-indigo-600" />
+                <div class="absolute inset-0 bg-emerald-100 rounded-full blur-2xl opacity-40 animate-pulse"></div>
+                <div class="relative bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 ring-1 ring-emerald-100">
+                  <Icon name="heroicons:calendar-days" class="h-20 w-20 text-emerald-600" />
                 </div>
               </div>
 
-              <!-- Text -->
-              <div class="max-w-md mx-auto space-y-2">
-                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Ujian Belum Dimulai</h2>
-                <p class="text-slate-500 text-lg leading-relaxed">
-                  Mohon bersabar, ujian akan segera dimulai sesuai jadwal yang ditentukan.
+              <div class="space-y-4 max-w-lg mx-auto">
+                <h2 class="text-4xl font-black text-gray-900 tracking-tight leading-tight">Ujian Belum Dimulai</h2>
+                <p class="text-gray-500 text-lg leading-relaxed font-medium">
+                  Persiapkan diri Anda. Ujian akan terbuka secara otomatis dalam:
                 </p>
               </div>
               
-              <!-- Countdown -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl">
+              <div class="flex flex-wrap justify-center gap-6">
                 <div v-for="(val, label) in { Hari: countdown.days, Jam: countdown.hours, Menit: countdown.minutes, Detik: countdown.seconds }" :key="label" 
-                     class="flex flex-col items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 transition-all hover:border-indigo-200 hover:shadow-sm">
-                  <span class="text-4xl font-black text-indigo-600 tabular-nums">{{ val }}</span>
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">{{ label }}</span>
+                     class="group flex flex-col items-center p-6 bg-white min-w-[120px] rounded-3xl border border-gray-100 shadow-sm transition-all hover:border-emerald-200 hover:shadow-emerald-500/10">
+                  <span class="text-4xl font-black text-emerald-600 tabular-nums tracking-tighter shadow-emerald-100 drop-shadow-sm group-hover:scale-110 transition-transform">
+                    {{ val.toString().padStart(2, '0') }}
+                  </span>
+                  <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-3">{{ label }}</span>
                 </div>
               </div>
 
-              <!-- Info Badge -->
-              <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-100">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <div class="inline-flex items-center gap-3 px-6 py-2.5 bg-gray-50 text-gray-600 rounded-2xl text-sm font-bold border border-gray-100 shadow-sm">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                Halaman akan dimuat ulang otomatis
+                Menunggu Sinyal Server...
               </div>
             </div>
 
-            <!-- Tampilkan layar pengantar bagian -->
-    <SectionIntroScreen
-      v-else-if="quizState === 'intro' && currentSection"
-      :section-title="currentSection.name"
-      :instructions="currentSection.instructions"
-      :audio-src="currentSection.audioInstructions"
-      @startSection="startCurrentSection"
-    />
+            <!-- Content Components -->
+            <SectionIntroScreen
+              v-else-if="quizState === 'intro' && currentSection"
+              :section-title="currentSection.name"
+              :instructions="currentSection.instructions"
+              :audio-src="currentSection.audioInstructions"
+              @startSection="startCurrentSection"
+              class="fade-in-up"
+            />
 
-    <!-- Tampilkan pertanyaan -->
-    <QuestionView
-      v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
-      :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage }"
-      :question-number="currentQuestionIndex + 1"
-      :total-questions="currentGroup.questions.length"
-      :is-first="isFirstQuestionOfSection"
-      :is-last="isLastQuestionOfSection"
-      @next="handleNextQuestion"
-      @prev="handlePrevQuestion"
-      @update:userAnswer="updateUserAnswer"
-    />
+            <QuestionView
+              v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
+              :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage }"
+              :question-number="currentQuestionIndex + 1"
+              :total-questions="currentGroup.questions.length"
+              :is-first="isFirstQuestionOfSection"
+              :is-last="isLastQuestionOfSection"
+              @next="handleNextQuestion"
+              @prev="handlePrevQuestion"
+              @update:userAnswer="updateUserAnswer"
+              class="fade-in-up"
+            />
 
-    <!-- Tampilkan layar selesai kuis -->
-    <div v-else-if="quizState === 'finished'" class="text-center text-gray-700 text-xl font-semibold p-8 bg-white rounded-lg shadow-lg max-w-xl mx-auto my-8">
-      <h2 class="text-3xl font-bold mb-4">Ujian Selesai!</h2>
-      <p class="mb-6">Anda telah menyelesaikan semua bagian ujian.</p>
-      <div v-if="isSubmitting" class="flex flex-col items-center">
-        <Icon name="lucide:loader-2" class="h-12 w-12 animate-spin text-indigo-500 mb-4" />
-        <p class="text-lg font-semibold mb-6">Menyimpan dan menghitung skor...</p>
-      </div>
-      <div v-else-if="finalScore">
-        <p class="text-lg mb-2">Skor Anda:</p>
-        <p class="text-5xl font-bold text-indigo-600 mb-6">{{ finalScore.score }} / {{ finalScore.totalQuestions }}</p>
-      </div>
-      <button @click="navigateTo('/')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-        Kembali ke Dashboard
-      </button>
-    </div>
+            <!-- Finished Screen -->
+            <div v-else-if="quizState === 'finished'" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center space-y-10 py-8 relative z-10">
+              <div class="relative">
+                <div class="absolute inset-0 bg-emerald-100 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                <div class="relative w-28 h-28 bg-emerald-600 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-700/30">
+                  <Icon name="heroicons:check-badge" class="w-16 h-16 text-white" />
+                </div>
+              </div>
+
+              <div class="space-y-4 max-w-md mx-auto">
+                <h2 class="text-4xl font-black text-gray-900 tracking-tight leading-tight">Ujian Selesai!</h2>
+                <p class="text-gray-500 text-lg font-medium">Terima kasih telah menyelesaikan ujian ini dengan jujur.</p>
+              </div>
+
+              <div class="w-full max-w-sm p-8 bg-gray-50/80 backdrop-blur-sm rounded-[2.5rem] border border-gray-100 shadow-inner">
+                <div v-if="isSubmitting" class="flex flex-col items-center space-y-4">
+                  <Icon name="svg-spinners:blocks-scale" class="h-12 w-12 text-emerald-500" />
+                  <p class="text-emerald-700 font-bold tracking-tight">Menyimpan Respons Anda...</p>
+                </div>
+                <div v-else-if="finalScore" class="space-y-2">
+                  <p class="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Skor Akhir Anda</p>
+                  <p class="text-7xl font-black text-emerald-600 drop-shadow-md">
+                    {{ finalScore.score }}<span class="text-gray-300 text-3xl font-medium">/{{ finalScore.totalQuestions }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <button @click="navigateTo('/')" class="px-10 py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all active:scale-95 flex items-center space-x-3 group">
+                <Icon name="heroicons:home" class="w-5 h-5 group-hover:-translate-y-1 transition-transform" />
+                <span>Kembali ke Beranda</span>
+              </button>
+            </div>
+          </div>
         </section>
-    </main>
+      </main>
 
     </AntiCheatWrapper>
   </div>
@@ -145,13 +216,15 @@ import { useTestSession, type Section, type Question, type QuestionGroup } from 
 import AntiCheatWrapper from '@/components/Test/AntiCheatWrapper.vue';
 import SectionIntroScreen from '@/components/Test/SectionIntroScreen.vue';
 import QuestionView from '@/components/Test/QuestionView.vue';
+import SidebarContent from '@/components/Test/SidebarContent.vue';
 
 const route = useRoute();
 const testId = route.params.id as string;
+
 definePageMeta({
   middleware: ['auth', 'role-check'],
   permission: "test.read",
-  title: 'Ujian'
+  title: 'Sesi Ujian'
 });
 
 const {
@@ -160,22 +233,17 @@ const {
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
 
-console.log("Meta Data",testMetadata);
-console.log("Sections Data",sectionsData);
-console.log("final score",finalScore);
-  
-
-
 // --- State Lokal Halaman Ujian ---
 const quizState = ref<'intro' | 'questions' | 'finished'>('intro');
 const currentSectionIndex = ref(0);
 const currentGroupIndex = ref(0);
 const currentQuestionIndex = ref(0);
 const timeLeft = ref(0);
+const isSidebarOpen = ref(false);
 let timerInterval: NodeJS.Timeout | null = null;
 let clockInterval: NodeJS.Timeout | null = null;
 
-// --- Dummy Data & Logic for Scheduled Start ---
+// --- Time Control Logic ---
 const currentTime = ref(new Date());
 
 const scheduledStartTime = computed(() => {
@@ -183,7 +251,7 @@ const scheduledStartTime = computed(() => {
 });
 
 const isTestOpen = computed(() => {
-  if (!scheduledStartTime.value) return true; // Jika tidak ada jadwal mulai, anggap ujian terbuka
+  if (!scheduledStartTime.value) return true;
   return currentTime.value >= scheduledStartTime.value;
 });
 
@@ -201,6 +269,19 @@ const countdown = computed(() => {
 });
 
 onMounted(() => {
+  // Add global style for shimmer animation
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-shimmer {
+      animation: shimmer 2s linear infinite;
+    }
+  `;
+  document.head.appendChild(style);
+
   clockInterval = setInterval(() => {
     currentTime.value = new Date();
   }, 1000);
@@ -213,7 +294,6 @@ const currentQuestion = computed<Question | null>(() => currentGroup.value?.ques
 
 const currentSectionQuestions = computed(() => {
   if (!currentSection.value?.groups) return [];
-  let questionCounter = 0;
   return currentSection.value.groups.flatMap((group, groupIdx) => 
     group.questions.map((question, questionIdx) => ({
       ...question,
@@ -223,21 +303,10 @@ const currentSectionQuestions = computed(() => {
   );
 });
 
-const allQuestions = computed(() => {
-  return sectionsData.value.flatMap(s => s.groups || []).flatMap(g => g.questions || []);
-});
-
-const totalQuestionsCount = computed(() => {
-  return testMetadata.value?.totalQuestions || 0;
-});
-
+const allQuestions = computed(() => sectionsData.value.flatMap(s => s.groups || []).flatMap(g => g.questions || []));
+const totalQuestionsCount = computed(() => testMetadata.value?.totalQuestions || 0);
 const answeredQuestionsCount = computed(() => allQuestions.value.filter(q => q.userAnswer).length);
-console.log("answerd count", answeredQuestionsCount);
-console.log("answerd", allQuestions);
-
-
 const progressPercentage = computed(() => totalQuestionsCount.value > 0 ? (answeredQuestionsCount.value / totalQuestionsCount.value) * 100 : 0);
-
 
 const isFirstQuestionOfSection = computed(() => currentGroupIndex.value === 0 && currentQuestionIndex.value === 0);
 const isLastQuestionOfSection = computed(() => {
@@ -261,15 +330,12 @@ watch(testMetadata, (newMetadata) => {
   }
 }, { immediate: true });
 
-// --- Functions ---
+// --- Actions ---
 const startTimer = () => {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    if (timeLeft.value > 0) {
-      timeLeft.value--;
-    } else {
-      finishQuiz();
-    }
+    if (timeLeft.value > 0) timeLeft.value--;
+    else finishQuiz();
   }, 1000);
 };
 
@@ -281,27 +347,18 @@ const startCurrentSection = () => {
 };
 
 const updateUserAnswer = (payload: { questionId: string; answer: string | null }) => {
-  console.log('updateUserAnswer dipanggil dengan payload:', payload);
-  // Cari pertanyaan di sumber data utama (sectionsData) dan perbarui di sana.
   for (const section of sectionsData.value) {
     for (const group of section.groups) {
       const question = group.questions.find(q => q.id === payload.questionId);
       if (question) {
-        console.log('Pertanyaan ditemukan, memperbarui jawaban:', question.id);
         question.userAnswer = payload.answer;
-        // Log seluruh data pertanyaan setelah diubah untuk verifikasi
-        console.log('Data allQuestions setelah diubah:', JSON.parse(JSON.stringify(allQuestions.value)));
-        console.log('Jumlah jawaban terhitung:', allQuestions.value.filter(q => q.userAnswer).length);
-        return; // Keluar dari loop setelah pertanyaan ditemukan dan diperbarui.
+        return;
       }
     }
   }
-  console.warn('Pertanyaan dengan ID', payload.questionId, 'tidak ditemukan di sectionsData.');
 };
 
 const handleNextQuestion = async () => {
-  console.log('handleNextQuestion dipanggil.');
-  console.log('Pertanyaan saat ini:', JSON.parse(JSON.stringify(currentQuestion.value)));
   if (currentGroup.value && currentQuestionIndex.value < currentGroup.value.questions.length - 1) {
     currentQuestionIndex.value++;
   } else if (currentSection.value && currentGroupIndex.value < currentSection.value.groups.length - 1) {
@@ -357,18 +414,13 @@ const goToQuestion = (groupIndex: number, questionIndex: number) => {
 
 const getNavButtonClass = (question: any, index: number) => {
   const isCurrent = question.groupIndex === currentGroupIndex.value && question.questionIndexInGroup === currentQuestionIndex.value;
-  if (isCurrent) {
-    return 'bg-indigo-600 text-white ring-2 ring-indigo-400';
-  }
-  if (question.userAnswer) {
-    return 'bg-green-200 text-green-800 hover:bg-green-300';
-  }
-  return 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+  if (isCurrent) return 'bg-gray-900 text-white ring-4 ring-gray-100 z-10';
+  if (question.userAnswer) return 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 hover:emerald-600';
+  return 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700';
 };
 
 const handleCheatingAction = (details: { type: string, duration?: number }) => {
   console.warn('Tindakan tidak diizinkan terdeteksi:', details);
-  // Anda bisa menambahkan logika penalti di sini, misalnya mengirim log ke server.
 };
 
 onBeforeUnmount(() => {
@@ -378,14 +430,36 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.bg-primary {
-  background-color: #4a5568; /* Contoh: abu-abu gelap */
+.fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.active-section {
-  background-color: #2d3748; /* Lebih gelap untuk section aktif */
-  border-bottom: 3px solid #63b3ed; /* Aksen biru */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.sidebar-transition {
-  transition: all 0.3s ease-in-out;
+
+/* Modal Animations */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translateY(100%);
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite;
 }
 </style>
