@@ -12,8 +12,12 @@ export const useTestSessionStore = defineStore('testSession', {
     quizState: 'intro' as 'intro' | 'questions' | 'finished',
     sectionsData: [],
     allAnswers: [],
+    fontSize: 'normal' as 'small' | 'normal' | 'large' | 'extra-large',
   }),
   actions: {
+    setFontSize(size: 'small' | 'normal' | 'large' | 'extra-large') {
+      this.fontSize = size;
+    },
     setTestId(id: string) {
       this.testId = id;
     },

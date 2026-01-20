@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center justify-center min-h-[500px] text-center p-0 md:p-12 space-y-8 animate-fade-in">
     <div class="space-y-2">
       <span class="text-emerald-600 font-black uppercase tracking-[0.3em] text-[10px]">Persiapan Bagian</span>
-      <h2 class="text-4xl font-black text-gray-900 leading-tight">{{ sectionTitle }}</h2>
+      <h2 :class="[fontSizeClasses.title]" class="font-black text-gray-900 leading-tight">{{ sectionTitle }}</h2>
     </div>
     
     <div class="w-full max-w-2xl bg-gray-50/50 rounded-3xl p-8 border border-gray-100 text-left shadow-inner">
@@ -10,7 +10,7 @@
         <Icon name="heroicons:information-circle" class="w-4 h-4 mr-2" />
         Instruksi Pengerjaan
       </h3>
-      <div class="prose prose-emerald max-w-none text-gray-600 leading-relaxed font-medium" v-html="instructions"></div>
+      <div :class="[fontSizeClasses.prose]" class="max-w-none text-gray-600 leading-relaxed font-medium" v-html="instructions"></div>
     </div>
 
     <!-- Audio Instruction Player -->
@@ -34,7 +34,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   sectionTitle: {
     type: String,
     required: true,
@@ -47,6 +49,35 @@ defineProps({
     type: String,
     default: null,
   },
+  fontSize: {
+    type: String,
+    required: true,
+  }
+});
+
+const fontSizeClasses = computed(() => {
+  switch (props.fontSize) {
+    case 'small':
+      return {
+        title: 'text-2xl',
+        prose: 'prose prose-sm'
+      };
+    case 'large':
+      return {
+        title: 'text-5xl',
+        prose: 'prose prose-xl'
+      };
+    case 'extra-large':
+      return {
+        title: 'text-6xl',
+        prose: 'prose prose-2xl'
+      };
+    default:
+      return {
+        title: 'text-4xl',
+        prose: 'prose prose-lg'
+      };
+  }
 });
 
 defineEmits(['startSection']);

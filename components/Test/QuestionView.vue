@@ -7,7 +7,7 @@
           <Icon name="heroicons:document-text" class="w-5 h-5" />
           <span class="text-xs font-black uppercase tracking-widest">{{ questionData.type }}</span>
         </div>
-        <h2 class=" text-xl md:text-2xl font-black text-gray-900">Pertanyaan {{ questionNumber }} dari {{ totalQuestions }}</h2>
+        <h2 :class="[fontSizeClasses.title]" class="font-black text-gray-900">Pertanyaan {{ questionNumber }} dari {{ totalQuestions }}</h2>
       </div>
       
       <!-- Quick Status -->
@@ -38,13 +38,13 @@
           <Icon name="heroicons:bars-3-bottom-right" class="w-4 h-4 mr-2" />
           Teks Bacaan (Passage)
         </h3>
-        <div dir="rtl" class="prose prose-lg max-w-none text-gray-800 leading-relaxed font-arabic text-right custom-scrollbar max-h-96 overflow-y-auto pr-2" v-html="questionData.passage"></div>
+        <div dir="rtl" :class="[fontSizeClasses.prose, 'leading-relaxed font-arabic text-right custom-scrollbar max-h-96 overflow-y-auto pr-2']" v-html="questionData.passage"></div>
       </div>
 
       <!-- Question Text -->
       <div class="space-y-6">
         <div dir="rtl" class="bg-white p-6 rounded-2xl border-r-4 border-emerald-500 shadow-sm">
-          <div class="prose prose-xl max-w-none text-gray-900 font-bold text-right" v-html="questionData.question"></div>
+          <div :class="[fontSizeClasses.question]" class="max-w-none text-gray-900 font-bold text-right" v-html="questionData.question"></div>
         </div>
 
         <!-- Jawaban (Options) -->
@@ -77,7 +77,7 @@
               class="hidden"
             />
             
-            <div class="flex-1 prose prose-sm max-w-none font-bold text-gray-700" v-html="option.text"></div>
+            <div :class="[fontSizeClasses.option]" class="prose max-w-none font-bold text-gray-700" v-html="option.text"></div>
 
             <!-- Check Icon when selected -->
             <div v-if="localUserAnswer === option.id" class="absolute right-4">
@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { Question } from '@/composables/useTestSession';
 
 const props = defineProps<{
@@ -120,11 +120,45 @@ const props = defineProps<{
   totalQuestions: number;
   isFirst: boolean;
   isLast: boolean;
+  fontSize: 'small' | 'normal' | 'large' | 'extra-large';
 }>();
 
 const emit = defineEmits(['update:userAnswer', 'next', 'prev']);
 
 const localUserAnswer = ref(props.questionData.userAnswer || null);
+
+const fontSizeClasses = computed(() => {
+  switch (props.fontSize) {
+    case 'small':
+      return {
+        title: 'text-lg',
+        prose: 'prose prose-sm',
+        question: 'text-lg',
+        option: 'text-xs'
+      };
+    case 'large':
+      return {
+        title: 'text-3xl',
+        prose: 'prose prose-xl',
+        question: 'text-2xl',
+        option: 'text-lg'
+      };
+    case 'extra-large':
+      return {
+        title: 'text-4xl',
+        prose: 'prose prose-2xl',
+        question: 'text-3xl',
+        option: 'text-xl'
+      };
+    default:
+      return {
+        title: 'text-xl md:text-2xl',
+        prose: 'prose prose-lg',
+        question: 'text-xl md:text-2xl',
+        option: 'text-sm'
+      };
+  }
+});
 
 // Sync with parent when navigating
 watch(() => props.questionData.userAnswer, (newVal) => {

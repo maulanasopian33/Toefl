@@ -152,6 +152,7 @@
               :section-title="currentSection.name"
               :instructions="currentSection.instructions"
               :audio-src="currentSection.audioInstructions"
+              :font-size="testSessionStore.fontSize"
               @startSection="startCurrentSection"
               class="fade-in-up"
             />
@@ -163,6 +164,7 @@
               :total-questions="currentGroup.questions.length"
               :is-first="isFirstQuestionOfSection"
               :is-last="isLastQuestionOfSection"
+              :font-size="testSessionStore.fontSize"
               @next="handleNextQuestion"
               @prev="handlePrevQuestion"
               @update:userAnswer="updateUserAnswer"
@@ -206,6 +208,12 @@
       </main>
 
     </AntiCheatWrapper>
+
+    <!-- Accessibility Floating Menu -->
+    <AccessibilityFloating 
+      :current-size="testSessionStore.fontSize" 
+      @update:size="testSessionStore.setFontSize" 
+    />
   </div>
 </template>
 
@@ -213,13 +221,16 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTestSession, type Section, type Question, type QuestionGroup } from '@/composables/useTestSession';
+import { useTestSessionStore } from '@/stores/testSessionStore';
 import AntiCheatWrapper from '@/components/Test/AntiCheatWrapper.vue';
 import SectionIntroScreen from '@/components/Test/SectionIntroScreen.vue';
 import QuestionView from '@/components/Test/QuestionView.vue';
 import SidebarContent from '@/components/Test/SidebarContent.vue';
+import AccessibilityFloating from '@/components/Test/AccessibilityFloating.vue';
 
 const route = useRoute();
 const testId = route.params.id as string;
+const testSessionStore = useTestSessionStore();
 
 definePageMeta({
   middleware: ['auth', 'role-check'],
