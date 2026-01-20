@@ -18,10 +18,10 @@
       <!-- Content Section -->
       <div class="flex-1">
         <div class="mb-1 flex flex-wrap items-center gap-2">
-          <h3 class="text-lg font-bold text-gray-900">
+          <h3 class="text-lg font-extrabold text-gray-900 tracking-tight">
             Pembayaran Berhasil
           </h3>
-          <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">
+          <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 uppercase tracking-widest">
             Lunas
           </span>
         </div>

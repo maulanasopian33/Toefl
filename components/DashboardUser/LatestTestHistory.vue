@@ -1,72 +1,64 @@
 <template>
-  <div class="card bg-white p-6 rounded-xl shadow-sm border border-slate-200/80">
-    <h3 class="text-xl font-semibold text-slate-800 mb-4">Riwayat Tes Terakhir</h3>
+  <div class="p-8 space-y-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3 text-emerald-600">
+        <Icon name="heroicons:clock" class="w-6 h-6" />
+        <h3 class="text-lg font-extrabold text-gray-900 tracking-tight">Riwayat Tes Terakhir</h3>
+      </div>
+      <button v-if="histories && histories.length > 0" @click="navigateTo('/history')" class="text-sm font-bold text-gray-400 hover:text-emerald-600 transition-colors flex items-center gap-1 group">
+        Lihat Semua
+        <Icon name="heroicons:arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+      </button>
+    </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="text-center py-8">
-      <div class="flex justify-center mb-4">
-        <Icon name="lucide:loader-2" class="w-8 h-8 text-slate-400 animate-spin" />
-      </div>
-      <p class="text-slate-500">Memuat riwayat tes...</p>
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
+      <Icon name="svg-spinners:ring-resize" class="h-12 w-12 text-emerald-500" />
+      <p class="text-gray-400 font-medium">Memuat riwayat...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="text-center py-8">
-       <div class="flex justify-center mb-4">
-          <div class="bg-red-100 rounded-full p-3">
-              <Icon name="lucide:alert-triangle" class="w-8 h-8 text-red-500" />
-          </div>
+    <div v-else-if="error" class="flex flex-col items-center justify-center py-12 text-center space-y-4">
+      <div class="p-4 bg-red-50 rounded-full border border-red-100">
+        <Icon name="heroicons:exclamation-triangle" class="h-10 w-10 text-red-500" />
       </div>
-      <p class="text-slate-600 font-medium">Gagal memuat data</p>
-      <p class="text-sm text-slate-500 mt-1">Terjadi kesalahan saat mengambil riwayat tes.</p>
+      <p class="text-gray-500 font-medium">Gagal memuat data riwayat.</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!histories || histories.length === 0" class="text-center py-8">
-      <div class="flex justify-center mb-4">
-        <div class="bg-slate-100 rounded-full p-3">
-          <Icon name="lucide:history" class="w-8 h-8 text-slate-500" />
-        </div>
+    <div v-else-if="!histories || histories.length === 0" class="flex flex-col items-center justify-center py-12 text-center space-y-4">
+      <div class="p-4 bg-gray-50 rounded-full border border-gray-100 text-gray-300">
+        <Icon name="heroicons:document-magnifying-glass" class="h-12 w-12" />
       </div>
-      <p class="text-slate-600 font-medium">Belum ada tes yang diselesaikan</p>
-      <p class="text-sm text-slate-500 mt-1">Hasil tes terakhir Anda akan muncul di sini.</p>
+      <div class="space-y-1">
+        <p class="text-gray-800 font-bold leading-tight">Belum Ada Riwayat</p>
+        <p class="text-gray-400 text-sm font-medium">Tes yang Anda selesaikan akan muncul di sini.</p>
+      </div>
     </div>
 
     <!-- Success State -->
-    <div v-else-if="latestHistory">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <p class="text-sm text-slate-500">{{ formatDate(latestHistory.completedDate) }}</p>
-          <h4 class="text-lg font-semibold text-slate-800">{{ latestHistory.batchName }}</h4>
+    <div v-else-if="latestHistory" class="relative group">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50/50 rounded-3xl border border-gray-100 group-hover:border-emerald-100 transition-colors">
+        <div class="space-y-3">
+          <div class="inline-flex items-center px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            {{ formatDate(latestHistory.completedDate) }}
+          </div>
+          <h4 class="text-lg font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors">{{ latestHistory.batchName }}</h4>
+          
+          <!-- Rincian Skor per Sesi -->
+          <div v-if="latestHistory.sectionScores" class="flex flex-wrap gap-4 pt-2">
+            <div v-for="(val, key) in { Listening: latestHistory.sectionScores.listening, Structure: latestHistory.sectionScores.structure, Reading: latestHistory.sectionScores.reading }" :key="key" class="space-y-1">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ key }}</p>
+              <p class="text-base font-bold text-gray-700">{{ val }}</p>
+            </div>
+          </div>
         </div>
-        <div class="text-right">
-          <p class="text-3xl font-bold text-green-600">{{ latestHistory.score }}</p>
-          <p class="text-sm text-slate-500">Skor Total</p>
-        </div>
-      </div>
-      <!-- Rincian Skor per Sesi -->
-      <div v-if="latestHistory.sectionScores" class="mt-4 pt-4 border-t border-slate-200/80 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.listening }}</p>
-          <p class="text-xs text-slate-500">Listening</p>
-        </div>
-        <div>
-          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.structure }}</p>
-          <p class="text-xs text-slate-500">Structure</p>
-        </div>
-        <div>
-          <p class="font-semibold text-slate-700">{{ latestHistory.sectionScores.reading }}</p>
-          <p class="text-xs text-slate-500">Reading</p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Footer Button -->
-    <div v-if="histories && histories.length > 0" class="mt-4 border-t border-slate-200 pt-4 flex justify-end">
-      <button @click="navigateTo('/history')" class="inline-flex items-center gap-2 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors duration-200">
-        Lihat Semua Riwayat
-        <Icon name="lucide:arrow-right" class="w-4 h-4" />
-      </button>
+        <div class="flex flex-col items-center md:items-end space-y-1">
+          <p class="text-4xl font-extrabold text-emerald-600 drop-shadow-sm">{{ latestHistory.score }}</p>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Total Score</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>

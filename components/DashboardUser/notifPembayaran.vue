@@ -3,52 +3,53 @@
   <div 
     v-if="hasPending"
     id="paymentPendingNotification" 
-    class="relative overflow-hidden rounded-2xl border border-amber-200 bg-white p-6 shadow-sm transition-all hover:shadow-md mb-6"
+    class="relative overflow-hidden rounded-[2.5rem] border border-amber-100 bg-white p-8 shadow-xl shadow-amber-900/5 transition-all hover:shadow-md"
   >
     <!-- Background Decoration -->
-    <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-50/50 blur-3xl pointer-events-none"></div>
+    <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-amber-50 blur-3xl opacity-50 pointer-events-none"></div>
     
-    <div class="relative flex flex-col gap-5 sm:flex-row sm:items-start">
+    <div class="relative flex flex-col gap-6 md:flex-row md:items-center">
       <!-- Icon Section -->
       <div class="flex-shrink-0">
-        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600 ring-4 ring-amber-50">
-          <Icon name="lucide:wallet-cards" class="h-6 w-6" />
+        <div class="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-amber-100 text-amber-600 ring-8 ring-amber-50">
+          <Icon name="heroicons:credit-card" class="h-8 w-8" />
         </div>
       </div>
 
       <!-- Content Section -->
-      <div class="flex-1">
-        <div class="mb-1 flex flex-wrap items-center gap-2">
-          <h3 class="text-lg font-bold text-gray-900">
-            Pembayaran Tertunda
-          </h3>
-          <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 border border-amber-200">
+      <div class="flex-1 space-y-4">
+        <div class="space-y-1">
+          <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold text-amber-600 border border-amber-100 uppercase tracking-widest">
             Perlu Tindakan
           </span>
+          <h3 class="text-xl font-extrabold text-gray-900">
+            Pembayaran Belum Selesai
+          </h3>
+          <p class="text-gray-500 text-sm font-medium">Selesaikan pembayaran untuk dapat mengikuti tes TOEFL.</p>
         </div>
         
-        <div class="mt-3 mb-4 grid grid-cols-2 gap-4 rounded-xl bg-amber-50/80 border border-amber-100 p-4 sm:max-w-md">
-          <div>
-            <p class="text-xs font-medium text-amber-600/80 uppercase tracking-wider">Total Tagihan</p>
-            <p class="mt-1 text-lg font-bold text-gray-900">{{ displayAmount }}</p>
+        <div class="flex flex-wrap gap-6 p-5 bg-amber-50/50 border border-amber-100 rounded-2xl">
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Total Tagihan</p>
+            <p class="text-xl font-extrabold text-gray-900">{{ displayAmount }}</p>
           </div>
-          <div>
-            <p class="text-xs font-medium text-amber-600/80 uppercase tracking-wider">Nama Test</p>
-            <p class="mt-1 font-mono text-sm font-medium text-gray-700">{{ displayNameTest }}</p>
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Sesi Ujian</p>
+            <p class="text-sm font-bold text-gray-700">{{ displayNameTest }}</p>
           </div>
         </div>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-5 flex flex-wrap gap-3">
-          <button 
-            id="goToPaymentButton"
-            class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-amber-700 hover:shadow focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-            @click="handleNavigate"
-          >
-            <Icon name="lucide:credit-card" class="h-4 w-4" />
-            Lakukan Pembayaran
-          </button>
-        </div>
+      <!-- Action Button -->
+      <div class="flex-shrink-0">
+        <button 
+          id="goToPaymentButton"
+          class="flex items-center gap-3 rounded-2xl bg-amber-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-amber-600/20 transition-all hover:bg-amber-700 hover:scale-105 active:scale-95"
+          @click="handleNavigate"
+        >
+          <span>Bayar Sekarang</span>
+          <Icon name="heroicons:chevron-right" class="h-5 w-5" />
+        </button>
       </div>
     </div>
   </div>

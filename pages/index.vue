@@ -1,49 +1,60 @@
 <template>
-  <div class="bg-slate-50 min-h-screen">
+  <div class="min-h-screen bg-gray-50/50 flex flex-col relative overflow-hidden">
+    <!-- Decorative Elements -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-50 rounded-full opacity-50 blur-3xl -z-10"></div>
+    <div class="absolute top-1/2 -left-24 w-64 h-64 bg-emerald-50 rounded-full opacity-40 blur-3xl -z-10"></div>
     
-    <main class="container mx-auto px-4 py-6 sm:px-6 lg:py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <main class="flex-grow container mx-auto px-4 py-8 md:px-6 lg:py-12 relative z-10 pb-24 lg:pb-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-            <!-- Bagian Utama Dashboard -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Hero Section & Notifikasi -->
-                <HeroSection @mulai-tes="openBatchModal" />
-                <notifPembayaran/>
-                <notifSertifikat/>
+        <!-- Bagian Utama Dashboard -->
+        <div class="lg:col-span-8 space-y-8">
+          <!-- Hero Section -->
+          <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 md:p-10 relative overflow-hidden group">
+            <div class="absolute -top-12 -right-12 w-48 h-48 bg-emerald-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
+            <HeroSection @mulai-tes="openBatchModal" />
+          </div>
 
-                <!-- Riwayat Tes Terakhir -->
-                <LatestTestHistory />
-            </div>
+          <div class="space-y-6">
+            <notifPembayaran />
+            <notifSertifikat />
+          </div>
 
-            <!-- Sidebar dengan Link Cepat -->
-            <div class="hidden lg:block lg:col-span-1 h-fit lg:sticky top-6">
-              <QuickLinksSidebar />
-            </div>
+          <!-- Riwayat Tes Terakhir -->
+          <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+            <LatestTestHistory />
+          </div>
         </div>
 
-        <!-- Modal Pemilihan Batch -->
-        <BatchSelectionModal 
-            v-model="showBatchModal"
-            :batches="myBatches"
-            :is-loading="isMyBatchesLoading"
-            :error="myBatchesError"
-            @start-test="handleStartTest"
-            @open-registration="openRegistrationModal"
-        />
+        <!-- Sidebar dengan Link Cepat -->
+        <aside class="hidden lg:block lg:col-span-4 space-y-6">
+          <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 sticky top-24">
+            <QuickLinksSidebar />
+          </div>
+        </aside>
+      </div>
 
-        <!-- Modal Pendaftaran Batch Baru -->
-        <BatchRegistrationModal
-            v-model="showRegistrationModal"
-            :batches="publicBatches"
-            :is-loading="isPublicLoading"
-            :error="publicError"
-            @join-batch="handleJoinBatch"
-        />
+      <!-- Modal selection components stay same but styled via their own files -->
+      <BatchSelectionModal 
+          v-model="showBatchModal"
+          :batches="myBatches"
+          :is-loading="isMyBatchesLoading"
+          :error="myBatchesError"
+          @start-test="handleStartTest"
+          @open-registration="openRegistrationModal"
+      />
+
+      <BatchRegistrationModal
+          v-model="showRegistrationModal"
+          :batches="publicBatches"
+          :is-loading="isPublicLoading"
+          :error="publicError"
+          @join-batch="handleJoinBatch"
+      />
     </main>
 
     <!-- Bottom Navigation (Hanya untuk Mobile) -->
-    <BottomNav />
-
+    <BottomNav class="z-50" />
   </div>
 </template>
 
