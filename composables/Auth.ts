@@ -8,15 +8,15 @@ import { useAuth as useAuthState } from './useAuth'; // Impor state manager
 import { useNotification } from './useNotification'; // Impor useNotification
 import { useLogger } from './useLogger';
 
-const { startLoading, stopLoading } = useLoading();
-const { showNotification } = useNotification(); // Ganti showAlert dengan showNotification
-
 /**
  * Composable ini berisi FUNGSI AKSI terkait otentikasi (login, logout, dll).
  * Untuk STATE pengguna (data, role, status login), gunakan `useAuth()`.
  */
 export const useAuthActions = () => {
-  const config = useRuntimeConfig(); // Tambahkan ini
+  const { startLoading, stopLoading } = useLoading();
+  const { showNotification } = useNotification();
+  const { logToServer } = useLogger();
+  const config = useRuntimeConfig();
   const { $auth, $googleProvider } = useNuxtApp();
   const router = useRouter();
 
@@ -118,8 +118,6 @@ export const useAuthActions = () => {
       errorHandler(e);
     }
   };
-
-  const { logToServer } = useLogger();
 
   const errorHandler = (e: any) => {
     let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';

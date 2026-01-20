@@ -1,54 +1,38 @@
 <template>
   <HeaderPrimary/>
-  <div class="w-full mx-auto">
-    <!-- Main Content - Login Form Container -->
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl flex flex-col lg:flex-row max-w-4xl w-full overflow-hidden">
-            <!-- Left Section (Illustration and Intro Text) -->
-            <div class="left-section-bg p-8 flex-1 flex flex-col justify-between items-start text-white lg:w-1/2 rounded-l-xl">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold mb-2 rounded-md">{{ state.title }}</h2>
-                    <p class="text-lg opacity-90 rounded-md">{{ state.description }}</p>
-                </div>
-                <div class="w-full h-48 illustration-placeholder rounded-lg mb-8">
-                    <!-- Placeholder for illustration -->
-                </div>
-                <!-- Login as section -->
-                <div v-if="state.loginAs">
-                    <h3 class="text-xl font-semibold mb-4 rounded-md">Masuk sebagai</h3>
-                    <div class="flex flex-wrap gap-4">
-                        <!-- User 1 -->
-                        <div class="flex items-center bg-white bg-opacity-20 p-3 rounded-full pr-6 cursor-pointer hover:bg-opacity-30 transition duration-200">
-                            <img src="https://placehold.co/40x40/cccccc/ffffff?text=JP" alt="John Peter" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-semibold text-sm rounded-md">John Peter</p>
-                                <p class="text-xs opacity-80 rounded-md">Aktif 1 hari lalu</p>
-                            </div>
-                        </div>
-                        <!-- User 2 -->
-                        <div class="flex items-center bg-white bg-opacity-20 p-3 rounded-full pr-6 cursor-pointer hover:bg-opacity-30 transition duration-200">
-                            <img src="https://placehold.co/40x40/cccccc/ffffff?text=AA" alt="Alina Ahmen" class="w-10 h-10 rounded-full mr-3">
-                            <div>
-                                <p class="font-semibold text-sm rounded-md">Alina Ahmen</p>
-                                <p class="text-xs opacity-80 rounded-md">Aktif 4 hari lalu</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="auth-wrapper min-h-screen w-full flex items-center justify-center p-4">
+    <!-- Animated Background Mesh -->
+    <div class="bg-mesh"></div>
 
-            <!-- Right Section (Login Form) -->
-            <div class="p-8 flex-1 lg:w-1/2 flex flex-col">
-                <div class="flex justify-end text-sm mb-4" v-if="state.navlogin || state.navregister">
-                    <span class="text-gray-600 rounded-md" v-if="!state.navlogin">Belum punya akun?</span>
-                    <span class="text-gray-600 rounded-md" v-if="!state.navregister">sudah punya akun?</span>
-                    <nuxt-link to="/auth/register" class="text-green-600 font-semibold ml-1 hover:underline rounded-md" v-if="!state.navlogin">Daftar</nuxt-link>
-                    <nuxt-link to="/auth/login" class="text-green-600 font-semibold ml-1 hover:underline rounded-md" v-if="!state.navregister">login</nuxt-link>
-                </div>
-                <NuxtPage/>
-            </div>
+    <div class="glass-card flex flex-col lg:flex-row max-w-4xl w-full">
+      <!-- Left Section (Illustration and Intro Text) -->
+      <div class="lg:w-1/2 p-10 flex-col justify-between text-white relative overflow-hidden hidden lg:flex">
+        <div class="relative z-10">
+          <h2 class="text-4xl font-bold mb-4 tracking-tight">{{ state.title }}</h2>
+          <p class="text-lg opacity-90 leading-relaxed font-light">{{ state.description }}</p>
         </div>
-    </main>
+        
+        <div class="illustration-container relative z-10 my-8">
+           <div class="blob-animation"></div>
+           <div class="illustration-placeholder"></div>
+        </div>
+
+        <div class="relative z-10">
+          <!-- Removed hardcoded profiles -->
+        </div>
+      </div>
+
+      <!-- Right Section (Login Form) -->
+      <div class="flex-1 p-10 flex flex-col bg-white/95 backdrop-blur-sm lg:rounded-r-2xl rounded-2xl lg:rounded-l-none">
+        <div class="flex justify-end text-sm mb-8" v-if="state.navlogin || state.navregister">
+          <span class="text-gray-500" v-if="!state.navlogin">Belum punya akun?</span>
+          <span class="text-gray-500" v-if="!state.navregister">Sudah punya akun?</span>
+          <nuxt-link to="/auth/register" class="text-emerald-600 font-bold ml-2 hover:text-emerald-700 transition-colors" v-if="!state.navlogin">Daftar</nuxt-link>
+          <nuxt-link to="/auth/login" class="text-emerald-600 font-bold ml-2 hover:text-emerald-700 transition-colors" v-if="!state.navregister">Login</nuxt-link>
+        </div>
+        <NuxtPage/>
+      </div>
+    </div>
     <LoadingPopup/>
   </div>
 </template>
@@ -58,25 +42,83 @@ const { state } = useLayoutStore();
 </script>
 
 <style scoped>
-/* Set Inter font as default */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom background for the main login section */
-        .login-bg {
-            background-color: #f0f2f5; /* Light gray background for the overall page */
-        }
-        /* Custom background for the left section of the login card */
-        .left-section-bg {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%); /* Green gradient */
-            position: relative;
-            overflow: hidden;
-        }
-        /* Style for the illustration placeholder */
-        .illustration-placeholder {
-            background-image: url('https://placehold.co/400x300/10B981/ffffff?text=Ilustrasi'); /* Placeholder image for illustration */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
+.auth-wrapper {
+  background: #f8fafc;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.bg-mesh {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, #effaf5 0%, transparent 25%),
+              radial-gradient(circle at 70% 60%, #f0fdf4 0%, transparent 25%),
+              radial-gradient(circle at 40% 80%, #ecfdf5 0%, transparent 25%);
+  animation: mesh-float 20s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes mesh-float {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-5%, -5%) rotate(5deg); }
+}
+
+.glass-card {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.25);
+  z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.user-chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.illustration-container {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blob-animation {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: white;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  opacity: 0.15;
+  animation: blob-float 8s infinite alternate;
+}
+
+@keyframes blob-float {
+  0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: scale(1); }
+  100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; transform: scale(1.2); }
+}
+
+.illustration-placeholder {
+  width: 100%;
+  height: 100%;
+  background: url('https://illustrations.popsy.co/white/startup-launch.svg') no-repeat center;
+  background-size: contain;
+}
 </style>

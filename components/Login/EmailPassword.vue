@@ -1,53 +1,121 @@
 <template>
-  <div>
-    <!-- Login Form Fields -->
-    <div class="mb-4">
-        <label for="email" class="block text-gray-700 text-sm font-bold mb-2 rounded-md">Masukkan alamat email Anda</label>
-        <input type="email" v-model="email" required autocomplete="email" id="email" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Nama pengguna atau email">
-    </div>
-    <div class="mb-6">
-        <label for="password" class="block text-gray-700 text-sm font-bold mb-2 rounded-md">Masukkan Kata Sandi Anda</label>
-        <input type="password" @focus="showPasswordStrength = true" @blur="showPasswordStrength = false" v-model="password" id="password" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Kata sandi">
-        <strength-password @PassedPassword="handlePasswordStatus" :password="password" :showPasswordStrength="showPasswordStrength"/>
-        <p v-show="password.length > 0" :class="PassedPassword ? 'text-green-600 border-green-600 bg-green-200' : 'text-red-600 border-red-600 bg-red-200'" class="px-3 py-2 rounded-md border">
-          {{ PassedPassword ? 'Kata sandi memenuhi syarat!' : 'Kata sandi tidak valid.' }}
-        </p>
-        <nuxt-link to="/auth/forgot-password" class="inline-block align-baseline font-bold text-sm text-green-600 hover:text-green-800 rounded-md mt-5">Lupa Kata Sandi?</nuxt-link>
+  <div class="space-y-6">
+    <!-- Email Field -->
+    <div class="space-y-2">
+      <label for="email" class="text-sm font-semibold text-gray-700 ml-1">Email</label>
+      <div class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon name="heroicons:envelope" class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+        </div>
+        <input 
+          type="email" 
+          v-model="email" 
+          required 
+          autocomplete="email" 
+          id="email" 
+          class="auth-input !pl-10" 
+          placeholder="nama@email.com"
+        >
+      </div>
     </div>
 
+    <!-- Password Field -->
+    <div class="space-y-2">
+      <div class="flex justify-between items-center ml-1">
+        <label for="password" class="text-sm font-semibold text-gray-700">Password</label>
+        <nuxt-link to="/auth/forgot-password" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Lupa Password?</nuxt-link>
+      </div>
+      <div class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon name="heroicons:lock-closed" class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+        </div>
+        <input 
+          :type="showPassword ? 'text' : 'password'" 
+          v-model="password" 
+          id="password" 
+          class="auth-input !px-10" 
+          placeholder="••••••••"
+        >
+        <button 
+          type="button" 
+          @click="showPassword = !showPassword" 
+          class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-emerald-500 transition-colors"
+        >
+          <Icon :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'" class="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Error/Status Message (Optional) -->
+    <Transition name="fade">
+      <div v-if="password.length > 0 && !isPasswordValid" class="flex items-center space-x-2 text-red-500 text-xs font-medium bg-red-50 p-2 rounded-lg border border-red-100">
+        <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
+        <span>Password minimal 8 karakter.</span>
+      </div>
+    </Transition>
 
     <!-- Sign In Button -->
-    <button :disabled="!PassedPassword" :class="{'opacity-50 cursor-not-allowed': !PassedPassword}" @click="handleLogin()" class="bg-green-600 text-white font-bold py-3 px-4 rounded-lg w-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition duration-300">
+    <button 
+      :disabled="!isValid" 
+      @click="handleLogin()" 
+      class="login-btn group"
+    >
+      <span class="relative z-10 flex items-center justify-center">
         Masuk
+        <Icon name="heroicons:arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+      </span>
     </button>
   </div>
 </template>
 
 <script lang="ts" setup>
 const { startLoading, stopLoading } = useLoading();
-const { loginEmailPassword} = useAuthActions();
+const { loginEmailPassword } = useAuthActions();
+
 const email = ref('');
 const password = ref('');
-const showPasswordStrength = ref(false);
-const PassedPassword = ref(false);
+const showPassword = ref(false);
+
+const isPasswordValid = computed(() => password.value.length >= 8);
+const isValid = computed(() => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.value) && isPasswordValid.value;
+});
 
 const handleLogin = async () => {
+  if (!isValid.value) return;
   try {
     startLoading();
     await loginEmailPassword(email.value, password.value);
   } catch (error) {
-    stopLoading();
-    console.log(error)
+    console.error('[Login] Error:', error);
   } finally {
     stopLoading();
   }
 }
-
-const handlePasswordStatus = (status : boolean) => {
-  PassedPassword.value = status;
-};
 </script>
 
-<style>
+<style scoped>
+.auth-input {
+  @apply block w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-3 transition-all duration-300 outline-none;
+}
 
+.auth-input:focus {
+  @apply bg-white shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-500/20;
+}
+
+.login-btn {
+  @apply relative w-full bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all duration-300 overflow-hidden shadow-lg shadow-emerald-600/20;
+}
+
+.login-btn:disabled {
+  @apply opacity-50 cursor-not-allowed grayscale;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
 </style>
