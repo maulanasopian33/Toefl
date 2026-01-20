@@ -4,22 +4,25 @@
   <div v-if="form" class="space-y-8">
     <!-- HEADER -->
     <header
-      class="flex flex-col gap-3 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-5 py-4 text-white sm:flex-row sm:items-center sm:justify-between"
+      class="flex flex-col gap-4 rounded-3xl bg-white px-8 py-6 border border-gray-100 shadow-xl ring-1 ring-gray-900/5 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">
+        <h1 class="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+          <div class="p-2 bg-emerald-100 rounded-xl">
+            <Icon name="heroicons:cog-6-tooth" class="w-6 h-6 text-emerald-600" />
+          </div>
           Pengaturan Aplikasi
         </h1>
-        <p class="mt-1 text-sm text-slate-200/90">
+        <p class="mt-2 text-gray-500">
           Atur nama aplikasi, logo, identitas brand, dan preferensi sistem.
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
         <button
           :disabled="isSaving"
           type="button"
-          class="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-white/10"
+          class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
           @click="() => fetchSettings()"
         >
           <Icon name="lucide:refresh-cw" class="h-4 w-4" />
@@ -27,7 +30,7 @@
         </button>
         <button
           type="button"
-          class="inline-flex items-center gap-2 rounded-lg border border-emerald-400/50 bg-emerald-400 px-3 py-1.5 text-xs font-medium text-emerald-950 shadow-sm hover:bg-emerald-300 disabled:opacity-60"
+          class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all transform active:scale-95 disabled:opacity-60"
           :disabled="isSaving"
           @click="handleSave"
         >
@@ -41,7 +44,7 @@
             name="lucide:loader-2"
             class="h-4 w-4 animate-spin"
           />
-          {{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}
+          {{ isSaving ? 'Menyimpan...' : 'Simpan' }}
         </button>
       </div>
     </header>
@@ -51,73 +54,71 @@
       <!-- LEFT: FORM SECTIONS -->
       <div class="space-y-6">
         <!-- General Info -->
-        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Informasi Umum</h2>
-              <p class="mt-1 text-xs text-slate-500">
-                Nama aplikasi dan informasi dasar yang akan tampil di seluruh sistem.
-              </p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Informasi Umum</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Nama aplikasi dan informasi dasar yang akan tampil di seluruh sistem.
+            </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+          <div class="p-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Nama Aplikasi
               </label>
               <input
                 v-model="form.appName"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="Contoh: Pusat Pembelajaran Bahasa Arab"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Nama Pendek / Brand
               </label>
               <input
                 v-model="form.appShortName"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="Contoh: QiraApp"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Slug / ID Aplikasi
               </label>
               <input
                 v-model="form.appSlug"
                 type="text"
-                class="input w-full rounded-lg border-slate-200 font-mono text-xs"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-mono font-bold text-gray-700 text-sm"
                 placeholder="contoh: qira-app"
               />
             </div>
 
-            <div class="md:col-span-2">
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Tagline
               </label>
               <input
                 v-model="form.tagline"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="Contoh: Platform ujian bahasa Arab yang simpel dan terukur."
               />
             </div>
 
-            <div class="md:col-span-2">
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Deskripsi Singkat
               </label>
               <textarea
                 v-model="form.description"
                 rows="3"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium text-gray-700 text-sm"
                 placeholder="Deskripsi ini dapat digunakan untuk meta description, dokumentasi internal, dan lain-lain."
               ></textarea>
             </div>
@@ -125,37 +126,35 @@
         </section>
         
         <!-- Dashboard Hero -->
-        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Konten Hero Dashboard</h2>
-              <p class="mt-1 text-xs text-slate-500">
-                Atur teks sambutan yang muncul di dashboard peserta.
-              </p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Konten Hero Dashboard</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Atur teks sambutan yang muncul di dashboard peserta.
+            </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-4">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+          <div class="p-8 grid grid-cols-1 gap-6">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Hero Title (Judul)
               </label>
               <input
                 v-model="form.heroTitle"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="Contoh: Siap untuk Tes TOEFL Anda?"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Hero Subtitle (Sub-Judul)
               </label>
               <textarea
                 v-model="form.heroSubtitle"
                 rows="2"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-medium text-gray-700 text-sm"
                 placeholder="Contoh: Uji kemampuan Bahasa Inggris Anda di bagian Reading, Listening, Speaking, dan Writing."
               ></textarea>
             </div>
@@ -163,128 +162,112 @@
         </section>
 
         <!-- Branding & Logo -->
-        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Branding & Logo</h2>
-              <p class="mt-1 text-xs text-slate-500">
-                Atur logo utama, favicon, dan warna utama yang digunakan di dashboard.
-              </p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Branding & Logo</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Atur logo utama, favicon, dan warna utama yang digunakan di dashboard.
+            </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div class="p-8 grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <!-- Upload -->
-            <div class="space-y-4">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                   Logo Utama
                 </label>
                 <div
-                  class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 px-4 py-3"
+                  class="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-5 py-4 hover:bg-gray-50 hover:border-emerald-300 transition-all cursor-pointer group/upload"
+                  @click="openMediaModal('logo')"
                 >
-                  <div class="flex items-center gap-3 cursor-pointer" @click="openMediaModal('logo')">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-slate-100 overflow-hidden"
+                      class="flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden"
                     >
-                      <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo Preview" class="h-full w-full object-contain p-1" />
-                      <Icon v-else name="lucide:image" class="h-5 w-5" />
+                      <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo Preview" class="h-full w-full object-contain p-1.5" />
+                      <Icon v-else name="lucide:image" class="h-6 w-6 text-gray-300" />
                     </div>
                     <div>
-                      <p class="text-xs font-medium text-slate-800">
-                        Upload logo (.png, .svg)
+                      <p class="text-sm font-bold text-gray-700 group-hover/upload:text-emerald-600 transition-colors">
+                        Logo Aplikasi
                       </p>
-                      <p class="text-[11px] text-slate-500">
-                        Disarankan minimum 200x200px, background transparan.
+                      <p class="text-[10px] font-medium text-gray-400 uppercase tracking-tight">
+                        PNG, SVG (Min 200x200px)
                       </p>
                     </div>
                   </div>
-                  <div class="flex flex-col items-end gap-1">
-                    <button
-                      type="button"
-                      class="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
-                      @click="openMediaModal('logo')"
-                    >
-                      <Icon name="lucide:upload" class="h-3.5 w-3.5" />
-                      Pilih File
-                    </button>
-                    <!-- <p class="text-[11px] text-slate-400 max-w-[160px] text-right truncate">{{ logoFile?.name || 'Belum ada file' }}</p> -->
-                  </div>
+                  <Icon name="heroicons:arrow-up-tray" class="w-5 h-5 text-gray-300 group-hover/upload:text-emerald-500 transition-all" />
                 </div>
               </div>
 
-              <div>
-                <label class="mb-1 block text-xs font-medium text-slate-700">
+              <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                   Favicon
                 </label>
                 <div
-                  class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-slate-300 bg-slate-50/60 px-4 py-3"
+                  class="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-5 py-4 hover:bg-gray-50 hover:border-emerald-300 transition-all cursor-pointer group/upload"
+                  @click="openMediaModal('favicon')"
                 >
-                  <div class="flex items-center gap-3 cursor-pointer" @click="openMediaModal('favicon')">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-slate-100 overflow-hidden"
+                      class="flex h-10 w-10 items-center justify-center rounded-lg bg-white border border-gray-100 shadow-sm overflow-hidden"
                     >
-                      <img v-if="faviconPreviewUrl" :src="`${config.public.MEDIA_URL}${faviconPreviewUrl}`" alt="Favicon Preview" class="h-full w-full object-contain p-1" />
-                      <Icon v-else name="lucide:square-dot" class="h-4 w-4" />
+                      <img v-if="faviconPreviewUrl" :src="`${config.public.MEDIA_URL}${faviconPreviewUrl}`" alt="Favicon Preview" class="h-full w-full object-contain p-1.5" />
+                      <Icon v-else name="lucide:square-dot" class="h-5 w-5 text-gray-300" />
                     </div>
                     <div>
-                      <p class="text-xs font-medium text-slate-800">
-                        Upload favicon (.ico atau .png 32x32)
+                      <p class="text-sm font-bold text-gray-700 group-hover/upload:text-emerald-600 transition-colors">
+                        Favicon
                       </p>
-                      <p class="text-[11px] text-slate-500">
-                        Digunakan di tab browser.
+                      <p class="text-[10px] font-medium text-gray-400 uppercase tracking-tight">
+                        ICO, PNG (32x32px)
                       </p>
                     </div>
                   </div>
-                  <button
-                    type="button" @click="openMediaModal('favicon')"
-                    class="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50" 
-                  >
-                    <Icon name="lucide:upload" class="h-3.5 w-3.5" />
-                    Pilih File
-                  </button>
+                  <Icon name="heroicons:arrow-up-tray" class="w-5 h-5 text-gray-300 group-hover/upload:text-emerald-500 transition-all" />
                 </div>
               </div>
             </div>
 
             <!-- Brand Colors -->
-            <div class="space-y-4">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                   Warna Utama
                 </label>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl px-4 py-2">
                   <input
                     v-model="form.primaryColor"
                     type="color"
-                    class="h-9 w-10 rounded-md border border-slate-300 bg-white p-0"
+                    class="h-10 w-10 rounded-xl border-none bg-transparent p-0 cursor-pointer"
                   />
                   <input
                     v-model="form.primaryColor"
                     type="text"
-                    class="input w-full rounded-lg border-slate-200 font-mono text-xs"
+                    class="bg-transparent border-none focus:ring-0 w-full font-mono font-bold text-gray-700 text-sm"
                     placeholder="#4f46e5"
                   />
                 </div>
-                <p class="mt-1 text-[11px] text-slate-500">
-                  Warna ini dapat digunakan untuk tombol utama, link, dan highlight.
+                <p class="mt-1 text-[10px] text-gray-400 font-medium italic">
+                  * Warna ini digunakan untuk branding tombol & aksen dashboard.
                 </p>
               </div>
 
-              <div>
-                <label class="mb-1 block text-xs font-medium text-slate-700">
+              <div class="space-y-2">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                   Mode Tampilan
                 </label>
                 <select
                   v-model="form.theme"
-                  class="input w-full rounded-lg border-slate-200 text-sm"
+                  class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 cursor-pointer text-sm"
                 >
                   <option value="system">Ikuti Sistem</option>
                   <option value="light">Selalu Terang</option>
                   <option value="dark">Selalu Gelap</option>
                 </select>
-                <p class="mt-1 text-[11px] text-slate-500">
-                  Mengatur preferensi tema default untuk seluruh pengguna.
+                <p class="mt-1 text-[10px] text-gray-400 font-medium italic">
+                  * Preferensi tema default untuk pengguna baru.
                 </p>
               </div>
             </div>
@@ -292,61 +275,59 @@
         </section>
 
         <!-- Contact / Organization -->
-        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Informasi Organisasi & Kontak</h2>
-              <p class="mt-1 text-xs text-slate-500">
-                Informasi ini dapat digunakan di footer, email notifikasi, dan halaman publik.
-              </p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Informasi Organisasi & Kontak</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Informasi ini dapat digunakan di footer, email notifikasi, dan halaman publik.
+            </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+          <div class="p-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Nama Organisasi
               </label>
               <input
                 v-model="form.organization"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="Contoh: Lembaga Bahasa dan Sains Islam"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Website
               </label>
               <input
                 v-model="form.website"
                 type="url"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="https://contoh-domain.com"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Email Support
               </label>
               <input
                 v-model="form.supportEmail"
                 type="email"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="support@contoh.com"
               />
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 No. Kontak / WhatsApp
               </label>
               <input
                 v-model="form.supportPhone"
                 type="text"
-                class="input w-full rounded-lg border-slate-200"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm"
                 placeholder="+62 812 3456 7890"
               />
             </div>
@@ -354,24 +335,22 @@
         </section>
 
         <!-- System Preferences -->
-        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Preferensi Sistem</h2>
-              <p class="mt-1 text-xs text-slate-500">
-                Pengaturan umum seperti bahasa, zona waktu, dan mata uang default.
-              </p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Preferensi Sistem</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Pengaturan umum seperti bahasa, zona waktu, dan mata uang default.
+            </p>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+          <div class="p-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Bahasa Default
               </label>
               <select
                 v-model="form.defaultLanguage"
-                class="input w-full rounded-lg border-slate-200 text-sm"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 cursor-pointer text-sm"
               >
                 <option value="id">Indonesia</option>
                 <option value="en">English</option>
@@ -379,13 +358,13 @@
               </select>
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Zona Waktu
               </label>
               <select
                 v-model="form.timezone"
-                class="input w-full rounded-lg border-slate-200 text-sm"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 cursor-pointer text-sm"
               >
                 <option value="Asia/Jakarta">Asia/Jakarta</option>
                 <option value="Asia/Makassar">Asia/Makassar</option>
@@ -393,13 +372,13 @@
               </select>
             </div>
 
-            <div>
-              <label class="mb-1 block text-xs font-medium text-slate-700">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
                 Mata Uang
               </label>
               <select
                 v-model="form.currency"
-                class="input w-full rounded-lg border-slate-200 text-sm"
+                class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 cursor-pointer text-sm"
               >
                 <option value="IDR">IDR - Rupiah</option>
                 <option value="USD">USD - Dollar</option>
@@ -411,13 +390,15 @@
 
       <!-- RIGHT: LIVE PREVIEW -->
       <aside class="space-y-6">
-        <section class="card rounded-2xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm sticky top-24">
-          <h3 class="text-sm font-semibold text-slate-900">
-            Pratinjau Live
-          </h3>
-          <p class="mt-1 text-xs text-slate-500">
-            Beginilah tampilan aplikasi Anda dengan pengaturan saat ini.
-          </p>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5 sticky top-24">
+          <div class="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+              Pratinjau Live
+            </h3>
+            <p class="mt-0.5 text-[11px] text-gray-400 font-medium italic">
+              * Tampilan aplikasi dengan pengaturan saat ini.
+            </p>
+          </div>
 
           <!-- Simulated App Window -->
           <div class="mt-4 rounded-xl border border-slate-300/70 bg-slate-200 shadow-inner overflow-hidden">
@@ -440,24 +421,24 @@
             </div>
 
             <!-- App Content -->
-            <div class="p-4 transition-colors" :class="form.theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'">
+            <div class="p-6 transition-colors" :class="form.theme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-gray-900'">
               <!-- Header -->
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-4">
                 <div
-                  class="flex h-12 w-12 items-center justify-center rounded-xl text-white flex-shrink-0"
-                  :style="{ backgroundColor: form.primaryColor || '#0f172a' }"
+                  class="flex h-14 w-14 items-center justify-center rounded-2xl text-white flex-shrink-0 shadow-lg"
+                  :style="{ backgroundColor: form.primaryColor || '#10b981' }"
                 >
-                  <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo preview" class="h-full w-full object-contain p-1.5" />
-                  <span v-else class="text-lg font-bold tracking-tighter">
+                  <img v-if="logoPreviewUrl" :src="`${config.public.MEDIA_URL}${logoPreviewUrl}`" alt="Logo preview" class="h-full w-full object-contain p-2" />
+                  <span v-else class="text-xl font-black tracking-tighter">
                     {{ appInitials }}
                   </span>
                 </div>
                 <div class="min-w-0">
-                  <p class="truncate text-base font-bold" :class="form.theme === 'dark' ? 'text-white' : 'text-slate-900'">
-                    {{ form.appName || 'Nama Aplikasi Anda' }}
+                  <p class="truncate text-base font-extrabold tracking-tight" :class="form.theme === 'dark' ? 'text-white' : 'text-gray-900'">
+                    {{ form.appName || 'Nama Aplikasi' }}
                   </p>
-                  <p class="truncate text-xs" :class="form.theme === 'dark' ? 'text-slate-400' : 'text-slate-500'">
-                    {{ form.tagline || 'Tagline singkat aplikasi.' }}
+                  <p class="truncate text-[11px] font-bold uppercase tracking-widest text-gray-400">
+                    {{ form.tagline || 'Tagline aplikasi.' }}
                   </p>
                 </div>
               </div>
@@ -491,20 +472,24 @@
           </div>
         </section>
 
-        <section class="card rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sticky top-[34rem]">
-          <h3 class="text-sm font-semibold text-slate-900">Status Sinkronisasi</h3>
-          <div v-if="error" class="mt-3 flex items-start gap-2.5 text-xs text-rose-700 bg-rose-50 p-3 rounded-lg">
-            <Icon name="lucide:alert-triangle" class="h-4 w-4 flex-shrink-0 mt-0.5 text-rose-500" />
-            <div>
-              <p class="font-bold">Gagal Memuat</p>
-              <p class="text-rose-600">{{ error.message || 'Terjadi kesalahan pada server.' }}</p>
-            </div>
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5 sticky top-[36rem]">
+          <div class="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+             <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Status Sinkronisasi</h3>
           </div>
-          <div v-else class="mt-3 flex items-start gap-2.5 text-xs text-slate-600 bg-slate-100/80 p-3 rounded-lg">
-            <Icon name="lucide:info" class="h-4 w-4 flex-shrink-0 mt-0.5 text-slate-500" />
-            <p>
-              Semua perubahan akan disimpan ke server secara terpusat. Klik 'Simpan Perubahan' untuk menerapkan.
-            </p>
+          <div class="p-6">
+            <div v-if="error" class="flex items-start gap-3 text-xs text-rose-700 bg-rose-50 p-4 rounded-2xl border border-rose-100">
+              <Icon name="lucide:alert-triangle" class="h-5 w-5 flex-shrink-0 text-rose-500" />
+              <div>
+                <p class="font-bold">Gagal Memuat</p>
+                <p class="text-rose-600 mt-0.5">{{ error.message || 'Terjadi kesalahan pada server.' }}</p>
+              </div>
+            </div>
+            <div v-else class="flex items-start gap-3 text-xs text-gray-500 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              <Icon name="lucide:info" class="h-5 w-5 flex-shrink-0 text-gray-400" />
+              <p class="font-medium leading-relaxed">
+                Semua perubahan akan disimpan secara terpusat. Klik <span class="text-emerald-600 font-bold">'Simpan'</span> untuk menerapkan perubahan.
+              </p>
+            </div>
           </div>
         </section>
       </aside>
