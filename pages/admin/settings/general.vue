@@ -123,6 +123,44 @@
             </div>
           </div>
         </section>
+        
+        <!-- Dashboard Hero -->
+        <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
+          <div class="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Konten Hero Dashboard</h2>
+              <p class="mt-1 text-xs text-slate-500">
+                Atur teks sambutan yang muncul di dashboard peserta.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="mb-1 block text-xs font-medium text-slate-700">
+                Hero Title (Judul)
+              </label>
+              <input
+                v-model="form.heroTitle"
+                type="text"
+                class="input w-full rounded-lg border-slate-200"
+                placeholder="Contoh: Siap untuk Tes TOEFL Anda?"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1 block text-xs font-medium text-slate-700">
+                Hero Subtitle (Sub-Judul)
+              </label>
+              <textarea
+                v-model="form.heroSubtitle"
+                rows="2"
+                class="input w-full rounded-lg border-slate-200"
+                placeholder="Contoh: Uji kemampuan Bahasa Inggris Anda di bagian Reading, Listening, Speaking, dan Writing."
+              ></textarea>
+            </div>
+          </div>
+        </section>
 
         <!-- Branding & Logo -->
         <section class="card rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">

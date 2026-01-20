@@ -9,11 +9,16 @@
         Dashboard Peserta
       </div>
       <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">
-        Siap untuk <span class="text-emerald-600">Tes TOEFL</span> Anda?
+        <template v-if="settings?.heroTitle">
+          {{ settings.heroTitle.split(' ').slice(0, -2).join(' ') }}
+          <span class="text-emerald-600">{{ ' ' + settings.heroTitle.split(' ').slice(-2).join(' ') }}</span>
+        </template>
+        <template v-else>
+          Siap untuk <span class="text-emerald-600">Tes TOEFL</span> Anda?
+        </template>
       </h2>
       <p class="text-gray-500 text-sm md:text-base font-medium max-w-2xl leading-relaxed">
-        Uji kemampuan Bahasa Inggris Anda di bagian Reading, Listening, Speaking, dan Writing.
-        Mulai tes baru atau lanjutkan dari progres terakhir Anda.
+        {{ settings?.heroSubtitle || 'Uji kemampuan Bahasa Inggris Anda di bagian Reading, Listening, Speaking, dan Writing. Mulai tes baru atau lanjutkan dari progres terakhir Anda.' }}
       </p>
     </div>
 
@@ -35,7 +40,11 @@
 </template>
 
 <script lang="ts" setup>
+import { useAppSettings } from '@/composables/useAppSettings';
+
 defineEmits(['mulai-tes']);
+
+const { settings } = useAppSettings();
 </script>
 
 <style>

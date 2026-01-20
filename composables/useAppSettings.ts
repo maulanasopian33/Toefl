@@ -24,6 +24,8 @@ export interface AppSettings {
   defaultLanguage: 'id' | 'en' | 'ar'
   timezone: string
   currency: 'IDR' | 'USD'
+  heroTitle?: string
+  heroSubtitle?: string
   [key: string]: any // Allow other properties
 }
 
@@ -49,6 +51,8 @@ function mapApiToAppSettings(apiData: any): AppSettings {
     defaultLanguage: apiData.bahasa_default,
     timezone: apiData.zona_waktu,
     currency: apiData.mata_uang,
+    heroTitle: apiData.hero_title,
+    heroSubtitle: apiData.hero_subtitle,
     createdAt: apiData.createdAt,
     updatedAt: apiData.updatedAt,
   }
@@ -76,6 +80,8 @@ function mapAppSettingsToApi(appSettings: AppSettings): any {
     bahasa_default: appSettings.defaultLanguage,
     zona_waktu: appSettings.timezone,
     mata_uang: appSettings.currency,
+    hero_title: appSettings.heroTitle,
+    hero_subtitle: appSettings.heroSubtitle,
     // createdAt and updatedAt are usually handled by the backend
   }
 }
