@@ -1,62 +1,98 @@
 <template>
-  <Transition name="modal-fade">
-    <div v-if="confirm.show" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-75 p-4" @click.self="onCancel">
-      <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all">
-        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10 ring-4 ring-indigo-50">
-              <Icon name="lucide:user-cog" class="h-6 w-6 text-indigo-600" aria-hidden="true" />
-            </div>
-            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-base font-semibold leading-6 text-gray-900">{{ confirm.title }}</h3>
-              <div class="mt-2">
-                <p class="text-sm text-gray-500" v-html="confirm.message"></p>
-              </div>
+  <TransitionRoot appear :show="confirm.show" as="template">
+    <Dialog as="div" @close="onCancel" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+      </TransitionChild>
 
-              <!-- Role Selection -->
-              <div class="mt-5 space-y-3">
-                <label v-for="role in confirm.availableRoles" :key="role" :for="`role-${role}`"
-                  class="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all duration-200 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 has-[:checked]:ring-2 has-[:checked]:ring-indigo-200"
-                >
-                  <span class="font-medium text-slate-800 capitalize">{{ role }}</span>
-                  <input
-                    :id="`role-${role}`"
-                    v-model="selectedRole"
-                    type="radio"
-                    :value="role"
-                    name="role-selection"
-                    class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  />
-                </label>
-              </div>
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+              <DialogTitle as="h3" class="text-lg font-bold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                 <div class="p-1.5 bg-indigo-100 rounded-lg">
+                    <Icon name="lucide:user-cog" class="w-5 h-5 text-indigo-600" />
+                 </div>
+                 {{ confirm.title }}
+              </DialogTitle>
+              
+              <div class="space-y-6">
+                 <div v-if="confirm.message" class="bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm text-gray-500 font-medium" v-html="confirm.message"></div>
 
-            </div>
-          </div>
-        </div>
-        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-          <button
-            type="button"
-            class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto disabled:opacity-50"
-            :disabled="!selectedRole || selectedRole === confirm.currentRole"
-            @click="onSelectRole(selectedRole!)"
-          >
-            Simpan Perubahan
-          </button>
-          <button
-            type="button"
-            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-            @click="onCancel"
-          >
-            Batal
-          </button>
+                 <!-- Role Selection -->
+                 <div class="space-y-3">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Pilih Peran Baru</p>
+                    <div class="space-y-2">
+                       <label 
+                         v-for="role in confirm.availableRoles" 
+                         :key="role" 
+                         :for="`role-${role}`"
+                         class="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 p-4 transition-all duration-200 group hover:bg-white hover:border-indigo-200"
+                         :class="{ 'ring-2 ring-indigo-500 border-indigo-200 bg-white ring-offset-0': selectedRole === role }"
+                       >
+                         <span class="font-bold text-gray-700 capitalize text-sm group-hover:text-indigo-600 transition-colors">{{ role }}</span>
+                         <div class="relative flex items-center justify-center">
+                            <input
+                              :id="`role-${role}`"
+                              v-model="selectedRole"
+                              type="radio"
+                              :value="role"
+                              name="role-selection"
+                              class="peer sr-only"
+                            />
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-indigo-600 peer-checked:bg-white flex items-center justify-center transition-all">
+                               <div class="w-2 h-2 rounded-full bg-indigo-600 scale-0 peer-checked:scale-100 transition-transform"></div>
+                            </div>
+                         </div>
+                       </label>
+                    </div>
+                 </div>
+
+                 <div class="mt-8 flex justify-end gap-3">
+                    <button 
+                      type="button" 
+                      @click="onCancel"
+                      class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
+                    >
+                       Batal
+                    </button>
+                    <button 
+                      type="button" 
+                      class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-200 transition-all transform active:scale-95 flex items-center gap-2 text-sm disabled:opacity-50"
+                      :disabled="!selectedRole || selectedRole === confirm.currentRole"
+                      @click="onSelectRole(selectedRole!)"
+                    >
+                       Simpan Perubahan
+                    </button>
+                 </div>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </div>
-    </div>
-  </Transition>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 import { useNotificationPopup } from '@/composables/NotificationPopup'
 
 const {
@@ -74,24 +110,3 @@ watch(() => confirm.value.show, (isVisible) => {
   }
 })
 </script>
-
-<style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-.modal-fade-enter-active .transform {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.modal-fade-leave-active .transform {
-  transition: all 0.2s ease-in-out;
-}
-.modal-fade-enter-from .transform, .modal-fade-leave-to .transform {
-  transform: scale(0.95) translateY(20px);
-  opacity: 0;
-}
-</style>

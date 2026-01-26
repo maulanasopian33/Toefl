@@ -1,95 +1,184 @@
 <template>
-  <div v-if="modelValue" class="fixed inset-0 z-40 bg-black/40 flex items-center justify-center" @click.self="closeModal">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <p class="text-sm font-semibold text-gray-900">Detail Pembayaran</p>
-        <button class="text-gray-400 hover:text-gray-700" @click="$emit('update:modelValue', null)">
-          <Icon name="lucide:x" class="w-4 h-4" />
-        </button>
-      </div>
-      <div v-if="editablePayment" class="p-4 space-y-4 text-sm text-gray-700 max-h-[70vh] overflow-y-auto">
-        <!-- Mode Lihat -->
-        <div v-if="!isEditing" class="space-y-2">
-          <p><span class="font-semibold">Peserta:</span> {{ editablePayment.name }}</p>
-          <p><span class="font-semibold">Email:</span> {{ editablePayment.email }}</p>
-          <p><span class="font-semibold">Batch:</span> {{ editablePayment.batchName || '-' }}</p>
-          <p><span class="font-semibold">Jumlah:</span> {{ formatCurrency(editablePayment.amount) }}</p>
-          <p><span class="font-semibold">Status:</span> {{ editablePayment.status }}</p>
-          <p><span class="font-semibold">Tanggal:</span> {{ formatDate(editablePayment.date) }}</p>
-        </div>
+  <TransitionRoot appear :show="!!modelValue" as="template">
+    <Dialog as="div" @close="closeModal" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+      </TransitionChild>
 
-        <!-- Mode Edit -->
-        <div v-else class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah (Amount)</label>
-            <input type="number" v-model.number="editablePayment.amount" class="input w-full" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-            <select v-model="editablePayment.status" class="input w-full">
-              <option value="Paid">Paid</option>
-              <option value="Pending">Pending</option>
-              <option value="Failed">Failed</option>
-              <option value="Refunded">Refunded</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Tampilkan Bukti Pembayaran jika ada -->
-        <div v-if="editablePayment.payment_proof" class="pt-2 border-t border-gray-100">
-          <p class="font-semibold mb-2">Bukti Pembayaran:</p>
-          <a :href="editablePayment.payment_proof" target="_blank" rel="noopener noreferrer">
-            <img
-              :src="editablePayment.payment_proof"
-              alt="Bukti Pembayaran"
-              class="w-full rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-            />
-          </a>
-        </div>
-      </div>
-
-      <!-- Tombol Aksi -->
-      <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-end gap-2">
-        <!-- Tombol Mode Lihat -->
-        <template v-if="!isEditing">
-          <button class="btn-small" @click="closeModal">Tutup</button>
-          <button class="btn-secondary px-4 py-2 text-xs" @click="isEditing = true">Edit</button>
-          <button
-            v-if="editablePayment && editablePayment.status !== 'Paid'"
-            class="btn-primary px-4 py-2 text-xs"
-            @click="$emit('markAsPaid', editablePayment)"
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
           >
-            Tandai Lunas
-          </button>
-        </template>
-        <!-- Tombol Mode Edit -->
-        <template v-else>
-          <button class="btn-small" @click="isEditing = false">Batal</button>
-          <button class="btn-primary px-4 py-2 text-xs" @click="saveChanges">Simpan Perubahan</button>
-        </template>
-        <!--
-        <button
-          v-if="payment && payment.status === 'Paid'"
-          class="btn-warning px-4 py-2 text-xs"
-          @click="$emit('markAsPending', payment)"
-        >
-          Tandai Pending
-        </button>
-        <button
-          v-if="payment && payment.status !== 'Paid'"
-          class="btn-primary px-4 py-2 text-xs"
-          @click="$emit('markAsPaid', payment)"
-        >
-          Tandai Lunas
-        </button>
-        -->
+            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-[2rem] bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+              <DialogTitle as="h3" class="text-lg font-extrabold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                 <div class="p-1.5 bg-amber-100 rounded-lg">
+                    <Icon name="lucide:receipt" class="w-5 h-5 text-amber-600" />
+                 </div>
+                 Detail Pembayaran
+              </DialogTitle>
+              
+              <div v-if="editablePayment" class="space-y-6">
+                <!-- Mode Lihat -->
+                <div v-if="!isEditing" class="space-y-4">
+                  <div class="bg-gray-50 p-5 rounded-[1.5rem] border border-gray-100 space-y-3">
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Peserta</dt>
+                       <dd class="text-sm font-black text-gray-800">{{ editablePayment.name }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Email</dt>
+                       <dd class="text-xs font-bold text-gray-500">{{ editablePayment.email }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Batch</dt>
+                       <dd class="text-sm font-black text-gray-800">{{ editablePayment.batchName || '-' }}</dd>
+                    </div>
+                  </div>
+
+                  <div class="bg-indigo-50/50 p-5 rounded-[1.5rem] border border-indigo-100/50 space-y-3">
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-none">Jumlah</dt>
+                       <dd class="text-lg font-black text-indigo-700 tabular-nums">{{ formatCurrency(editablePayment.amount) }}</dd>
+                    </div>
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-none">Status</dt>
+                       <dd>
+                          <span :class="['px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border', 
+                            editablePayment.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                            editablePayment.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                            'bg-rose-50 text-rose-700 border-rose-100']">
+                             {{ editablePayment.status }}
+                          </span>
+                       </dd>
+                    </div>
+                    <div class="flex justify-between items-center group/item">
+                       <dt class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-none">Tanggal</dt>
+                       <dd class="text-xs font-bold text-indigo-600">{{ formatDate(editablePayment.date) }}</dd>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mode Edit -->
+                <div v-else class="space-y-4">
+                  <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Jumlah (Amount)</label>
+                    <input 
+                      type="number" 
+                      v-model.number="editablePayment.amount" 
+                      class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-gray-700 text-sm" 
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Status Pembayaran</label>
+                    <div class="relative group">
+                       <select 
+                         v-model="editablePayment.status" 
+                         class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-bold text-gray-700 text-sm appearance-none"
+                       >
+                         <option value="Paid">Paid</option>
+                         <option value="Pending">Pending</option>
+                         <option value="Failed">Failed</option>
+                         <option value="Refunded">Refunded</option>
+                       </select>
+                       <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-amber-500 transition-colors">
+                          <Icon name="lucide:chevron-down" class="w-4 h-4" />
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bukti Pembayaran -->
+                <div v-if="editablePayment.payment_proof" class="space-y-3">
+                  <div class="flex items-center gap-2 px-1">
+                     <Icon name="lucide:image" class="w-4 h-4 text-gray-400" />
+                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Bukti Pembayaran</p>
+                  </div>
+                  <a :href="editablePayment.payment_proof" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+                    <img
+                      :src="editablePayment.payment_proof"
+                      alt="Bukti Pembayaran"
+                      class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <div class="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30 text-white flex items-center gap-2 text-xs font-bold">
+                          <Icon name="lucide:maximize-2" class="w-4 h-4" />
+                          Lihat Ukuran Penuh
+                       </div>
+                    </div>
+                  </a>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="mt-8 flex items-center justify-end gap-3 pt-4 border-t border-gray-50">
+                  <template v-if="!isEditing">
+                    <button 
+                      type="button"
+                      @click="closeModal"
+                      class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
+                    >
+                       Tutup
+                    </button>
+                    <button 
+                      type="button"
+                      @click="isEditing = true"
+                      class="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-all flex items-center gap-2 text-sm"
+                    >
+                       <Icon name="lucide:edit-2" class="w-3.5 h-3.5" />
+                       Edit
+                    </button>
+                    <button
+                      v-if="editablePayment && editablePayment.status !== 'Paid'"
+                      @click="$emit('markAsPaid', editablePayment)"
+                      class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/20 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
+                    >
+                      <Icon name="lucide:check-circle" class="w-4 h-4" />
+                      Tandai Lunas
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button 
+                      type="button"
+                      @click="isEditing = false"
+                      class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
+                    >
+                       Batal
+                    </button>
+                    <button 
+                      type="button"
+                      @click="saveChanges"
+                      class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black shadow-lg shadow-amber-600/20 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
+                    >
+                       Simpan Perubahan
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
       </div>
-    </div>
-  </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 
 const props = defineProps({
   modelValue: {
@@ -105,14 +194,12 @@ const editablePayment = ref(null);
 
 watch(() => props.modelValue, (newVal) => {
   if (newVal) {
-    // Buat salinan data agar tidak mengubah prop secara langsung
     editablePayment.value = { ...newVal };
   } else {
     editablePayment.value = null;
   }
-  // Reset mode edit setiap kali modal dibuka
   isEditing.value = false;
-}, { deep: true });
+}, { deep: true, immediate: true });
 
 const closeModal = () => {
   emit('update:modelValue', null);
@@ -120,13 +207,9 @@ const closeModal = () => {
 
 const saveChanges = () => {
   if (!editablePayment.value) return;
-  // Kirim data yang sudah diedit ke parent
   emit('saveEdit', editablePayment.value);
-  // Nonaktifkan mode edit setelah menyimpan
   isEditing.value = false;
 };
-
-// const payment = computed(() => props.modelValue);
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('id-ID', {

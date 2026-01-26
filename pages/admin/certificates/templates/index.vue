@@ -137,41 +137,41 @@
               leave-from="opacity-100 scale-100"
               leave-to="opacity-0 scale-95"
             >
-              <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <DialogTitle as="h3" class="text-lg font-bold leading-6 text-gray-900 mb-6 flex justify-between items-center">
+              <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+                <DialogTitle as="h3" class="text-lg font-bold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                   <div class="p-1.5 bg-blue-100 rounded-lg">
+                      <Icon :name="editingId ? 'lucide:edit-2' : 'lucide:plus'" class="w-5 h-5 text-blue-600" />
+                   </div>
                    {{ editingId ? 'Edit Template' : 'Tambah Template Baru' }}
-                   <button @click="closeModal" class="text-gray-400 hover:text-gray-500">
-                      <Icon name="lucide:x" class="w-5 h-5" />
-                   </button>
                 </DialogTitle>
                 
                 <form @submit.prevent="handleSubmit" class="space-y-4">
-                   <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Nama Template</label>
+                   <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Nama Template</label>
                       <input 
                         type="text" 
                         v-model="formData.name" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm"
                         placeholder="Contoh: Sertifikat Seminar"
                         required
                       />
                    </div>
                    
-                   <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Link File Template (.docx)</label>
+                   <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Link File Template (.docx)</label>
                       <div class="relative">
                           <input 
                             type="text" 
                             v-model="formData.templateFile" 
-                            class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-mono font-bold text-gray-700 text-sm"
                             placeholder="/path/to/template.docx"
                             required
                           />
-                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                              <Icon name="lucide:file-type" class="w-4 h-4 text-gray-400" />
                           </div>
                       </div>
-                      <p class="text-xs text-gray-500 mt-1">Pastikan URL dapat diakses atau path file valid.</p>
+                      <p class="text-[10px] text-gray-400 font-medium italic mt-1">* Pastikan URL dapat diakses atau path file valid.</p>
                    </div>
                    
                    <div class="bg-blue-50 rounded-lg p-3 flex items-start gap-3 mt-2">
@@ -182,17 +182,17 @@
                       </div>
                    </div>
 
-                   <div class="mt-6 flex justify-end gap-3">
+                   <div class="mt-8 flex justify-end gap-3">
                       <button 
                         type="button" 
                         @click="closeModal"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50"
+                        class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
                       >
                          Batal
                       </button>
                       <button 
                         type="submit" 
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2"
+                        class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2 text-sm disabled:opacity-60"
                         :disabled="isLoading"
                       >
                          <Icon v-if="isLoading" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
@@ -211,17 +211,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
-import { useCertificateTemplates, type CertificateTemplate } from '@/composables/useCertificateTemplates'
+import { useNotificationPopup } from '@/composables/NotificationPopup'
 
-definePageMeta({
-  layout: 'admin',
-  middleware: ['auth', 'role-check'],
-  permission: "certificate.manage_templates",
-  title: 'Manajemen Template'
-})
-
+const { showConfirm } = useNotificationPopup()
 const { templates, isLoading, addTemplate, updateTemplate, deleteTemplate, setActiveTemplate } = useCertificateTemplates()
 
 // Modal State
@@ -254,6 +246,8 @@ const closeModal = () => {
   }, 200)
 }
 
+const { showNotification } = useNotification()
+
 const handleSubmit = async () => {
   try {
     if (editingId.value) {
@@ -262,9 +256,10 @@ const handleSubmit = async () => {
       await addTemplate({ ...formData })
     }
     closeModal()
+    showNotification('Template berhasil disimpan.', 'success')
   } catch (e) {
     console.error(e)
-    alert('Terjadi kesalahan saat menyimpan data.')
+    showNotification('Terjadi kesalahan saat menyimpan data.', 'error')
   }
 }
 
@@ -273,7 +268,16 @@ const handleSetActive = async (id: string) => {
 }
 
 const confirmDelete = async (template: CertificateTemplate) => {
-   if (confirm(`Yakin ingin menghapus template "${template.name}"?`)) {
+   const confirmed = await showConfirm(
+     `Template "${template.name}" akan dihapus secara permanen.`,
+     {
+       title: 'Hapus Template?',
+       type: 'danger',
+       confirmText: 'Ya, Hapus'
+     }
+   )
+   
+   if (confirmed) {
       await deleteTemplate(template.id)
    }
 }

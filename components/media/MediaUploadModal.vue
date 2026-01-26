@@ -1,125 +1,174 @@
 <template>
-  <div
-    v-if="modelValue"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    @click.self="closeModal"
-  >
-    <form
-      @submit.prevent="handleUpload"
-      class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden"
-    >
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <p class="text-base font-semibold text-gray-900">Upload Media Baru</p>
-        <button type="button" class="text-gray-400 hover:text-gray-700" @click="closeModal">
-          <Icon name="lucide:x" class="w-4 h-4" />
-        </button>
-      </div>
+  <TransitionRoot appear :show="modelValue" as="template">
+    <Dialog as="div" @close="closeModal" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+      </TransitionChild>
 
-      <div class="p-5 space-y-4">
-        <!-- Dropzone -->
-        <div
-          @dragover.prevent="isDragging = true"
-          @dragleave.prevent="isDragging = false"
-          @drop.prevent="handleDrop"
-          :class="[
-            'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
-            isDragging ? 'border-teal-500 bg-teal-50' : 'border-gray-300 bg-gray-50 hover:border-gray-400',
-          ]"
-          @click="openFilePicker"
-        >
-          <Icon name="lucide:upload-cloud" class="w-10 h-10 mx-auto text-gray-400 mb-2" />
-          <p class="text-sm font-medium text-gray-700">
-            Tarik & Lepas file di sini, atau <span class="text-teal-600">klik untuk memilih</span>
-          </p>
-          <p class="text-xs text-gray-500 mt-1">Mendukung Gambar dan Audio (Maks. 5MB per file)</p>
-          <input type="file" ref="fileInput" @change="handleFileSelect" multiple class="hidden" />
-        </div>
-
-        <!-- Daftar File Terpilih -->
-        <div v-if="selectedFiles.length > 0" class="space-y-2 max-h-48 overflow-y-auto pr-2">
-          <div
-            v-for="(file, index) in selectedFiles"
-            :key="index"
-            class="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-2 text-xs"
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
           >
-            <div class="flex items-center gap-3 truncate min-w-0">
-              <!-- Image Preview -->
-              <img v-if="file.previewUrl" :src="file.previewUrl" :alt="file.file.name" class="w-10 h-10 object-cover rounded-md bg-gray-100" />
-              <!-- Generic Icon -->
-              <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md">
-                <Icon name="lucide:file-check-2" class="w-5 h-5 text-teal-600 flex-shrink-0" />
-              </div>
-              <div class="truncate min-w-0">
-                <span class="font-medium text-gray-800 truncate block">{{ file.file.name }}</span>
-                <span class="text-gray-500">({{ formatSize(file.file.size) }})</span>
-                <div v-if="file.status === 'error'" class="text-red-600 truncate text-[10px]">{{ file.error }}</div>
-              </div>
-            </div>
-            <!-- Status Upload per File -->
-            <div v-if="isUploading && file.status !== 'error'" class="flex-shrink-0">
-              <Icon v-if="file.status === 'uploading'" name="lucide:loader-2" class="w-4 h-4 text-gray-500 animate-spin" />
-              <Icon v-else-if="file.status === 'success'" name="lucide:check-circle-2" class="w-4 h-4 text-green-600" />
-              <Icon v-else name="lucide:clock" class="w-4 h-4 text-gray-400" />
-            </div>
-            <!-- Tombol Aksi per File -->
-            <div v-else class="flex-shrink-0">
-              <button
-                v-if="file.status === 'error'"
-                type="button"
-                @click="retryFile(index)"
-                class="text-blue-600 hover:text-blue-800 p-1 rounded-full text-xs flex items-center gap-1"
-              >
-                <Icon name="lucide:refresh-cw" class="w-3 h-3" /> Coba Lagi
-              </button>
-              <button v-else-if="file.status !== 'success'" type="button" @click="removeFile(index)" class="text-gray-400 hover:text-red-600 p-1 rounded-full">
-                <Icon name="lucide:x-circle" class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
+            <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-[2rem] bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+              <DialogTitle as="h3" class="text-lg font-extrabold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                 <div class="p-1.5 bg-teal-100 rounded-lg">
+                    <Icon name="lucide:upload-cloud" class="w-5 h-5 text-teal-600" />
+                 </div>
+                 Upload Media Baru
+              </DialogTitle>
+              
+              <form @submit.prevent="handleUpload" class="space-y-6">
+                <!-- Dropzone -->
+                <div
+                  @dragover.prevent="isDragging = true"
+                  @dragleave.prevent="isDragging = false"
+                  @drop.prevent="handleDrop"
+                  :class="[
+                    'relative group border-2 border-dashed rounded-[2rem] p-12 text-center cursor-pointer transition-all duration-300',
+                    isDragging ? 'border-teal-500 bg-teal-50/50 scale-[1.01]' : 'border-gray-200 bg-gray-50/50 hover:border-teal-300 hover:bg-white hover:shadow-lg',
+                  ]"
+                  @click="openFilePicker"
+                >
+                  <div class="p-5 bg-white rounded-2xl shadow-sm inline-block mb-4 ring-1 ring-gray-900/5 group-hover:scale-110 transition-transform duration-300">
+                    <Icon name="lucide:upload-cloud" class="w-10 h-10 text-teal-600" />
+                  </div>
+                  <p class="text-sm font-extrabold text-gray-900">
+                    Tarik & Lepas file di sini, atau <span class="text-teal-600 decoration-teal-600/30 decoration-2 underline-offset-4 hover:underline">klik untuk memilih</span>
+                  </p>
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 leading-none">
+                    Mendukung Gambar dan Audio (Maks. 5MB per file)
+                  </p>
+                  <input type="file" ref="fileInput" @change="handleFileSelect" multiple class="hidden" />
+                </div>
 
-        <!-- Pesan Error -->
-        <div v-if="error" class="text-xs text-red-600 bg-red-50 p-3 rounded-lg flex justify-between items-center">
-          <span>{{ error }}</span>
-          <button v-if="hasFailedUploads" @click="retryAllFailed" type="button" class="font-semibold text-red-700 hover:underline">
-            Coba Lagi Semua
-          </button>
+                <!-- Daftar File Terpilih -->
+                <div v-if="selectedFiles.length > 0" class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">File Terpilih ({{ selectedFiles.length }})</p>
+                  <div
+                    v-for="(file, index) in selectedFiles"
+                    :key="index"
+                    class="group flex items-center justify-between bg-white border border-gray-100 rounded-[1.25rem] p-3 transition-all hover:bg-gray-50 hover:shadow-sm"
+                  >
+                    <div class="flex items-center gap-4 truncate min-w-0">
+                      <!-- Image Preview -->
+                      <div class="w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
+                        <img v-if="file.previewUrl" :src="file.previewUrl" :alt="file.file.name" class="w-full h-full object-cover" />
+                        <div v-else class="w-full h-full flex items-center justify-center">
+                          <Icon name="lucide:file-check-2" class="w-6 h-6 text-teal-600" />
+                        </div>
+                      </div>
+                      
+                      <div class="truncate min-w-0">
+                        <span class="font-bold text-gray-800 text-sm truncate block">{{ file.file.name }}</span>
+                        <div class="flex items-center gap-2 mt-0.5">
+                           <span class="text-[10px] font-medium text-gray-400 leading-none">{{ formatSize(file.file.size) }}</span>
+                           <span v-if="file.status === 'error'" class="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full leading-none">{{ file.error || 'Gagal' }}</span>
+                           <span v-else-if="file.status === 'success'" class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-full leading-none">Berhasil</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Status Upload per File -->
+                    <div class="flex items-center gap-2 ml-4">
+                      <template v-if="isUploading && file.status !== 'error'">
+                        <Icon v-if="file.status === 'uploading'" name="lucide:loader-2" class="w-5 h-5 text-teal-600 animate-spin" />
+                        <Icon v-else-if="file.status === 'success'" name="lucide:check-circle-2" class="w-5 h-5 text-emerald-500" />
+                        <Icon v-else name="lucide:clock" class="w-5 h-5 text-gray-400" />
+                      </template>
+                      <template v-else>
+                        <button
+                          v-if="file.status === 'error'"
+                          type="button"
+                          @click="retryFile(index)"
+                          class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Coba Lagi"
+                        >
+                          <Icon name="lucide:refresh-cw" class="w-4 h-4" />
+                        </button>
+                        <button v-if="file.status !== 'success'" type="button" @click="removeFile(index)" class="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                          <Icon name="lucide:trash-2" class="w-4 h-4" />
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pesan Error -->
+                <div v-if="error" class="text-xs font-bold text-rose-600 bg-rose-50 p-4 rounded-2xl border border-rose-100 flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                     <Icon name="lucide:alert-circle" class="w-4 h-4" />
+                     <span>{{ error }}</span>
+                  </div>
+                  <button v-if="hasFailedUploads" @click="retryAllFailed" type="button" class="text-xs text-rose-700 bg-white px-3 py-1.5 rounded-xl border border-rose-200 hover:bg-rose-100 transition-colors shadow-sm">
+                    Coba Lagi Semua
+                  </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div v-if="isUploading" class="space-y-2">
+                  <div class="flex items-center justify-between px-1">
+                    <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest leading-none">Mengunggah...</span>
+                    <span class="text-[10px] font-black text-teal-700 tabular-nums leading-none">{{ uploadProgress }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-teal-500 h-full rounded-full transition-all duration-300 shadow-sm" :style="{ width: `${uploadProgress}%` }"></div>
+                  </div>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                  <button 
+                    type="button" 
+                    @click="closeModal" 
+                    :disabled="isUploading"
+                    class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    :disabled="(pendingFilesCount === 0 && !isUploading) || isCancelling"
+                    @click="isUploading ? cancelUpload() : null"
+                    :class="[
+                      'px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center gap-2 text-sm',
+                      isUploading ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-200'
+                    ]"
+                  >
+                    <Icon v-if="isUploading && !isCancelling" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                    <Icon v-else-if="isCancelling" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                    <Icon v-else-if="!isUploading" name="lucide:upload" class="w-4 h-4" />
+                    <span>{{ buttonText }}</span>
+                  </button>
+                </div>
+              </form>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </div>
-
-      <!-- Progress Bar -->
-      <div v-if="isUploading" class="px-5 pb-4">
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div class="bg-teal-600 h-2 rounded-full transition-all duration-300" :style="{ width: `${uploadProgress}%` }"></div>
-        </div>
-      </div>
-
-
-      <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-3">
-        <button type="button" class="btn-small" @click="closeModal" :disabled="isUploading">Batal</button>
-        <button
-          type="submit"
-          :disabled="(pendingFilesCount === 0 && !isUploading) || isCancelling"
-          @click="isUploading ? cancelUpload() : null"
-          :class="[
-            'px-4 py-2 text-xs flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait transition-colors',
-            isUploading ? 'btn-danger' : 'btn-primary'
-          ]"
-        >
-          <Icon v-if="isUploading && !isCancelling" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
-          <Icon v-else-if="isCancelling" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
-          <Icon v-else-if="!isUploading" name="lucide:upload" class="w-4 h-4" />
-          <span>{{ buttonText }}</span>
-        </button>
-      </div>
-    </form>
-  </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
 import { ref, onBeforeUnmount, computed } from 'vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 import { useMediaUpload } from '@/composables/media/upload';
 import { useNotification } from '@/composables/useNotification';
+
 const { showNotification } = useNotification();
 
 const props = defineProps(['modelValue']);
@@ -140,7 +189,7 @@ const hasFailedUploads = computed(() => selectedFiles.value.some(f => f.status =
 
 const buttonText = computed(() => {
   if (isUploading.value) {
-    return `Mengunggah ${uploadCount.value} dari ${selectedFiles.value.length}...`;
+    return 'Batalkan Unggahan';
   }
   if (isCancelling.value) {
     return 'Membatalkan...';
@@ -167,7 +216,6 @@ const handleDrop = (event) => {
 const addFiles = (files) => {
   error.value = '';
   for (const file of files) {
-    // Buat URL pratinjau hanya untuk file gambar
     let previewUrl = null;
     if (file.type.startsWith('image/')) {
       previewUrl = URL.createObjectURL(file);
@@ -175,7 +223,7 @@ const addFiles = (files) => {
     selectedFiles.value.push({
       file,
       previewUrl,
-      status: 'pending', // 'pending', 'uploading', 'success', 'error'
+      status: 'pending',
       progress: 0,
       error: null,
     });
@@ -184,7 +232,6 @@ const addFiles = (files) => {
 
 const removeFile = (index) => {
   const fileToRemove = selectedFiles.value[index];
-  // Hapus object URL dari memori jika ada
   if (fileToRemove.previewUrl) {
     URL.revokeObjectURL(fileToRemove.previewUrl);
   }
@@ -198,7 +245,6 @@ const openFilePicker = () => {
 const handleUpload = async () => {
   const filesToUpload = selectedFiles.value.filter(f => f.status === 'pending');
   if (isUploading.value || filesToUpload.length === 0) {
-    // Jika tidak ada file yang pending dan ada yang gagal, tombol berfungsi sebagai tombol tutup
     if (!isUploading.value && hasFailedUploads.value) {
       closeModal();
     }
@@ -211,7 +257,7 @@ const handleUpload = async () => {
 
   for (const fileObject of filesToUpload) {
     if (abortController.signal.aborted) {
-      fileObject.status = 'pending'; // Reset status file yang belum diunggah
+      fileObject.status = 'pending';
       continue;
     }
 
@@ -224,14 +270,13 @@ const handleUpload = async () => {
       fileObject.status = 'success';
     } catch (e) {
       if (e.name === 'AbortError') {
-        fileObject.status = 'pending'; // Reset status file yang dibatalkan
+        fileObject.status = 'pending';
       } else {
         const errorMessage = e.data?.message || e.message || 'Error tidak diketahui';
         fileObject.status = 'error';
         fileObject.error = errorMessage;
       }
     }
-    // Update progress setelah setiap file (berhasil atau gagal)
     uploadCount.value = selectedFiles.value.filter(f => f.status === 'success').length;
     const processedCount = selectedFiles.value.filter(f => f.status === 'success' || f.status === 'error').length;
     uploadProgress.value = Math.round((processedCount / selectedFiles.value.length) * 100);
@@ -241,16 +286,13 @@ const handleUpload = async () => {
   isCancelling.value = false;
   abortController = null;
 
-  const successCount = selectedFiles.value.filter(f => f.status === 'success').length;
-  const failedCount = selectedFiles.value.filter(f => f.status === 'error').length;
-
   if (hasFailedUploads.value) {
     error.value = 'Beberapa file gagal diunggah. Silakan coba lagi.';
-    showNotification(`${failedCount} file gagal diunggah. Silakan coba lagi.`, 'error');
+    showNotification(`Beberapa file gagal diunggah.`, 'error');
   } else {
     emit('upload-success');
     closeModal();
-    showNotification(`${successCount} file berhasil diunggah.`, 'success');
+    showNotification(`Semua file berhasil diunggah.`, 'success');
   }
 };
 
@@ -283,7 +325,6 @@ const cancelUpload = () => {
 
 const closeModal = () => {
   if (isUploading.value) return;
-  // Hapus semua object URL dari memori sebelum menutup
   cleanupPreviewUrls();
   selectedFiles.value = [];
   error.value = '';
@@ -309,3 +350,19 @@ const formatSize = (size) => {
   return kb < 1024 ? `${kb.toFixed(1)} KB` : `${(kb / 1024).toFixed(1)} MB`;
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #D1D5DB;
+}
+</style>

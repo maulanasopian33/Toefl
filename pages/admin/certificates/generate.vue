@@ -394,6 +394,9 @@ import { useAdminBatches } from '@/composables/useAdminResults' // Use existing 
 import { useCandidateResults, type CandidateResult } from '@/composables/useCandidateResults'
 import { useCertificates, type GenerateRequest } from '@/composables/useCertificates'
 
+import { useNotificationPopup } from '@/composables/NotificationPopup'
+import { useNotification } from '@/composables/useNotification'
+
 // Simple debounce utility
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
   let timeoutID: ReturnType<typeof setTimeout> | undefined
@@ -414,6 +417,8 @@ definePageMeta({
 const { batches } = useAdminBatches()
 const { results, summary, isLoading, fetchCandidateResults, updateCandidateScore } = useCandidateResults()
 const { generateCertificates } = useCertificates()
+const { showConfirm } = useNotificationPopup()
+const { showNotification } = useNotification()
 
 // State
 const searchQuery = ref('')
@@ -504,7 +509,16 @@ const formatDate = (dateStr: string) => {
 
 // Actions
 const processSingleGenerate = async (candidate: CandidateResult) => {
-   if (!confirm(`Generate sertifikat untuk ${candidate.name}?`)) return
+   const confirmed = await showConfirm(
+     `Generate sertifikat untuk ${candidate.name}?`,
+     {
+       title: 'Generate Sertifikat?',
+       type: 'info',
+       confirmText: 'Ya, Generate'
+     }
+   )
+   
+   if (!confirmed) return
    
    const request: GenerateRequest = {
       data: {
@@ -525,7 +539,17 @@ const processSingleGenerate = async (candidate: CandidateResult) => {
 
 const processBulkGenerate = async () => {
    if (selectedCandidates.value.length === 0) return
-   if (!confirm(`Generate ${selectedCandidates.value.length} sertifikat terpilih?`)) return
+   
+   const confirmed = await showConfirm(
+     `Generate ${selectedCandidates.value.length} sertifikat terpilih?`,
+     {
+       title: 'Generate Masal?',
+       type: 'info',
+       confirmText: 'Mulai Generate'
+     }
+   )
+   
+   if (!confirmed) return
 
    // Map selected IDs to candidate objects
    const candidates = results.value.filter(c => selectedCandidates.value.includes(c.id))
@@ -551,14 +575,14 @@ const callGenerateAPI = async (requests: GenerateRequest[]) => {
    isGenerating.value = true
    try {
       await generateCertificates(requests)
-      alert('Berhasil mengirim permintaan generate sertifikat!')
+      showNotification('Berhasil mengirim permintaan generate sertifikat!', 'success')
       
       // Update local state to reflect generated status (Optimistic UI or re-fetch)
       // For now, let's re-fetch to keep it simple, or update manually if detailed response
       fetchData() 
       selectedCandidates.value = []
    } catch (error: any) {
-      alert('Gagal: ' + (error.message || 'Unknown error'))
+      showNotification('Gagal: ' + (error.message || 'Unknown error'), 'error')
    } finally {
       isGenerating.value = false
    }
@@ -587,7 +611,7 @@ const saveScore = async () => {
       closeEditModal()
       // alert('Nilai berhasil diperbarui') // Optional feedback
    } catch (error: any) {
-      alert('Gagal update nilai: ' + error.message)
+      showNotification('Gagal update nilai: ' + error.message, 'error')
    } finally {
       isSavingScore.value = false
    }

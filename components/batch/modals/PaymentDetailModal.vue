@@ -1,138 +1,183 @@
 <template>
-  <Transition name="modal-fade">
-    <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60" @click.self="closeModal">
-      <Transition name="modal-scale">
-        <div v-if="modelValue && payment" class="relative transform overflow-hidden rounded-2xl bg-gray-50 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-          <!-- Tampilan Detail Transaksi -->
-          <template v-if="!isConfirming">
-            <div class="bg-white px-6 pt-5 pb-6">
-              <div class="sm:flex sm:items-start">
-                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <Icon name="lucide:receipt" class="h-6 w-6 text-teal-600" aria-hidden="true" />
-                </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                  <h3 class="text-lg font-semibold leading-6 text-gray-900">Detail Transaksi</h3>
-                  <p class="text-sm text-gray-500">ID Transaksi: #{{ payment.id.toString().padStart(5, '0') }}</p>
-                  
-                  <div class="mt-5 space-y-4 border-t pt-4">
-                    <!-- Detail Peserta -->
-                    <div>
-                      <p class="text-xs font-medium text-gray-500 uppercase">Peserta</p>
-                      <p class="font-semibold text-gray-800">{{ payment.name }}</p>
-                      <p class="text-sm text-gray-600">{{ payment.email || 'email-peserta@example.com' }}</p>
-                    </div>
+  <TransitionRoot appear :show="modelValue" as="template">
+    <Dialog as="div" @close="closeModal" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+      </TransitionChild>
 
-                    <!-- Detail Pembayaran -->
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Jumlah</p>
-                        <p class="font-semibold text-gray-800">{{ formatCurrency(payment.amount) }}</p>
-                      </div>
-                      <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Tanggal</p>
-                        <p class="font-semibold text-gray-800">{{ payment.date }}</p>
-                      </div>
-                      <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Metode</p>
-                        <p class="font-semibold text-gray-800">Bank Transfer</p>
-                      </div>
-                      <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Status</p>
-                        <span :class="paymentStatusClass(payment.status)" class="px-3 py-1 text-xs rounded-full font-semibold">
-                          {{ payment.status }}
-                        </span>
-                      </div>
-                    </div>
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+              
+              <!-- Tampilan Detail Transaksi -->
+              <template v-if="!isConfirming && payment">
+                <DialogTitle as="h3" class="text-lg font-bold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                   <div class="p-1.5 bg-teal-100 rounded-lg">
+                      <Icon name="lucide:receipt" class="w-5 h-5 text-teal-600" />
+                   </div>
+                   Detail Transaksi
+                </DialogTitle>
+                
+                <div class="space-y-6">
+                   <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 leading-none">ID Transaksi</p>
+                      <p class="font-extrabold text-gray-900 text-lg tabular-nums">#{{ payment.id.toString().padStart(5, '0') }}</p>
+                   </div>
 
-                    <!-- Bukti Pembayaran (Dummy) -->
-                    <div v-if="payment.status !== 'Unpaid'">
-                      <p class="text-xs font-medium text-gray-500 uppercase mb-2">Bukti Pembayaran</p>
-                      <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center border border-dashed">
-                        <p class="text-gray-500 text-sm">Gambar Bukti Transfer.jpg</p>
+                   <div class="space-y-4">
+                      <div class="flex flex-col">
+                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Informasi Peserta</p>
+                         <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            <p class="font-bold text-gray-800">{{ payment.name }}</p>
+                            <p class="text-sm text-gray-500 font-medium">{{ payment.email || 'email-peserta@example.com' }}</p>
+                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-gray-100 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl">
-              <button
-                v-if="payment && payment.status === 'Pending'"
-                type="button"
-                class="inline-flex w-full justify-center rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 sm:ml-3 sm:w-auto"
-                @click="isConfirming = true"
-              >
-                Tandai sebagai Lunas
-              </button>
-              <button
-                type="button"
-                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                @click="closeModal"
-              >
-                Tutup
-              </button>
-            </div>
-          </template>
 
-          <!-- Tampilan Form Konfirmasi Pembayaran -->
-          <template v-else>
-            <form @submit.prevent="handleConfirmPayment">
-              <div class="bg-white px-6 pt-5 pb-6">
-                <div class="sm:flex sm:items-start">
-                  <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <Icon name="lucide:check-circle" class="h-6 w-6 text-blue-600" aria-hidden="true" />
-                  </div>
-                  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 class="text-lg font-semibold leading-6 text-gray-900">Konfirmasi Pembayaran</h3>
-                    <p class="text-sm text-gray-500">Lengkapi detail konfirmasi untuk <span class="font-medium">{{ payment.name }}</span>.</p>
-                    
-                    <div class="mt-4 space-y-4">
-                      <div>
-                        <label for="confirmationDate" class="block text-sm font-medium text-gray-700">Tanggal Konfirmasi</label>
-                        <input type="date" v-model="confirmationData.confirmationDate" id="confirmationDate" class="input mt-1" required />
+                      <div class="grid grid-cols-2 gap-4">
+                         <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Jumlah</p>
+                            <p class="font-black text-gray-900 text-sm tabular-nums">{{ formatCurrency(payment.amount) }}</p>
+                         </div>
+                         <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                            <span :class="paymentStatusClass(payment.status)" class="inline-flex px-2 py-0.5 text-[10px] rounded-lg font-bold border">
+                              {{ payment.status }}
+                            </span>
+                         </div>
+                         <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tanggal</p>
+                            <p class="font-bold text-gray-700 text-xs">{{ payment.date }}</p>
+                         </div>
+                         <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Metode</p>
+                            <p class="font-bold text-gray-700 text-xs text-emerald-600">Bank Transfer</p>
+                         </div>
                       </div>
-                      <div>
-                        <label for="paymentMethod" class="block text-sm font-medium text-gray-700">Metode Pembayaran</label>
-                        <select v-model="confirmationData.paymentMethod" id="paymentMethod" class="input mt-1 bg-white" required>
-                          <option>Bank Transfer</option>
-                          <option>Digital Wallet</option>
-                          <option>Cash</option>
-                          <option>Other</option>
-                        </select>
+                   </div>
+
+                   <!-- Bukti Pembayaran -->
+                   <div v-if="payment.status !== 'Unpaid'">
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Bukti Pembayaran</p>
+                      <div class="w-full aspect-video bg-gray-50 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 group hover:border-blue-200 transition-colors cursor-zoom-in">
+                        <Icon name="lucide:image" class="w-10 h-10 text-gray-300 group-hover:text-blue-300 transition-colors" />
+                        <p class="text-gray-400 text-[10px] font-bold mt-2">Gambar Bukti Transfer.jpg</p>
                       </div>
-                      <div>
-                        <label for="notes" class="block text-sm font-medium text-gray-700">Catatan (Opsional)</label>
-                        <textarea v-model="confirmationData.notes" id="notes" rows="3" class="input mt-1" placeholder="Contoh: Pembayaran lunas via transfer BCA..."></textarea>
-                      </div>
-                    </div>
-                  </div>
+                   </div>
+
+                   <div class="mt-8 flex justify-end gap-3">
+                      <button 
+                        type="button" 
+                        @click="closeModal"
+                        class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
+                      >
+                         Tutup
+                      </button>
+                      <button 
+                        v-if="payment && payment.status === 'Pending'"
+                        @click="isConfirming = true"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
+                      >
+                         <Icon name="lucide:check-circle" class="w-4 h-4" />
+                         Tandai Lunas
+                      </button>
+                   </div>
                 </div>
-              </div>
-              <div class="bg-gray-100 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl">
-                <button
-                  type="submit"
-                  class="inline-flex w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:ml-3 sm:w-auto"
-                >
-                  Konfirmasi & Simpan
-                </button>
-                <button
-                  type="button"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                  @click="isConfirming = false"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </template>
+              </template>
+
+              <!-- Tampilan Form Konfirmasi Pembayaran -->
+              <template v-else-if="payment">
+                <DialogTitle as="h3" class="text-lg font-bold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                   <div class="p-1.5 bg-blue-100 rounded-lg">
+                      <Icon name="lucide:check-circle" class="w-5 h-5 text-blue-600" />
+                   </div>
+                   Konfirmasi Pembayaran
+                </DialogTitle>
+                
+                <form @submit.prevent="handleConfirmPayment" class="space-y-5">
+                   <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Konfirmasi Untuk</p>
+                      <p class="font-bold text-gray-800 text-sm">{{ payment.name }}</p>
+                   </div>
+                   
+                   <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Tanggal Konfirmasi</label>
+                      <input 
+                        type="date" 
+                        v-model="confirmationData.confirmationDate" 
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm"
+                        required 
+                      />
+                   </div>
+
+                   <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Metode Pembayaran</label>
+                      <select 
+                        v-model="confirmationData.paymentMethod" 
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm cursor-pointer"
+                        required
+                      >
+                        <option>Bank Transfer</option>
+                        <option>Digital Wallet</option>
+                        <option>Cash</option>
+                        <option>Other</option>
+                      </select>
+                   </div>
+
+                   <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none px-1">Catatan (Opsional)</label>
+                      <textarea 
+                        v-model="confirmationData.notes" 
+                        rows="3" 
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-gray-700 text-sm"
+                        placeholder="Contoh: Pembayaran lunas via transfer BCA..."
+                      ></textarea>
+                   </div>
+
+                   <div class="mt-8 flex justify-end gap-3">
+                      <button 
+                        type="button" 
+                        @click="isConfirming = false"
+                        class="px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
+                      >
+                         Kembali
+                      </button>
+                      <button 
+                        type="submit" 
+                        class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
+                      >
+                         Konfirmasi & Simpan
+                      </button>
+                   </div>
+                </form>
+              </template>
+            </DialogPanel>
+          </TransitionChild>
         </div>
-      </Transition>
-    </div>
-  </Transition>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -177,33 +222,8 @@ const formatCurrency = (value) => {
 const paymentStatusClass = (status) => {
   if (!status) return '';
   const s = status.toLowerCase();
-  if (s === 'paid') return 'bg-emerald-100 text-emerald-800';
-  if (s === 'pending') return 'bg-amber-100 text-amber-800';
-  return 'bg-red-100 text-red-800';
+  if (s === 'paid') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+  if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-100';
+  return 'bg-rose-50 text-rose-700 border-rose-100';
 };
-
-const handleKeydown = (e) => {
-  if (e.key === 'Escape') closeModal();
-};
-
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    document.addEventListener('keydown', handleKeydown);
-  } else {
-    document.removeEventListener('keydown', handleKeydown);
-  }
-});
 </script>
-
-<style scoped>
-/* Animasi sama seperti modal sebelumnya */
-.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
-.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
-.modal-scale-enter-active { transition: all 0.3s ease-out; }
-.modal-scale-leave-active { transition: all 0.2s ease-in; }
-.modal-scale-enter-from, .modal-scale-leave-to { opacity: 0; transform: translateY(1rem) scale(0.95); }
-
-.input {
-  @apply w-full border border-gray-300 p-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500;
-}
-</style>

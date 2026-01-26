@@ -1,99 +1,128 @@
 <template>
-  <Transition name="modal-fade">
-    <div v-if="modelValue && user" class="fixed inset-0 bg-black/60 !mt-0 z-50 flex items-center justify-center p-4" @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        <header class="p-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h2 class="text-lg font-semibold text-gray-800">Detail Pengguna</h2>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-            <Icon name="lucide:x" class="w-5 h-5" />
-          </button>
-        </header>
+  <TransitionRoot appear :show="modelValue && !!user" as="template">
+    <Dialog as="div" @close="closeModal" class="relative z-50">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+      </TransitionChild>
 
-        <main class="flex-grow p-6 overflow-y-auto">
-          <div class="flex items-center gap-4 mb-6">
-            <template v-if="user.picture">
-              <img :src="apiUrl + user.picture" alt="avatar" class="h-16 w-16 rounded-full object-cover border border-gray-200" />
-            </template>
-            <template v-else>
-              <div class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-xl font-semibold text-indigo-600">
-                {{ initials(user.name) }}
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-[2rem] bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-100">
+              <DialogTitle as="h3" class="text-lg font-extrabold leading-6 text-gray-900 mb-6 flex items-center gap-2">
+                 <div class="p-1.5 bg-indigo-100 rounded-lg">
+                    <Icon name="lucide:user" class="w-5 h-5 text-indigo-600" />
+                 </div>
+                 Detail Pengguna
+              </DialogTitle>
+              
+              <div v-if="user" class="space-y-8">
+                 <!-- Profile Header -->
+                 <div class="flex items-center gap-6 p-6 bg-gray-50/50 rounded-3xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all">
+                    <div class="relative">
+                       <template v-if="user.picture">
+                         <img :src="apiUrl + user.picture" alt="avatar" class="h-20 w-20 rounded-2xl object-cover ring-4 ring-white shadow-sm" />
+                       </template>
+                       <template v-else>
+                         <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-2xl font-black text-indigo-600 ring-4 ring-white shadow-sm">
+                           {{ initials(user.name) }}
+                         </div>
+                       </template>
+                       <div class="absolute -bottom-2 -right-2 p-1.5 bg-white rounded-xl shadow-sm border border-gray-100 ring-1 ring-gray-900/5">
+                          <Icon :name="user.disabled ? 'lucide:user-x' : 'lucide:user-check'" class="w-4 h-4" :class="user.disabled ? 'text-rose-500' : 'text-emerald-500'" />
+                       </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                       <h4 class="text-xl font-black text-gray-900 truncate">{{ user.name }}</h4>
+                       <div class="flex items-center gap-2 mt-1">
+                          <span class="text-xs font-bold text-gray-500">{{ user.email }}</span>
+                          <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">UID: {{ user.uid }}</span>
+                       </div>
+                       <div class="flex items-center gap-2 mt-3">
+                          <span class="inline-flex px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-wider border border-indigo-100">
+                             {{ user.role }}
+                          </span>
+                          <span :class="['inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-black uppercase tracking-wider border', user.email_verified ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100']">
+                             <Icon :name="user.email_verified ? 'lucide:mail-check' : 'lucide:mail-question'" class="h-3 w-3" />
+                             {{ user.email_verified ? 'Verified' : 'Unverified' }}
+                          </span>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- General Info -->
+                    <div class="space-y-4">
+                       <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">Informasi Akun</h5>
+                       <div class="bg-gray-50/50 rounded-[1.5rem] border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+                          <div class="px-5 py-3.5 flex justify-between items-center group/item hover:bg-white transition-colors">
+                             <dt class="text-xs font-bold text-gray-500">Dibuat Pada</dt>
+                             <dd class="text-xs font-black text-gray-800">{{ formatDate(user.createdAt) }}</dd>
+                          </div>
+                          <div class="px-5 py-3.5 flex justify-between items-center group/item hover:bg-white transition-colors">
+                             <dt class="text-xs font-bold text-gray-500">Terakhir Login</dt>
+                             <dd class="text-xs font-black text-gray-800">{{ formatDate(user.lastLogin) || 'Never' }}</dd>
+                          </div>
+                       </div>
+                    </div>
+
+                    <!-- Academic Info -->
+                    <div class="space-y-4">
+                       <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">Data Akademik</h5>
+                       <div class="bg-gray-50/50 rounded-[1.5rem] border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+                          <div class="px-5 py-3.5 flex justify-between items-center group/item hover:bg-white transition-colors">
+                             <dt class="text-xs font-bold text-gray-500">NIM</dt>
+                             <dd class="text-xs font-black text-gray-800">{{ user.detailuser?.nim || '-' }}</dd>
+                          </div>
+                          <div class="px-5 py-3.5 flex justify-between items-center group/item hover:bg-white transition-colors">
+                             <dt class="text-xs font-bold text-gray-500">Program Studi</dt>
+                             <dd class="text-xs font-black text-gray-800 text-right">{{ user.detailuser?.prodi || '-' }}</dd>
+                          </div>
+                          <div class="px-5 py-3.5 flex justify-between items-center group/item hover:bg-white transition-colors">
+                             <dt class="text-xs font-bold text-gray-500">Fakultas</dt>
+                             <dd class="text-xs font-black text-gray-800">{{ user.detailuser?.fakultas || '-' }}</dd>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div class="mt-8 flex justify-end">
+                    <button 
+                      type="button" 
+                      @click="closeModal"
+                      class="px-8 py-3 rounded-2xl bg-gray-900 text-white font-black shadow-xl shadow-gray-200 hover:bg-gray-800 transition-all transform active:scale-95 text-sm"
+                    >
+                       Tutup Detail
+                    </button>
+                 </div>
               </div>
-            </template>
-            <div>
-              <h3 class="text-xl font-bold text-gray-900">{{ user.name }}</h3>
-              <p class="text-sm text-gray-600">{{ user.email }}</p>
-              <p class="text-xs text-gray-500">UID: {{ user.uid }}</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-            <!-- General Info -->
-            <div>
-              <h4 class="font-semibold text-gray-700 mb-2">Informasi Umum</h4>
-              <dl class="space-y-1">
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">Role:</dt>
-                  <dd class="font-medium text-gray-800 capitalize">{{ user.role }}</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">Dibuat Pada:</dt>
-                  <dd class="font-medium text-gray-800">{{ formatDate(user.createdAt) }}</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">Terakhir Login:</dt>
-                  <dd class="font-medium text-gray-800">{{ formatDate(user.lastLogin) || '-' }}</dd>
-                </div>
-              </dl>
-            </div>
-
-            <!-- Academic Info -->
-            <div>
-              <h4 class="font-semibold text-gray-700 mb-2">Data Akademik</h4>
-              <dl class="space-y-1">
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">NIM:</dt>
-                  <dd class="font-medium text-gray-800">{{ user.detailuser?.nim || '-' }}</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">Fakultas:</dt>
-                  <dd class="font-medium text-gray-800">{{ user.detailuser?.fakultas || '-' }}</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="text-gray-500">Program Studi:</dt>
-                  <dd class="font-medium text-gray-800">{{ user.detailuser?.prodi || '-' }}</dd>
-                </div>
-              </dl>
-            </div>
-
-            <!-- Status Info -->
-            <div class="md:col-span-2">
-              <h4 class="font-semibold text-gray-700 mb-2">Status</h4>
-              <div class="flex flex-wrap items-center gap-2">
-                <span :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium', user.email_verified ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700']">
-                  <Icon :name="user.email_verified ? 'lucide:mail-check' : 'lucide:mail-question'" class="h-3.5 w-3.5" />
-                  Email {{ user.email_verified ? 'Terverifikasi' : 'Belum Terverifikasi' }}
-                </span>
-                <span :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium', user.disabled ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700']">
-                  <Icon :name="user.disabled ? 'lucide:user-x' : 'lucide:user-check'" class="h-3.5 w-3.5" />
-                  Akun {{ user.disabled ? 'Nonaktif' : 'Aktif' }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </main>
-
-        <footer class="p-4 border-t border-gray-200 bg-gray-50 flex justify-end flex-shrink-0">
-          <button @click="closeModal" class="btn-secondary">
-            Tutup
-          </button>
-        </footer>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 import type { User } from '@/composables/useUsers';
 
 const props = defineProps<{
@@ -124,28 +153,10 @@ const formatDate = (iso?: string) => {
   if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleDateString('id-ID', {
     day: '2-digit',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
 };
 </script>
-
-<style scoped>
-.modal-fade-enter-active, .modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.modal-fade-enter-from, .modal-fade-leave-to {
-  opacity: 0;
-}
-/* Optional: Add scale effect for content */
-.modal-fade-enter-active .bg-white,
-.modal-fade-leave-active .bg-white {
-  transition: transform 0.3s ease;
-}
-.modal-fade-enter-from .bg-white,
-.modal-fade-leave-to .bg-white {
-  transform: scale(0.95);
-}
-</style>
