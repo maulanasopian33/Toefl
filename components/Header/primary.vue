@@ -28,7 +28,7 @@
             :aria-expanded="isMenuOpen"
             aria-haspopup="true"
           >
-                <img :src="`${config.public.MEDIA_URL}${userdb.picture}` || '/img/avatar.png'" alt="User Avatar" class="h-8 w-8 rounded-full object-cover" />
+                <img :src="`${userdb.picture}` || '/img/avatar.png'" alt="User Avatar" class="h-8 w-8 rounded-full object-cover" />
                 <span class="hidden sm:inline" :class="isDarkMode ? 'text-gray-300' : 'text-gray-800'">{{ getNamaLengkap(userdb) }}</span>
                 <Icon name="lucide:chevron-down" class="-mr-1 h-4 w-4 text-gray-400 transition-transform group-hover:text-gray-600" />
           </button>

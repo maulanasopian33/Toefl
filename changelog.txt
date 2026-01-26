@@ -9,7 +9,16 @@ LATEST UPDATES - 26 Januari 2026
 
 2. UPDATE PAGE PROFILE ADMIN
    - Mengubah sumber data profil (Nama, Foto, Role) menggunakan API userdb.
-   - Menampilkan data detail user sesuai response API.
+   - Menampilkan data detail user (NIM, Fakultas, Prodi) dan info akun (Member Since, Last Login).
+   - Memperbarui layout dengan desain premium dan ikonik.
    - File yang diubah: pages/admin/profile.vue
 
-Timestamp: 2026-01-26 10:25:00
+3. REDESIGN TAB MANAJEMEN SOAL (SOAL TAB)
+   - Memperbarui UI menjadi lebih premium dan informatif.
+   - Menambahkan ringkasan statistik (Total Section, Group, Soal).
+   - Menambahkan ikon spesifik untuk tipe section (Listening, Reading, Structure).
+   - Meningkatkan desain list section dan group dengan hover effects.
+   - Menyamakan nama field dengan data real dari API (namaSection, idSection, dsb).
+   - File yang diubah: components/batch/tabs/SoalTab.vue
+
+Timestamp: 2026-01-26 11:15:00
