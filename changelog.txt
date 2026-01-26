@@ -1,0 +1,10 @@
+LATEST UPDATES - 26 Januari 2026
+==============================
+
+1. UPDATE DESAIN HALAMAN EDIT BATCH
+   - Menyamakan desain halaman Edit Batch dengan halaman Add Batch.
+   - Mengubah tema warna menjadi Biru (Blue) untuk membedakan mode Edit.
+   - Memperbarui komponen Header, Form, dan Tombol agar konsisten.
+   - File yang diubah: pages/admin/batch/edit/[id].vue
+
+Timestamp: 2026-01-26 09:59:00

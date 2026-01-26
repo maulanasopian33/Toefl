@@ -156,8 +156,102 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import { useBatchDetails } from '@/composables/useBatchDetails';
+
+// Import komponen tab
+import OverviewTab from '@/components/batch/tabs/OverviewTab.vue';
+import ParticipantsTab from '@/components/batch/tabs/ParticipantsTab.vue';
+import SessionsTab from '@/components/batch/tabs/SessionsTab.vue';
+import PlaceholderTab from '@/components/batch/tabs/PlaceholderTab.vue';
+import SettingsTab from '@/components/batch/tabs/SettingsTab.vue';
+import SoalTab from '@/components/batch/tabs/SoalTab.vue';
+import ResultsTab from '@/components/batch/tabs/ResultsTab.vue';
+import AddParticipantModal from '@/components/batch/modals/AddParticipantModal.vue';
+
+const route = useRoute();
+const router = useRouter();
+const id = route.params.id;
 const { showConfirm } = useNotificationPopup();
 const { showNotification } = useNotification();
+
+definePageMeta({
+  title: 'Detail Batch - Admin Panel',
+  layout: 'admin',
+  middleware: ['auth', 'role-check'],
+  permission: "batch.update",
+})
+
+// -------------------------------------------------
+// Mengambil data menggunakan composable
+// -------------------------------------------------
+const { batch } = useBatchDetails(id);
+
+
+console.log(batch);
+
+// --- Modal State ---
+const isAddParticipantModalOpen = ref(false);
+
+
+// -------------------------------------------------
+// Tabs
+// -------------------------------------------------
+const tabs = ["Overview", "Peserta", "Session", "Soal", "Results", "Settings"];
+const activeTab = ref("Overview");
+
+// -------------------------------------------------
+// Tab Switching
+const tabComponent = computed(() => {
+  switch (activeTab.value) {
+    case "Peserta":
+      return ParticipantsTab;
+    case "Session":
+      return SessionsTab;
+    case "Soal":
+      return SoalTab;
+    case "Results":
+      return ResultsTab;
+    case "Settings":
+      return SettingsTab;
+    default:
+      return OverviewTab;
+  }
+});
+
+// -------------------------------------------------
+// Extra computed helpers
+// -------------------------------------------------
+
+const formattedDateRange = computed(() => {
+  if (!batch.value) return '-';
+  return `${batch.value.startDate} - ${batch.value.endDate}`;
+});
+
+const statusBadgeClass = computed(() => {
+  const s = batch.value?.status?.toLowerCase();
+  switch (s) {
+    case 'open':
+    case 'upcoming':
+      return 'bg-green-50 text-green-700 border-green-200';
+    case 'closed':
+      return 'bg-red-50 text-red-700 border-red-200';
+    case 'full':
+      return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'ongoing':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
+    default:
+      return 'bg-gray-100 text-gray-600 border-gray-200';
+  }
+});
+
+const groupCount = computed(() =>
+  batch.value?.sections?.reduce((n, s) => n + (s.groups?.length || 0), 0) || 0
+);
+
+function goToEdit() {
+  router.push(`/admin/batch/edit/${id}`);
+}
 
 async function confirmDelete() {
   const confirmed = await showConfirm(

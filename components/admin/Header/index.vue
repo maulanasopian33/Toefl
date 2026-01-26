@@ -44,7 +44,7 @@
       <div class="relative">
         <button @click="toggleDropdown('profile')" class="flex items-center gap-2">
           <div class="w-9 h-9 bg-gray-200 rounded-full overflow-hidden">
-            <img v-if="imageURL" :src="imageURL" @error="onImageError" alt="Avatar" class="w-full h-full object-cover" />
+            <img v-if="user?.picture" :src="`${user?.picture}`" @error="onImageError" alt="Avatar" class="w-full h-full object-cover" />
             <span v-else class="w-full h-full flex items-center justify-center text-sm font-semibold text-gray-600 bg-gray-200">
               {{ userInitials }}
             </span>
