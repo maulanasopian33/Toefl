@@ -83,7 +83,7 @@
                 <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">{{ section.idSection || 'N/A' }}</span>
               </div>
               <h4 class="text-lg font-black text-slate-900 leading-tight">{{ section.namaSection }}</h4>
-              <p v-if="section.deskripsi" class="text-sm text-slate-500 font-medium mt-1 pr-10 truncate" v-html="section.deskripsi"></p>
+              <p v-if="section.deskripsi" class="text-sm text-slate-500 font-medium mt-1 pr-10">{{ formatDescription(section.deskripsi) }}</p>
               <p v-else class="text-sm text-slate-500 font-medium mt-1 pr-10">Tidak ada deskripsi section.</p>
             </div>
           </div>
@@ -156,6 +156,12 @@ const getSectionTypeClass = (name) => {
   if (n.includes('reading')) return 'bg-emerald-50 text-emerald-600 border-emerald-100';
   if (n.includes('structure')) return 'bg-purple-50 text-purple-600 border-purple-100';
   return 'bg-slate-50 text-slate-600 border-slate-100';
+};
+
+const formatDescription = (html) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]+>/g, '');
+  return text.length > 100 ? text.substring(0, 100) + '...' : text;
 };
 
 const goToEditor = (batchId, sectionId, groupId) => {
