@@ -7,4 +7,9 @@ LATEST UPDATES - 26 Januari 2026
    - Memperbarui komponen Header, Form, dan Tombol agar konsisten.
    - File yang diubah: pages/admin/batch/edit/[id].vue
 
-Timestamp: 2026-01-26 09:59:00
+2. UPDATE PAGE PROFILE ADMIN
+   - Mengubah sumber data profil (Nama, Foto, Role) menggunakan API userdb.
+   - Menampilkan data detail user sesuai response API.
+   - File yang diubah: pages/admin/profile.vue
+
+Timestamp: 2026-01-26 10:25:00

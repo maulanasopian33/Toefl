@@ -44,14 +44,14 @@
       <div class="relative">
         <button @click="toggleDropdown('profile')" class="flex items-center gap-2">
           <div class="w-9 h-9 bg-gray-200 rounded-full overflow-hidden">
-            <img v-if="user?.picture" :src="`${user?.picture}`" @error="onImageError" alt="Avatar" class="w-full h-full object-cover" />
+            <img v-if="userdb?.picture" :src="`${userdb?.picture}`" @error="onImageError" alt="Avatar" class="w-full h-full object-cover" />
             <span v-else class="w-full h-full flex items-center justify-center text-sm font-semibold text-gray-600 bg-gray-200">
               {{ userInitials }}
             </span>
           </div>
           <div class="hidden md:block text-left">
-            <p class="text-sm font-semibold text-gray-800 truncate max-w-[100px]">{{ user?.displayName || 'Admin' }}</p>
-            <p class="text-xs text-gray-500">Administrator</p>
+            <p class="text-sm font-semibold text-gray-800 truncate max-w-[100px]">{{ userdb?.name || 'Admin' }}</p>
+            <p class="text-xs text-gray-500">{{ userdb?.role || 'Admin' }}</p>
           </div>
           <Icon name="lucide:chevron-down" class="h-4 w-4 text-gray-400 hidden md:block" />
         </button>
@@ -91,9 +91,7 @@ const { $auth } = useNuxtApp();
 const config = useRuntimeConfig()
 const API_URL = config.public.API_URL 
 const imageURL = ref<string | null>(null);
-// Gunakan ref() untuk user object agar reaktif
-const user = ref<any>(null);
-
+const { data: userdb } = await useUserMe();
 // State for dropdowns
 const dropdowns = reactive({
   profile: false,
@@ -111,26 +109,10 @@ const toggleDropdown = (type: 'profile' | 'notifications') => {
 };
 
 const userInitials = computed(() => {
-  if (!user.value) return 'A';
-  const name = user.value.displayName || user.value.email || 'Admin';
+  if (!userdb.value) return 'A';
+  const name = userdb.value.name || userdb.value.email || 'Admin';
   return name.charAt(0).toUpperCase();
 });
-
-// Memantau perubahan status autentikasi
-onMounted(() => {
-  $auth.onAuthStateChanged(firebaseUser => {
-    user.value = firebaseUser;
-    if (firebaseUser) {
-      imageURL.value = `${API_URL}/images/avatar/${firebaseUser.uid}.png`;
-    } else {
-      imageURL.value = null;
-    }
-  });
-});
-
-const onImageError = () => {
-  imageURL.value = null; // Set to null to show initials as fallback
-};
 
 const logout = async () => {
   try {

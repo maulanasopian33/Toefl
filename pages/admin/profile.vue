@@ -11,17 +11,17 @@
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
         <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
           <div class="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center text-3xl font-bold text-slate-400 overflow-hidden border-4 border-white shadow-sm">
-             <img v-if="user?.photoURL" :src="user.photoURL" alt="Profile" class="h-full w-full object-cover" />
+             <img v-if="userdb?.picture" :src="userdb.picture" alt="Profile" class="h-full w-full object-cover" />
              <span v-else>{{ userInitials }}</span>
           </div>
           <div class="text-center sm:text-left">
-            <h2 class="text-2xl font-bold text-slate-900">{{ user?.displayName || 'Pengguna' }}</h2>
-            <p class="text-slate-500 font-medium">{{ user?.email }}</p>
+            <h2 class="text-2xl font-bold text-slate-900">{{ userdb?.name || 'Pengguna' }}</h2>
+            <p class="text-slate-500 font-medium">{{ userdb?.email }}</p>
             <div class="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
               <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 capitalize">
-                Role: {{ claims?.role || 'User' }}
+                Role: {{ userdb?.role || 'User' }}
               </span>
-              <span v-if="user?.emailVerified" class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+              <span v-if="userdb?.email_verified" class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
                 Terverifikasi
               </span>
             </div>
@@ -75,9 +75,9 @@ definePageMeta({
 });
 
 const { user, claims } = useAuth();
-
+const { data: userdb } = await useUserMe();
 const userInitials = computed(() => {
-  const name = user.value?.displayName || '';
+  const name = userdb.value?.name || '';
   if (!name) return '?';
   return name
     .split(' ')
