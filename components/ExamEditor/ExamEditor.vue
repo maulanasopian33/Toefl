@@ -4,6 +4,7 @@ import { onMounted, ref, nextTick, watch } from 'vue'
 import Sidebar from './Sidebar.vue'
 import GroupCard from './GroupCard.vue'
 import SectionModal from './SectionModal.vue'
+import ImportBankModal from './ImportBankModal.vue'
 import CustomAudioPlayer from './CustomAudioPlayer.vue'
 
 const EditorMediaLibraryModal = defineAsyncComponent(() =>
@@ -22,7 +23,7 @@ const apiUrl = `${config.public.API_URL}/exams/${examId}`;
 const { $auth } = useNuxtApp();
 
 // 1. Panggil composable untuk mengambil data
-const { data: fetchedData, pending: isLoading, error } = useExamData(examId);
+const { data: fetchedData, pending: isLoading, error, isLocked, lockReason } = useExamData(examId);
 
 // Jika terjadi error saat fetch, tampilkan notifikasi
 if (error.value) {
@@ -107,8 +108,16 @@ async function saveAllChanges() {
 }
 
 const showModal = ref(false)
+const showImportModal = ref(false)
 const modalPayload = ref<Partial<Section> & { batchId?: string }>()
 const showSectionMediaModal = ref(false)
+
+const { refresh: reloadData } = useExamData(examId);
+
+function onSectionImported() {
+  reloadData();
+  showNotification('Daftar bagian diperbarui setelah impor.', 'info');
+}
 
 async function initTiny(selector: string, initialContent: string, onBlur: () => void) {
   await $tinymceReady()
@@ -223,10 +232,16 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
       <button @click="router.back()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors" title="Kembali">
            <Icon name="lucide:arrow-left" class="w-5 h-5" />
         </button>
-      <button @click="saveAllChanges" :disabled="isSaving" class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-sm shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
+      <button 
+        @click="saveAllChanges" 
+        :disabled="isSaving || isLocked" 
+        class="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-sm shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        :title="isLocked ? 'Editor terkunci: ' + (lockReason === 'SUBMISSIONS_EXIST' ? 'Sudah ada siswa yang mengerjakan' : 'Waktu ujian sudah dimulai') : 'Simpan Perubahan'"
+      >
         <Icon v-if="isSaving" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+        <Icon v-else-if="isLocked" name="lucide:lock" class="w-4 h-4" />
         <Icon v-else name="lucide:save" class="w-4 h-4" />
-        <span class="font-medium hidden md:block">{{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
+        <span class="font-medium hidden md:block">{{ isSaving ? 'Menyimpan...' : (isLocked ? 'Terkunci' : 'Simpan Perubahan') }}</span>
       </button>
     </header>
 
@@ -236,9 +251,26 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                :is-open="isSidebarOpen"
                @select="setActiveSection"
                @toggle="toggleSidebar"
-               @add-section="openSectionModal()" />
+               @add-section="openSectionModal()"
+               @import-bank="showImportModal = true" />
 
       <div class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <!-- Locked Banner -->
+        <div v-if="isLocked" class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm animate-fade-in-down">
+           <div class="p-2 bg-amber-100 rounded-xl text-amber-600 flex-shrink-0">
+              <Icon name="lucide:lock" class="w-5 h-5" />
+           </div>
+           <div>
+              <h3 class="font-bold text-amber-900 text-sm">Mode Baca-Saja (Locked)</h3>
+              <p class="text-xs text-amber-700 mt-1 leading-relaxed">
+                 {{ lockReason === 'SUBMISSIONS_EXIST' 
+                    ? 'Ujian ini sudah dikerjakan oleh siswa. Untuk menjaga integritas nilai, pengeditan dinonaktifkan.' 
+                    : 'Waktu ujian telah dimulai. Pengeditan tidak diizinkan saat ujian berlangsung.' }}
+                 Jika ingin mengubah soal, silakan <button @click="openSectionModal(activeSectionId || undefined)" class="font-bold underline hover:text-amber-900">Promosikan ke Bank Soal</button> lalu buat batch baru.
+              </p>
+           </div>
+        </div>
+
         <!-- Loading State -->
         <div v-if="isLoading" class="flex flex-col items-center justify-center h-full text-center">
           <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
@@ -358,6 +390,7 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
       </div>
     </main>
     <SectionModal v-model="showModal" :payload="modalPayload" @save="onSaveSection" />
+    <ImportBankModal v-model="showImportModal" :batch-id="examId" @imported="onSectionImported" />
     <ClientOnly>
       <EditorMediaLibraryModal
         v-model="showSectionMediaModal"

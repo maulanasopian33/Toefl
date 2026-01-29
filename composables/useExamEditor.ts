@@ -23,6 +23,7 @@ interface Section {
   instructions: string;
   audioInstructions?: string | null;
   groups: Group[];
+  scoring_table_id?: number | null;
 }
 
 // --- State Utama (tipe data langsung array dari Section) ---
@@ -51,7 +52,7 @@ export function useExamEditor() {
     isSidebarOpen.value = !isSidebarOpen.value;
   };
 
-  const saveSectionDetails = (payload: { id?: string; name: string; type: string; instructions: string }) => {
+  const saveSectionDetails = (payload: { id?: string; name: string; type: string; instructions: string; scoring_table_id?: number | null }) => {
     console.log("payload", payload);
 
     if (payload.id) { // Update
@@ -62,12 +63,14 @@ export function useExamEditor() {
       if (section) {
         section.name = payload.name;
         section.type = payload.type;
+        section.scoring_table_id = payload.scoring_table_id;
       } else {
         data.value.push({
           id: payload.id,
           name: payload.name,
           type: payload.type,
           instructions: payload.instructions || '',
+          scoring_table_id: payload.scoring_table_id,
           groups: []
         });
       }
@@ -79,6 +82,7 @@ export function useExamEditor() {
         name: payload.name,
         type: payload.type,
         instructions: payload.instructions || '',
+        scoring_table_id: payload.scoring_table_id,
         groups: []
       });
     }

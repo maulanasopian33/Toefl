@@ -27,8 +27,20 @@ export const useExamData = (examId: string) => {
   const config = useRuntimeConfig();
   const apiUrl = `${config.public.API_URL}/exams/${examId}`;
 
-  const { data, pending, error } = useFetch<Section[]>(apiUrl, {
+  const isLocked = ref(false);
+  const lockReason = ref<string | null>(null);
+
+  const { data, pending, error, refresh } = useFetch(apiUrl, {
     lazy: true,
+    transform: (response: any) => {
+      if (response && typeof response === 'object' && !Array.isArray(response) && 'data' in response) {
+        isLocked.value = !!response.isLocked;
+        lockReason.value = response.lockReason;
+        return response.data;
+      }
+      // Handle legacy/direct array response just in case
+      return response;
+    },
     default: () => [],
     async onRequest({ options }) {
       try {
@@ -65,5 +77,5 @@ export const useExamData = (examId: string) => {
     }
   });
 
-  return { data, pending, error };
+  return { data, pending, error, refresh, isLocked, lockReason };
 }

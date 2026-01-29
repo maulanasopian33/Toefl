@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{sections:{id:string;name:string}[],activeId:string,isOpen:boolean}>()
-const emit = defineEmits(['select','toggle','add-section'])
+const emit = defineEmits(['select','toggle','add-section', 'import-bank'])
 </script>
 
 <template>
@@ -15,9 +15,14 @@ const emit = defineEmits(['select','toggle','add-section'])
       <!-- Sidebar Header -->
       <div class="flex justify-between items-center mb-4 px-2 flex-shrink-0">
         <h3 class="font-bold text-slate-800 text-sm tracking-wide">Daftar Bagian</h3>
-        <button @click="emit('add-section')" class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors" title="Tambah Bagian">
-          <Icon name="lucide:plus" class="w-4 h-4" />
-        </button>
+        <div class="flex items-center gap-1">
+          <button @click="emit('import-bank')" class="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors" title="Impor dari Bank Soal">
+            <Icon name="lucide:database-zap" class="w-4 h-4" />
+          </button>
+          <button @click="emit('add-section')" class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors" title="Tambah Bagian">
+            <Icon name="lucide:plus" class="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <!-- Scrollable Section List -->
