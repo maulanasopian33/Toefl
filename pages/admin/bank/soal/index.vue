@@ -34,7 +34,7 @@
         </div>
         <h3 class="text-xl font-black text-slate-900">Gagal Memuat Data</h3>
         <p class="mt-2 text-slate-500 max-w-xs mx-auto font-medium">{{ error }}</p>
-        <button @click="fetchTemplates" class="mt-8 px-6 py-2.5 bg-rose-100 text-rose-700 font-bold rounded-xl hover:bg-rose-200 transition-colors">Coba Lagi</button>
+        <button @click="() => fetchTemplates()" class="mt-8 px-6 py-2.5 bg-rose-100 text-rose-700 font-bold rounded-xl hover:bg-rose-200 transition-colors">Coba Lagi</button>
       </div>
 
       <!-- Empty State -->
@@ -102,30 +102,23 @@ definePageMeta({
 const config = useRuntimeConfig();
 const { $auth } = useNuxtApp();
 
-const templates = ref<any[]>([]);
-const isLoading = ref(true);
-const error = ref<string | null>(null);
 
-const fetchTemplates = async () => {
-  isLoading.value = true;
-  error.value = null;
-  try {
+// Fetch Data using useFetch for better SSR and state management
+const { data: response, pending: isLoading, error: fetchError, refresh: fetchTemplates } = await useFetch(`${config.public.API_URL}/bank/templates`, {
+  lazy: true,
+  async onRequest({ options }) {
     const token = await $auth.currentUser?.getIdToken();
-    const response: any = await $fetch(`${config.public.API_URL}/bank/templates`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    templates.value = response.data;
-  } catch (err: any) {
-    console.error("Error fetching templates:", err);
-    error.value = 'Gagal mengambil data Bank Soal.';
-  } finally {
-    isLoading.value = false;
+    if (token) {
+      options.headers = { ...options.headers, Authorization: `Bearer ${token}` } as any;
+    }
   }
-};
-
-onMounted(() => {
-  fetchTemplates();
 });
+
+const templates = computed(() => (response.value as any)?.data || []);
+const error = computed(() => fetchError.value?.message || null);
+
+// No need for onMounted fetch
+
 
 const openDeleteConfirmation = (template: any) => {
   // Logic to delete section master

@@ -113,6 +113,7 @@ const fetchSectionDetail = async () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     section.value = response;
+    console.log(section.value);
   } catch (err) {
     console.error("Error fetching bank detail:", err);
   } finally {

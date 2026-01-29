@@ -19,7 +19,7 @@ export default [
     children: [
       { name: 'All Batch', link: '/admin/batch' },
       { name: 'Add Batch', link: '/admin/batch/add' },
-      { name: 'Categories', link: '/admin/batch/categories' },
+      // { name: 'Categories', link: '/admin/batch/categories' },
     ],
   },
 
@@ -32,8 +32,8 @@ export default [
     </svg>`,
     children: [
       { name: 'Semua Peserta', link: '/admin/peserta' },
-      { name: 'Tambah Peserta', link: '/admin/peserta/add' },
-      { name: 'Import Peserta', link: '/admin/peserta/import' },
+      // { name: 'Tambah Peserta', link: '/admin/peserta/add' },
+      // { name: 'Import Peserta', link: '/admin/peserta/import' },
     ],
   },
 
@@ -45,10 +45,10 @@ export default [
       <path d="M5 3h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-5l-4 3v-3H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4v2h10V7zm0 4v2h7v-2z"/>
     </svg>`,
     children: [
-      { name: 'Semua Soal', link: '/admin/bank-soal' },
-      { name: 'Section', link: '/admin/sections' },
-      { name: 'Group Soal', link: '/admin/groups' },
-      { name: 'Tambah Soal', link: '/admin/questions/add' },
+      { name: 'Semua Soal', link: '/admin/bank/soal' },
+      // { name: 'Section', link: '/admin/bank/soal' },
+      // { name: 'Group Soal', link: '/admin/groups' }, // Pending implementation
+      // { name: 'Tambah Soal', link: '/admin/questions/add' }, // Pending implementation
     ],
   },
 
@@ -61,7 +61,7 @@ export default [
     </svg>`,
     children: [
       { name: 'Semua Media', link: '/admin/media' },
-      { name: 'Upload Media', link: '/admin/media/upload' },
+      // { name: 'Upload Media', link: '/admin/media/upload' },
     ],
   },
 
