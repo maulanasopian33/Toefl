@@ -78,7 +78,7 @@
             <td class="px-6 py-4 text-sm text-slate-700">
               <div class="flex items-center gap-4">
                 <template v-if="user.picture">
-                  <img :src="apiUrl + user.picture" alt="avatar" class="h-10 w-10 rounded-full object-cover shadow-sm ring-1 ring-slate-100" />
+                  <img :src="user.picture" alt="avatar" class="h-10 w-10 rounded-full object-cover shadow-sm ring-1 ring-slate-100" />
                 </template>
                 <template v-else>
                   <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600 shadow-sm ring-1 ring-indigo-100">

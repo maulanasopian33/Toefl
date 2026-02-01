@@ -19,7 +19,7 @@
         <Icon name="heroicons:speaker-wave" class="w-5 h-5" />
         <span class="text-xs font-bold uppercase tracking-wider">Instruksi Berbasis Suara</span>
       </div>
-      <audio controls :src="audioSrc" class="w-full"></audio>
+      <audio controls :src="`${config.public.MEDIA_URL}${audioSrc}`" class="w-full"></audio>
     </div>
 
     <button 
@@ -35,6 +35,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
+const config = useRuntimeConfig();
 
 const props = defineProps({
   sectionTitle: {

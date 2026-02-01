@@ -1,3 +1,14 @@
+LATEST UPDATES - 01 Februari 2026 (Part 3)
+==============================
+
+1. PERBAIKAN URL AUDIO INSTRUKSI
+   - Menambahkan prefix `MEDIA_URL` (CDN) pada elemen audio di `SectionIntroScreen.vue`.
+   - Hal ini memastikan file audio instruksi dipanggil dari server media yang benar.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/SectionIntroScreen.vue
+
+Timestamp: 2026-02-01 21:18:00
+
 LATEST UPDATES - 01 Februari 2026 (Part 2)
 ==============================
 

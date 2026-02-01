@@ -25,7 +25,7 @@
           <Icon name="heroicons:speaker-wave" class="sw-5 h-5" />
           <span class="text-xs font-black uppercase tracking-widest">Dengarkan Rekaman</span>
         </div>
-        <audio controls :src="questionData.audioUrl" class="w-full"></audio>
+        <audio controls :src="`${config.public.MEDIA_URL}${questionData.audioUrl}`" class="w-full"></audio>
       </div>
 
       <!-- Passage Area -->
@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import type { Question } from '@/composables/useTestSession';
-
+const config = useRuntimeConfig();
 const props = defineProps<{
   questionData: Question;
   questionNumber: number;
