@@ -32,6 +32,7 @@ LATEST UPDATES - 01 Februari 2026
      - nuxt-fe/public/icons/pwa-192x192.png
      - nuxt-fe/public/icons/pwa-512x512.png
      - nuxt-fe/tests/pwa.test.ts
+   - Mengoptimalkan konfigurasi Workbox untuk menghilangkan peringatan build di mode development.
 2. PERBAIKAN URL AVATAR & DEPLOYMENT
    - Memperbaiki logika `getAvatarUrl` di `BatchParticipants.vue` agar lebih fleksibel dengan path langsung.
    - Menambahkan `MEDIA_URL` pada Github Action `deploy-toafl.yml` untuk sinkronisasi konfigurasi production.
