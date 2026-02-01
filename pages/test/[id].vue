@@ -111,6 +111,21 @@
               </button>
             </div>
 
+            <!-- Test Ended State -->
+            <div v-else-if="isTestEnded" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-8">
+              <div class="p-6 bg-gray-100 rounded-full border border-gray-200">
+                <Icon name="heroicons:clock" class="h-20 w-20 text-gray-400" />
+              </div>
+              <div class="space-y-4 max-w-lg mx-auto">
+                <h2 class="text-3xl font-black text-gray-900 tracking-tight">Ujian Telah Berakhir</h2>
+                <p class="text-gray-500 text-lg font-medium">Maaf, masa berlaku ujian ini telah habis. Anda tidak dapat lagi mengakses atau mengerjakan soal.</p>
+              </div>
+              <button @click="navigateTo('/')" class="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-black transition-all active:scale-95 flex items-center space-x-2">
+                <Icon name="heroicons:arrow-left" class="w-5 h-5" />
+                <span>Kembali ke Dashboard</span>
+              </button>
+            </div>
+
             <!-- Waiting for Exam Start -->
             <div v-else-if="!isTestOpen" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-12">
               <div class="relative">
@@ -257,14 +272,41 @@ let clockInterval: NodeJS.Timeout | null = null;
 // --- Time Control Logic ---
 const currentTime = ref(new Date());
 
+console.log("currentTime", currentTime.value);
+
+console.log("testMetadata", testMetadata.value);
+console.log("testMetadata", testMetadata.value?.start_date);
+
 const scheduledStartTime = computed(() => {
   return testMetadata.value?.start_date ? new Date(testMetadata.value.start_date) : null;
 });
 
+console.log("scheduledStartTime", scheduledStartTime.value);
+
+const scheduledEndTime = computed(() => {
+  return testMetadata.value?.end_date ? new Date(testMetadata.value.end_date) : null;
+});
+
+console.log("scheduledEndTime", scheduledEndTime.value);
+
+const isTestEnded = computed(() => {
+  if (!scheduledEndTime.value) return false;
+  return currentTime.value > scheduledEndTime.value;
+});
+
+console.log("isTestEnded", isTestEnded.value);
+
 const isTestOpen = computed(() => {
+  // Jika test sudah berakhir, maka pasti tidak open
+  if (isTestEnded.value) return false;
+
+  // Jika tidak ada start date, dianggap open (kecuali sudah berakhir)
   if (!scheduledStartTime.value) return true;
+  
   return currentTime.value >= scheduledStartTime.value;
 });
+
+console.log("isTestOpen", isTestOpen.value);
 
 const countdown = computed(() => {
   if (!scheduledStartTime.value) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
@@ -278,6 +320,9 @@ const countdown = computed(() => {
 
   return { days, hours, minutes, seconds };
 });
+
+console.log("countdown", countdown.value);
+
 
 onMounted(() => {
   // Add global style for shimmer animation

@@ -41,6 +41,7 @@ export interface TestMetadata {
   totalQuestions: number;
   sectionOrder: { id: string; name: string }[];
   start_date?: string;
+  end_date?: string;
 }
 
 export interface SectionDetail {
@@ -173,6 +174,6 @@ export function useTestSession(testId: string) {
   return {
     testMetadata, sectionDetails, sectionsData, finalScore,
     isLoadingMetadata, isLoadingSection, isSubmitting, error,
-    fetchSectionData, submitAnswers,
+    fetchTestMetadata, fetchSectionData, submitAnswers,
   };
 }

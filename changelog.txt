@@ -12,12 +12,18 @@ LATEST UPDATES - 29 Januari 2026
    - Implementasi **Dynamic Favicon & Title**:
      - `app.vue` sekarang memuat pengaturan aplikasi (`appName`, `faviconUrl`) dari database.
      - Browser tab akan otomatis menampilkan logo dan nama aplikasi yang sesuai dengan konfigurasi white-label.
+   - Implementasi **Kontrol Akses Ujian (Test Access Control)**:
+     - Menambahkan logika pengecekan `end_date` pada halaman ujian (`pages/test/[id].vue`).
+     - Ujian tidak dapat diakses (terkunci) jika waktu sekarang melewati jadwal selesai.
+     - Menambahkan tampilan "Ujian Telah Berakhir" yang informatif.
    - File yang disentuh: 
      - nuxt-fe/error.vue
      - nuxt-fe/data/navItems.ts
      - nuxt-fe/pages/admin/bank/soal/index.vue
      - nuxt-fe/pages/admin/bank-soal/index.vue
      - nuxt-fe/app.vue
+     - nuxt-fe/composables/useTestSession.ts
+     - nuxt-fe/pages/test/[id].vue
 
 Timestamp: 2026-01-29 12:05:00
 
