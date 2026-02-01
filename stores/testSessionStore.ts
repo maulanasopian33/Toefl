@@ -1,4 +1,4 @@
-// store/testSessionStore.ts
+// stores/testSessionStore.ts
 import { defineStore } from 'pinia';
 
 export const useTestSessionStore = defineStore('testSession', {
@@ -10,15 +10,16 @@ export const useTestSessionStore = defineStore('testSession', {
     currentQuestionIndex: 0,
     timeLeft: 0,
     quizState: 'intro' as 'intro' | 'questions' | 'finished',
-    sectionsData: [],
-    allAnswers: [],
+    sectionsData: [] as any[],
+    allAnswers: [] as any[],
     fontSize: 'normal' as 'small' | 'normal' | 'large' | 'extra-large',
+    isRestored: false,
   }),
   actions: {
     setFontSize(size: 'small' | 'normal' | 'large' | 'extra-large') {
       this.fontSize = size;
     },
-    setTestId(id: string) {
+    setTestId(id: string | null) {
       this.testId = id;
     },
     setTestMetadata(metadata: any) {
@@ -45,6 +46,24 @@ export const useTestSessionStore = defineStore('testSession', {
     setAllAnswers(answers: any[]) {
       this.allAnswers = answers;
     },
+    setRestored(value: boolean) {
+      this.isRestored = value;
+    },
+    saveProgress(data: Partial<{
+      currentSectionIndex: number;
+      currentGroupIndex: number;
+      currentQuestionIndex: number;
+      timeLeft: number;
+      quizState: 'intro' | 'questions' | 'finished';
+      sectionsData: any[];
+    }>) {
+      if (data.currentSectionIndex !== undefined) this.currentSectionIndex = data.currentSectionIndex;
+      if (data.currentGroupIndex !== undefined) this.currentGroupIndex = data.currentGroupIndex;
+      if (data.currentQuestionIndex !== undefined) this.currentQuestionIndex = data.currentQuestionIndex;
+      if (data.timeLeft !== undefined) this.timeLeft = data.timeLeft;
+      if (data.quizState !== undefined) this.quizState = data.quizState;
+      if (data.sectionsData !== undefined) this.sectionsData = data.sectionsData;
+    },
     clearSession() {
       this.testId = null;
       this.testMetadata = null;
@@ -55,7 +74,11 @@ export const useTestSessionStore = defineStore('testSession', {
       this.quizState = 'intro';
       this.sectionsData = [];
       this.allAnswers = [];
+      this.isRestored = false;
     },
   },
-  persist: true,
+  persist: {
+    storage: localStorage,
+    pick: ['testId', 'currentSectionIndex', 'currentGroupIndex', 'currentQuestionIndex', 'timeLeft', 'quizState', 'sectionsData', 'allAnswers', 'fontSize'],
+  },
 });

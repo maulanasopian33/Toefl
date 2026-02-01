@@ -1,3 +1,22 @@
+LATEST UPDATES - 01 Februari 2026 (Part 2)
+==============================
+
+1. FITUR RESUME TEST (LOCAL PERSISTENCE)
+   - Implementasi penyimpanan otomatis progres tes (jawaban dan waktu) menggunakan Pinia & LocalStorage.
+   - Menambahkan banner "Melanjutkan dari progres terakhir" saat sesi dipulihkan.
+   - Dashboard (HeroSection) sekarang mendeteksi sesi aktif:
+     - Tombol "Lanjutkan Tes" aktif jika ada riwayat.
+     - Tombol "Mulai Tes Baru" menampilkan konfirmasi jika ada riwayat aktif.
+   - Sesi otomatis dibersihkan saat tes selesai disubmit.
+   - Unit test ditambahkan untuk memverifikasi logika persistensi store.
+   - File yang disentuh:
+     - nuxt-fe/stores/testSessionStore.ts
+     - nuxt-fe/pages/test/[id].vue
+     - nuxt-fe/components/DashboardUser/heroSection.vue
+     - nuxt-fe/tests/resumeSession.test.ts
+
+Timestamp: 2026-02-01 19:42:00
+
 LATEST UPDATES - 01 Februari 2026
 ==============================
 

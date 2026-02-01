@@ -6,6 +6,21 @@
       <!-- Sophisticated Sticky Navigation Bar -->
       <nav v-if="testMetadata && testMetadata.sectionOrder.length > 0" id="sectionNavBar" 
            class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4">
+        
+        <!-- History Restore Banner -->
+        <Transition name="slide-down">
+          <div v-if="testSessionStore.isRestored" 
+               class="max-w-7xl mx-auto mt-2 p-3 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-between animate-pulse-slow">
+            <div class="flex items-center space-x-3 text-blue-700">
+              <Icon name="heroicons:information-circle" class="w-5 h-5" />
+              <p class="text-sm font-bold tracking-tight">Melanjutkan dari progres terakhir (Histori dimuat)</p>
+            </div>
+            <button @click="testSessionStore.setRestored(false)" class="p-1 hover:bg-blue-100 rounded-full transition-colors">
+              <Icon name="heroicons:x-mark" class="w-4 h-4 text-blue-400" />
+            </button>
+          </div>
+        </Transition>
+
         <div class="max-w-7xl mx-auto flex justify-center">
           <div class="flex space-x-1 md:space-x-4">
             <button v-for="(item, index) in testMetadata.sectionOrder" 
@@ -380,11 +395,48 @@ const formattedTime = computed(() => {
 
 // --- Watchers ---
 watch(testMetadata, (newMetadata) => {
-  if (newMetadata && newMetadata.sectionOrder.length > 0 && sectionsData.value.length === 0) {
-    timeLeft.value = newMetadata.totalTime;
-    fetchSectionData(newMetadata.sectionOrder[0].id, 0);
+  if (newMetadata && newMetadata.sectionOrder.length > 0) {
+    // Check for history in store
+    if (testSessionStore.testId === testId && testSessionStore.sectionsData.length > 0) {
+      console.log('Restoring session from store...');
+      currentSectionIndex.value = testSessionStore.currentSectionIndex;
+      currentGroupIndex.value = testSessionStore.currentGroupIndex;
+      currentQuestionIndex.value = testSessionStore.currentQuestionIndex;
+      timeLeft.value = testSessionStore.timeLeft;
+      quizState.value = testSessionStore.quizState;
+      
+      // Sync sectionsData back to useTestSession state
+      sectionsData.value = JSON.parse(JSON.stringify(testSessionStore.sectionsData));
+      
+      testSessionStore.setRestored(true);
+      
+      // If we were on intro screen of a section, ensure we have section data
+      fetchSectionData(newMetadata.sectionOrder[currentSectionIndex.value].id, currentSectionIndex.value);
+      
+      if (quizState.value === 'questions') {
+        startTimer();
+      }
+    } else {
+      // Start fresh
+      testSessionStore.clearSession();
+      testSessionStore.setTestId(testId);
+      testSessionStore.setTestMetadata(newMetadata);
+      timeLeft.value = newMetadata.totalTime;
+      fetchSectionData(newMetadata.sectionOrder[0].id, 0);
+    }
   }
 }, { immediate: true });
+
+const saveCurrentProgress = () => {
+  testSessionStore.saveProgress({
+    currentSectionIndex: currentSectionIndex.value,
+    currentGroupIndex: currentGroupIndex.value,
+    currentQuestionIndex: currentQuestionIndex.value,
+    timeLeft: timeLeft.value,
+    quizState: quizState.value,
+    sectionsData: sectionsData.value,
+  });
+};
 
 // --- Actions ---
 const startTimer = () => {
@@ -415,6 +467,7 @@ const updateUserAnswer = (payload: { questionId: string; answer: string | null }
 };
 
 const handleNextQuestion = async () => {
+  saveCurrentProgress();
   if (currentGroup.value && currentQuestionIndex.value < currentGroup.value.questions.length - 1) {
     currentQuestionIndex.value++;
   } else if (currentSection.value && currentGroupIndex.value < currentSection.value.groups.length - 1) {
@@ -429,15 +482,18 @@ const handleNextQuestion = async () => {
   } else {
     finishQuiz();
   }
+  saveCurrentProgress(); // Save again after update
 };
 
 const handlePrevQuestion = () => {
+  saveCurrentProgress();
   if (currentQuestionIndex.value > 0) {
     currentQuestionIndex.value--;
   } else if (currentGroupIndex.value > 0) {
     currentGroupIndex.value--;
     currentQuestionIndex.value = currentSection.value?.groups[currentGroupIndex.value].questions.length - 1 || 0;
   }
+  saveCurrentProgress(); // Save again after update
 };
 
 const finishQuiz = async () => {
@@ -448,7 +504,9 @@ const finishQuiz = async () => {
     .flatMap(g => g.questions)
     .filter(q => q.userAnswer)
     .map(q => ({ questionId: q.id, userAnswer: q.userAnswer! }));
+  
   await submitAnswers(allAnswers);
+  testSessionStore.clearSession(); // Progress finished, clear history
 };
 
 const goToSection = async (index: number) => {
@@ -508,6 +566,14 @@ onBeforeUnmount(() => {
 }
 .slide-up-enter-from, .slide-up-leave-to {
   transform: translateY(100%);
+}
+
+.slide-down-enter-active, .slide-down-leave-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-down-enter-from, .slide-down-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
 }
 
 @keyframes pulse-slow {
