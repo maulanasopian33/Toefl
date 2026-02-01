@@ -34,6 +34,7 @@
     "@iconify-json/ic": "^1.2.4",
     "@nuxt/image": "^1.10.0",
     "@types/howler": "^2.2.12",
+    "@vite-pwa/nuxt": "^1.1.0",
     "@vue/test-utils": "^2.4.6",
     "html5-qrcode": "^2.3.8",
     "jsdom": "^27.4.0",
