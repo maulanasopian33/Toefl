@@ -41,6 +41,6 @@ const remainingCount = computed(() => Math.max(0, props.participants.length - MA
 const getAvatarUrl = (path : string) => {
   if (!path) return 'https://via.placeholder.com/40'; // Fallback avatar
   // Asumsi path adalah relatif, misal: /images/avatar/....png
-  return `${config.public.API_URL.replace('/api/v1', '')}${path}`;
+  return path;
 };
 </script>

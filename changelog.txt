@@ -13,6 +13,14 @@ LATEST UPDATES - 01 Februari 2026
      - nuxt-fe/public/icons/pwa-192x192.png
      - nuxt-fe/public/icons/pwa-512x512.png
      - nuxt-fe/tests/pwa.test.ts
+2. PERBAIKAN URL AVATAR & DEPLOYMENT
+   - Memperbaiki logika `getAvatarUrl` di `BatchParticipants.vue` agar lebih fleksibel dengan path langsung.
+   - Menambahkan `MEDIA_URL` pada Github Action `deploy-toafl.yml` untuk sinkronisasi konfigurasi production.
+   - Menambahkan `MEDIA_URL` ke `runtimeConfig` di `nuxt.config.ts` (sudah tersedia).
+   - File yang disentuh:
+     - nuxt-fe/components/batch/detail/BatchParticipants.vue
+     - nuxt-fe/.github/workflows/deploy-toafl.yml
+
 
 Timestamp: 2026-02-01 18:20:00
 
