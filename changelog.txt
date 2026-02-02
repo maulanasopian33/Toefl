@@ -1,3 +1,15 @@
+LATEST UPDATES - 02 Februari 2026
+==============================
+
+1. NOTIFIKASI PERTANYAAN TANPA JAWABAN BENAR
+   - Menambahkan kotak informasi (v-if) yang mendeteksi pertanyaan tanpa jawaban benar.
+   - Menampilkan jumlah total, nomor grup, dan nomor soal yang bermasalah secara dinamis.
+   - Memudahkan admin dalam validasi soal sebelum disimpan.
+   - File yang disentuh:
+     - nuxt-fe/components/ExamEditor/ExamEditor.vue
+
+Timestamp: 2026-02-02 22:54:00
+
 LATEST UPDATES - 01 Februari 2026 (Part 3)
 ==============================
 

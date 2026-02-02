@@ -58,6 +58,29 @@ watch(() => data.value, (newSections) => {
   }
 }, { immediate: true, deep: true }); // `immediate: true` untuk berjalan saat komponen dimuat
 
+// Computed to find questions without correct answers
+const invalidQuestions = computed(() => {
+  const result: { sectionName: string; sectionId: string; groupIndex: number; questionIndex: number; questionId: string }[] = [];
+  
+  data.value.forEach((section) => {
+    section.groups.forEach((group, gIdx) => {
+      group.questions.forEach((question, qIdx) => {
+        if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+          result.push({
+            sectionName: section.name,
+            sectionId: section.id,
+            groupIndex: gIdx + 1,
+            questionIndex: qIdx + 1,
+            questionId: question.id
+          });
+        }
+      });
+    });
+  });
+  
+  return result;
+});
+
 const isSaving = ref(false);
 
 async function saveAllChanges() {
@@ -268,10 +291,33 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                     : 'Waktu ujian telah dimulai. Pengeditan tidak diizinkan saat ujian berlangsung.' }}
                  Jika ingin mengubah soal, silakan <button @click="openSectionModal(activeSectionId || undefined)" class="font-bold underline hover:text-amber-900">Promosikan ke Bank Soal</button> lalu buat batch baru.
               </p>
-           </div>
-        </div>
+            </div>
+         </div>
 
-        <!-- Loading State -->
+         <!-- Missing Answer Notification -->
+         <div v-if="invalidQuestions.length > 0" class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 shadow-sm animate-fade-in-down">
+            <div class="p-2 bg-rose-100 rounded-xl text-rose-600 flex-shrink-0">
+               <Icon name="lucide:alert-circle" class="w-5 h-5" />
+            </div>
+            <div class="flex-1">
+               <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-rose-900 text-sm">Ada {{ invalidQuestions.length }} pertanyaan yang belum memiliki jawaban benar</h3>
+               </div>
+               <div class="mt-2 flex flex-wrap gap-2">
+                  <div v-for="(iq, idx) in invalidQuestions" :key="idx" 
+                       class="px-2 py-1 bg-white border border-rose-100 rounded-lg text-[10px] text-rose-700 font-medium flex items-center gap-1.5 shadow-sm">
+                     <span class="opacity-60">{{ iq.sectionName }}</span>
+                     <span class="w-1 h-1 rounded-full bg-rose-200"></span>
+                     <span>Grup {{ iq.groupIndex }}</span>
+                     <span class="w-1 h-1 rounded-full bg-rose-200"></span>
+                     <span class="text-rose-900 font-bold">No. {{ iq.questionIndex }}</span>
+                  </div>
+               </div>
+               <p class="text-[10px] text-rose-600 mt-2 italic">* Pastikan semua pertanyaan telah dipilih jawaban benarnya agar sistem penilaian berfungsi dengan benar.</p>
+            </div>
+         </div>
+
+         <!-- Loading State -->
         <div v-if="isLoading" class="flex flex-col items-center justify-center h-full text-center">
           <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
             <Icon name="lucide:loader-2" class="w-8 h-8 text-indigo-600 animate-spin" />
