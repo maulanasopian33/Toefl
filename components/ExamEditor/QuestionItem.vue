@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 const props = defineProps<{sectionId:string,groupIndex:number,qIndex:number,q:any, questionsLength:number}>()
-const emit = defineEmits(['delete','move','updateOption','addOption','deleteOption','rtlToggle','initEditor'])
+const emit = defineEmits(['delete','move','updateOption','addOption','deleteOption','rtlToggle','initEditor', 'manageAudio'])
+const config = useRuntimeConfig()
+import CustomAudioPlayer from './CustomAudioPlayer.vue'
 const qId=`q-${props.sectionId}-${props.groupIndex}-${props.qIndex}`
 
 const isEditorActive = ref(false);
@@ -56,6 +58,22 @@ function toggleOptionDir(index: number) {
         <Icon name="lucide:languages" class="w-3.5 h-3.5" />
         <span>Ubah Arah Teks</span>
       </button>
+    </div>
+
+    <!-- Question Audio -->
+    <div class="mb-4">
+      <div v-if="q.audioUrl" class="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+        <CustomAudioPlayer :src="`${config.public.MEDIA_URL}${q.audioUrl}`" />
+        <button @click="emit('manageAudio', 'delete')" class="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0" title="Hapus Audio">
+          <Icon name="lucide:trash-2" class="w-4 h-4" />
+        </button>
+      </div>
+      <div v-else>
+        <button @click="emit('manageAudio', 'select')" class="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 text-slate-500 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all font-medium">
+          <Icon name="lucide:music" class="w-4 h-4" />
+          <span class="text-xs">Tambah Audio Pertanyaan</span>
+        </button>
+      </div>
     </div>
 
     <!-- Options -->

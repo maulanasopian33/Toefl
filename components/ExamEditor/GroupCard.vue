@@ -11,7 +11,7 @@ const config = useRuntimeConfig()
 
 const props = defineProps<{sectionId:string,groupIndex:number,groupsLength:number,group:any}>()
 const emit = defineEmits(['toggle','moveGroup','deleteGroup','updateGroupMedia','initPassageEditor','initQuestionEditor','toggleDir',
-  'addQuestion','deleteQuestion','moveQuestion','updateOption','addOption','deleteOption'])
+  'addQuestion','deleteQuestion','moveQuestion','updateOption','addOption','deleteOption', 'updateQuestionMedia'])
 const pid=`group-${props.sectionId}-${props.groupIndex}`
 
 function initializeEditors() {
@@ -24,6 +24,30 @@ onMounted(initializeEditors);
 watch(() => props.group.isCollapsed, (isCollapsed) => { if (!isCollapsed) initializeEditors(); });
 
 const showMediaModal = ref(false);
+const mediaTarget = ref<{ type: 'group' | 'question', qIndex?: number }>({ type: 'group' });
+
+function openGroupMedia() {
+  mediaTarget.value = { type: 'group' };
+  showMediaModal.value = true;
+}
+
+function handleQuestionAudio(qIndex: number, action: 'select' | 'delete') {
+  if (action === 'delete') {
+    emit('updateQuestionMedia', qIndex, 'audioUrl', null);
+  } else {
+    mediaTarget.value = { type: 'question', qIndex };
+    showMediaModal.value = true;
+  }
+}
+
+function onMediaSelect(url: string) {
+  if (mediaTarget.value.type === 'group') {
+    emit('updateGroupMedia', 'audioUrl', url);
+  } else if (mediaTarget.value.type === 'question' && mediaTarget.value.qIndex !== undefined) {
+    emit('updateQuestionMedia', mediaTarget.value.qIndex, 'audioUrl', url);
+  }
+  showMediaModal.value = false;
+}
 </script>
 
 <template>
@@ -82,7 +106,7 @@ const showMediaModal = ref(false);
               <Icon name="lucide:trash-2" class="w-4 h-4" />
             </button>
           </div>
-          <div v-else @click="showMediaModal = true">
+          <div v-else @click="openGroupMedia">
             <button class="w-full flex items-center justify-center px-4 py-4 bg-white text-slate-500 rounded-xl border-2 border-dashed border-slate-300 cursor-pointer hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all group">
               <div class="flex flex-col items-center gap-2">
                 <Icon name="lucide:music" class="w-6 h-6 text-slate-400 group-hover:text-indigo-500" />
@@ -102,7 +126,8 @@ const showMediaModal = ref(false);
                           @move="d=>emit('moveQuestion',qIndex,d)"
                           @updateOption="(o,t)=>emit('updateOption',qIndex,o,t)"
                           @addOption="questionIndexPayload => emit('addOption', questionIndexPayload)"
-                          @deleteOption="o=>emit('deleteOption',qIndex,o)" />
+                          @deleteOption="o=>emit('deleteOption',qIndex,o)"
+                          @manageAudio="action => handleQuestionAudio(qIndex, action)" />
         </TransitionGroup>
 
         <button @click="emit('addQuestion')" class="mt-6 w-full py-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-2 font-medium">
@@ -116,7 +141,7 @@ const showMediaModal = ref(false);
         <EditorMediaLibraryModal
           v-model="showMediaModal"
           :media-type="'audio'"
-          @select="url => emit('updateGroupMedia', 'audioUrl', url)"
+          @select="onMediaSelect"
         />
       </template>
     </ClientOnly>

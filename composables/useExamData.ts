@@ -8,6 +8,7 @@ interface Question {
   options: string[];
   correctAnswer: string;
   userAnswer: string | null;
+  audioUrl: string | null;
 }
 
 interface Group {

@@ -6,6 +6,7 @@ interface Question {
   question: string;
   options: string[];
   correctAnswer: string;
+  audioUrl?: string | null;
 }
 
 interface Group {
@@ -207,6 +208,13 @@ export function useExamEditor() {
     }
   };
 
+  const updateQuestionMedia = (sectionId: string, groupIndex: number, questionIndex: number, field: 'audioUrl', value: string | null) => {
+    const section = data.value.find(s => s.id === sectionId);
+    if (section?.groups[groupIndex]?.questions[questionIndex]) {
+      section.groups[groupIndex].questions[questionIndex][field] = value;
+    }
+  };
+
   return {
     data,
     activeSectionId,
@@ -228,5 +236,6 @@ export function useExamEditor() {
     updateOption,
     addOption,
     deleteOption,
+    updateQuestionMedia,
   };
 }
