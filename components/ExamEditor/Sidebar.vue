@@ -1,6 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import draggable from 'vuedraggable'
 const props = defineProps<{sections:{id:string;name:string}[],activeId:string,isOpen:boolean}>()
-const emit = defineEmits(['select','toggle','add-section', 'import-bank'])
+const emit = defineEmits(['select','toggle','add-section', 'import-bank', 'reorder'])
+
+const list = computed({
+  get: () => props.sections,
+  set: (val) => emit('reorder', val)
+})
 </script>
 
 <template>
@@ -27,16 +34,29 @@ const emit = defineEmits(['select','toggle','add-section', 'import-bank'])
 
       <!-- Scrollable Section List -->
       <div class="flex-grow overflow-y-auto -mr-2 pr-2 custom-scrollbar">
-        <div class="space-y-1.5">
-          <button v-for="s in sections" :key="s.id"
-                  @click="emit('select', s.id); emit('toggle', true)"
-                  class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-3 group"
-                  :class="s.id === activeId ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
-            <div class="w-1.5 h-1.5 rounded-full transition-colors" :class="s.id === activeId ? 'bg-indigo-500' : 'bg-slate-300 group-hover:bg-slate-400'"></div>
-            <span class="truncate">{{ s.name }}</span>
-            <Icon v-if="s.id === activeId" name="lucide:chevron-right" class="w-4 h-4 ml-auto text-indigo-400" />
-          </button>
-        </div>
+        <draggable 
+          v-model="list" 
+          item-key="id"
+          class="space-y-1.5"
+          ghost-class="opacity-50"
+          drag-class="rotate-1"
+        >
+          <template #item="{element: s}">
+            <button @click="emit('select', s.id); emit('toggle', true)"
+                    class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-3 group relative overflow-hidden"
+                    :class="s.id === activeId ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-1.5 h-1.5 rounded-full transition-colors flex-shrink-0" :class="s.id === activeId ? 'bg-indigo-500' : 'bg-slate-300 group-hover:bg-slate-400'"></div>
+                <span class="truncate">{{ s.name }}</span>
+              </div>
+              
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <Icon v-if="s.id === activeId" name="lucide:chevron-right" class="w-4 h-4 text-indigo-400" />
+                <Icon name="lucide:grip-vertical" class="w-4 h-4 text-slate-300 cursor-grab active:cursor-grabbing hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+          </template>
+        </draggable>
       </div>
     </nav>
   </div>

@@ -1,3 +1,18 @@
+LATEST UPDATES - 04 Februari 2026
+==============================
+
+1. PERBAIKAN TYPEERROR & SYNTAX PADA EXAM EDITOR
+   - Memperbaiki `TypeError: _ctx.updateQuestionMedia is not a function` pada `ExamEditor.vue`.
+   - Menambahkan `updateQuestionMedia` ke dalam destructuring `useExamEditor` agar dapat diakses oleh template.
+   - Memperbaiki syntax error pada `Sidebar.vue` (missing `<script setup>` dan `computed` import) untuk mendukung fitur reorder section.
+   - Menginstal `vuedraggable` library yang diperlukan untuk fitur reorder.
+   - File yang disentuh:
+     - nuxt-fe/components/ExamEditor/ExamEditor.vue
+     - nuxt-fe/components/ExamEditor/Sidebar.vue
+     - nuxt-fe/package.json
+
+Timestamp: 2026-02-04 21:05:00
+
 LATEST UPDATES - 02 Februari 2026
 ==============================
 

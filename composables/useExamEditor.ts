@@ -215,6 +215,13 @@ export function useExamEditor() {
     }
   };
 
+  const reorderSections = (newList: { id: string; name: string }[]) => {
+    const reordered = newList.map(item => {
+      return data.value.find(s => s.id === item.id)!;
+    }).filter(Boolean);
+    data.value = reordered;
+  };
+
   return {
     data,
     activeSectionId,
@@ -237,5 +244,6 @@ export function useExamEditor() {
     addOption,
     deleteOption,
     updateQuestionMedia,
+    reorderSections,
   };
 }

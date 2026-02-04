@@ -38,7 +38,8 @@ const {
   updateSectionMedia,
   addGroup, moveGroup, deleteGroup, toggleGroup, updateGroupMedia,
   addQuestion, deleteQuestion, moveQuestion,
-  updateOption, addOption, deleteOption
+  updateOption, addOption, deleteOption, updateQuestionMedia,
+  reorderSections
 } = useExamEditor();
 
 // 3. Sinkronkan data dari fetch ke state editor
@@ -275,7 +276,8 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                @select="setActiveSection"
                @toggle="toggleSidebar"
                @add-section="openSectionModal()"
-               @import-bank="showImportModal = true" />
+               @import-bank="showImportModal = true"
+               @reorder="reorderSections" />
 
       <div class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
         <!-- Locked Banner -->
