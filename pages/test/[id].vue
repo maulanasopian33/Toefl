@@ -190,6 +190,7 @@
             <QuestionView
               v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
               :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage, groupAudio: currentGroup.audioUrl }"
+              :group-id="currentGroup.id"
               :question-number="currentQuestionIndex + 1"
               :total-questions="currentGroup.questions.length"
               :is-first="isFirstQuestionOfSection"
@@ -238,6 +239,9 @@
       </main>
 
     </AntiCheatWrapper>
+    
+    <!-- Audio Global Controller -->
+    <AudioFloatingWidget />
 
     <!-- Accessibility Floating Menu -->
     <AccessibilityFloating 
@@ -257,6 +261,9 @@ import SectionIntroScreen from '@/components/Test/SectionIntroScreen.vue';
 import QuestionView from '@/components/Test/QuestionView.vue';
 import SidebarContent from '@/components/Test/SidebarContent.vue';
 import AccessibilityFloating from '@/components/Test/AccessibilityFloating.vue';
+import HighEndAudioPlayer from '@/components/Test/HighEndAudioPlayer.vue';
+import AudioFloatingWidget from '@/components/Test/AudioFloatingWidget.vue';
+import { useAudioPlayer } from '@/composables/useAudioPlayer';
 
 const route = useRoute();
 const testId = route.params.id as string;
@@ -273,6 +280,8 @@ const {
   isLoadingMetadata, isLoadingSection, isSubmitting, error, fetchTestMetadata,
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
+
+const { play, stop, currentSource, isPlaying } = useAudioPlayer();
 
 // --- State Lokal Halaman Ujian ---
 const quizState = ref<'intro' | 'questions' | 'finished'>('intro');
@@ -394,6 +403,74 @@ const formattedTime = computed(() => {
 });
 
 // --- Watchers ---
+// --- Audio Autoplay Engine ---
+const lastPlayedGroupId = ref<string | null>(null);
+const lastPlayedQuestionId = ref<string | null>(null);
+const lastPlayedIntroId = ref<string | null>(null);
+
+const playNextAudioInSequence = async () => {
+  if (quizState.value === 'intro' && currentSection.value?.audioInstructions) {
+    const id = `intro-${currentSection.value.id}`;
+    if (lastPlayedIntroId.value === id) return;
+    
+    play({
+      id,
+      url: currentSection.value.audioInstructions,
+      title: `Instruksi: ${currentSection.value.name}`
+    });
+    lastPlayedIntroId.value = id;
+  } else if (quizState.value === 'questions') {
+    const groupId = currentGroup.value?.id;
+    const questionId = currentQuestion.value?.id;
+
+    if (currentGroup.value?.audioUrl && lastPlayedGroupId.value !== groupId) {
+      play({
+        id: `group-${groupId}`,
+        url: currentGroup.value.audioUrl,
+        title: "Teks Bacaan (Audio)"
+      });
+      lastPlayedGroupId.value = groupId || null;
+    } else if (currentQuestion.value?.audioUrl && lastPlayedQuestionId.value !== questionId) {
+      play({
+        id: `question-${questionId}`,
+        url: currentQuestion.value.audioUrl,
+        title: `Pertanyaan ${currentQuestionIndex.value + 1}`
+      });
+      lastPlayedQuestionId.value = questionId || null;
+    }
+  } else {
+    stop();
+    lastPlayedIntroId.value = null;
+    lastPlayedGroupId.value = null;
+    lastPlayedQuestionId.value = null;
+  }
+};
+
+// Automate playback on state changes
+watch([quizState, currentSectionIndex, currentGroupIndex, currentQuestionIndex], () => {
+  // Delay slightly to ensure components are mounted and avoid race conditions
+  setTimeout(playNextAudioInSequence, 500);
+});
+
+// Watch for audio completion to trigger next in sub-sequence
+watch(() => isPlaying.value, (newIsPlaying, oldIsPlaying) => {
+  if (oldIsPlaying && !newIsPlaying && currentSource.value) {
+    if (currentSource.value.id.startsWith('group-') && currentQuestion.value?.audioUrl) {
+      const qId = `question-${currentQuestion.value.id}`;
+      if (lastPlayedQuestionId.value === currentQuestion.value.id) return;
+
+      setTimeout(() => {
+        play({
+          id: qId,
+          url: currentQuestion.value!.audioUrl!,
+          title: `Pertanyaan ${currentQuestionIndex.value + 1}`
+        });
+        lastPlayedQuestionId.value = currentQuestion.value!.id;
+      }, 1000);
+    }
+  }
+});
+
 watch(testMetadata, (newMetadata) => {
   if (newMetadata && newMetadata.sectionOrder.length > 0) {
     // Check for history in store

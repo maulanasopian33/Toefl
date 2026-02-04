@@ -14,12 +14,12 @@
     </div>
 
     <!-- Audio Instruction Player -->
-    <div v-if="audioSrc" class="w-full max-w-md p-6 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-3">
-      <div class="flex items-center space-x-3 text-emerald-600">
-        <Icon name="heroicons:speaker-wave" class="w-5 h-5" />
-        <span class="text-xs font-bold uppercase tracking-wider">Instruksi Berbasis Suara</span>
-      </div>
-      <audio controls :src="`${config.public.MEDIA_URL}${audioSrc}`" class="w-full"></audio>
+    <div v-if="audioSrc" class="w-full max-w-md">
+      <HighEndAudioPlayer 
+        :id="`intro-${sectionTitle}`"
+        :src="audioSrc"
+        title="Instruksi Bagian"
+      />
     </div>
 
     <button 

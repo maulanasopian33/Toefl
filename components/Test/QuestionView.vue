@@ -20,21 +20,21 @@
     <!-- Konten Utama: Passage & Soal -->
     <div class="grid grid-cols-1 gap-8">
       <!-- Media: Group Audio (Passage) -->
-      <div v-if="questionData.groupAudio" class="bg-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100/50 shadow-inner space-y-3">
-        <div class="flex items-center space-x-3 text-indigo-600">
-          <Icon name="heroicons:speaker-wave" class="w-5 h-5" />
-          <span class="text-xs font-black uppercase tracking-widest">Dengarkan Teks/Audio Reading</span>
-        </div>
-        <audio controls :src="`${config.public.MEDIA_URL}${questionData.groupAudio}`" class="w-full"></audio>
+      <div v-if="questionData.groupAudio" class="">
+        <HighEndAudioPlayer 
+          :id="`group-${groupId}`"
+          :src="questionData.groupAudio"
+          title="Teks Bacaan (Audio)"
+        />
       </div>
 
       <!-- Media: Question Audio -->
-      <div v-if="questionData.audioUrl" class="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 shadow-inner space-y-3">
-        <div class="flex items-center space-x-3 text-gray-500">
-          <Icon name="heroicons:speaker-wave" class="w-5 h-5" />
-          <span class="text-xs font-black uppercase tracking-widest">Dengarkan Pertanyaan</span>
-        </div>
-        <audio controls :src="`${config.public.MEDIA_URL}${questionData.audioUrl}`" class="w-full"></audio>
+      <div v-if="questionData.audioUrl" class="">
+        <HighEndAudioPlayer 
+          :id="`question-${questionData.id}`"
+          :src="questionData.audioUrl"
+          title="Pertanyaan"
+        />
       </div>
 
       <!-- Passage Area -->
@@ -130,6 +130,7 @@ const props = defineProps<{
   isFirst: boolean;
   isLast: boolean;
   fontSize: 'small' | 'normal' | 'large' | 'extra-large';
+  groupId: string;
 }>();
 
 const emit = defineEmits(['update:userAnswer', 'next', 'prev']);
