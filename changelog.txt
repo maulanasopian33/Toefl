@@ -27,7 +27,17 @@ LATEST UPDATES - 04 Februari 2026
    - File yang disentuh:
      - nuxt-fe/pages/test/[id].vue
 
-Timestamp: 2026-02-04 22:20:00
+4. PENINGKATAN WIDGET AUDIO FLOATING (Halaman Ujian)
+   - Menambahkan daftar putar (Track List) pada widget audio yang menampilkan semua audio yang tersedia pada soal/passage saat ini.
+   - Menambahkan fitur minimize ("Hide") agar widget bisa disembunyikan menjadi tombol kecil tanpa menghentikan audio.
+   - Highlighting pada track yang sedang diputar dengan animasi visualizer.
+   - Integrasi state track otomatis antara halaman ujian dan widget audio.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/AudioFloatingWidget.vue
+     - nuxt-fe/composables/useAudioPlayer.ts
+     - nuxt-fe/pages/test/[id].vue
+
+Timestamp: 2026-02-04 22:50:00
 
 LATEST UPDATES - 02 Februari 2026
 ==============================

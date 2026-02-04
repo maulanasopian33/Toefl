@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-24 right-6 z-[60] flex flex-col items-end space-y-4">
+  <div class="fixed bottom-40 right-6 z-[60] flex flex-col items-end space-y-4">
     <!-- Menu -->
     <Transition name="scale">
       <div v-if="isOpen" class="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-6 w-64 space-y-4 mb-2">

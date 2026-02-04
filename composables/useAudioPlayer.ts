@@ -15,6 +15,7 @@ const progress = ref(0)
 const duration = ref(0)
 const currentTime = ref(0)
 const volume = ref(1.0)
+const availableTracks = ref<AudioSource[]>([])
 
 let activeHowl: Howl | null = null
 let progressInterval: any = null
@@ -129,10 +130,14 @@ export function useAudioPlayer() {
     duration,
     currentTime,
     volume,
+    availableTracks,
     play,
     pause,
     stop,
     togglePlay,
-    seek
+    seek,
+    setTracks: (tracks: AudioSource[]) => {
+      availableTracks.value = tracks
+    }
   }
 }

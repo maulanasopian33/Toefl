@@ -281,7 +281,7 @@ const {
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
 
-const { play, stop, currentSource, isPlaying } = useAudioPlayer();
+const { play, stop, currentSource, isPlaying, setTracks } = useAudioPlayer();
 
 // --- State Lokal Halaman Ujian ---
 const quizState = ref<'intro' | 'questions' | 'finished'>('intro');
@@ -409,6 +409,35 @@ const lastPlayedQuestionId = ref<string | null>(null);
 const lastPlayedIntroId = ref<string | null>(null);
 
 const playNextAudioInSequence = async () => {
+  // Update available tracks list
+  const tracks: any[] = [];
+  
+  if (currentSection.value?.audioInstructions) {
+    tracks.push({
+      id: `intro-${currentSection.value.id}`,
+      url: currentSection.value.audioInstructions,
+      title: `Instruksi: ${currentSection.value.name}`
+    });
+  }
+  
+  if (currentGroup.value?.audioUrl) {
+    tracks.push({
+      id: `group-${currentGroup.value.id}`,
+      url: currentGroup.value.audioUrl,
+      title: "Teks Bacaan (Audio)"
+    });
+  }
+  
+  if (currentQuestion.value?.audioUrl) {
+    tracks.push({
+      id: `question-${currentQuestion.value.id}`,
+      url: currentQuestion.value.audioUrl,
+      title: `Pertanyaan ${currentQuestionIndex.value + 1}`
+    });
+  }
+  
+  setTracks(tracks);
+
   if (quizState.value === 'intro' && currentSection.value?.audioInstructions) {
     const id = `intro-${currentSection.value.id}`;
     if (lastPlayedIntroId.value === id) return;
@@ -430,7 +459,8 @@ const playNextAudioInSequence = async () => {
         title: "Teks Bacaan (Audio)"
       });
       lastPlayedGroupId.value = groupId || null;
-    } else if (currentQuestion.value?.audioUrl && lastPlayedQuestionId.value !== questionId) {
+    } else if (currentQuestion.value?.audioUrl && lastPlayedQuestionId.value !== questionId && lastPlayedGroupId.value === groupId) {
+      // Only autoplay question audio if group audio was already played for THIS group
       play({
         id: `question-${questionId}`,
         url: currentQuestion.value.audioUrl,
