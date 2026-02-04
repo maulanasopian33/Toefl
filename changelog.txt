@@ -11,7 +11,16 @@ LATEST UPDATES - 04 Februari 2026
      - nuxt-fe/components/ExamEditor/Sidebar.vue
      - nuxt-fe/package.json
 
-Timestamp: 2026-02-04 21:05:00
+2. DUKUNGAN AUDIO PADA HALAMAN UJIAN (QUESTION VIEW)
+   - Implementasi tampilan audio untuk group/passage (listening passage) dan audio specific pada tiap soal.
+   - Menambahkan field `groupAudio` pada interface `Question`.
+   - Menyesuaikan prop passing pada `pages/test/[id].vue`.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/QuestionView.vue
+     - nuxt-fe/pages/test/[id].vue
+     - nuxt-fe/composables/useTestSession.ts
+
+Timestamp: 2026-02-04 22:10:00
 
 LATEST UPDATES - 02 Februari 2026
 ==============================
