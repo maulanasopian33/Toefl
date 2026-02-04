@@ -421,7 +421,7 @@ watch(testMetadata, (newMetadata) => {
       testSessionStore.clearSession();
       testSessionStore.setTestId(testId);
       testSessionStore.setTestMetadata(newMetadata);
-      timeLeft.value = newMetadata.totalTime;
+      timeLeft.value = newMetadata.totalTime * 60;
       fetchSectionData(newMetadata.sectionOrder[0].id, 0);
     }
   }
@@ -510,6 +510,7 @@ const finishQuiz = async () => {
 };
 
 const goToSection = async (index: number) => {
+  if (quizState.value === 'intro') return; // Restriction during intro
   if (index < currentSectionIndex.value || sectionsData.value[index]) {
     currentSectionIndex.value = index;
     currentGroupIndex.value = 0;
@@ -519,11 +520,9 @@ const goToSection = async (index: number) => {
 };
 
 const goToQuestion = (groupIndex: number, questionIndex: number) => {
+  if (quizState.value === 'intro') return; // Restriction during intro
   currentGroupIndex.value = groupIndex;
   currentQuestionIndex.value = questionIndex;
-  if (quizState.value === 'intro') {
-    quizState.value = 'questions';
-  }
 };
 
 const getNavButtonClass = (question: any, index: number) => {

@@ -20,7 +20,14 @@ LATEST UPDATES - 04 Februari 2026
      - nuxt-fe/pages/test/[id].vue
      - nuxt-fe/composables/useTestSession.ts
 
-Timestamp: 2026-02-04 22:10:00
+3. PERBAIKAN SISTEM TIMER & NAVIGASI (Halaman Ujian)
+   - Konversi unit timer dari menit ke detik agar sinkron dengan metadata API.
+   - Menambahkan proteksi navigasi soal (Sidebar & Section Tab) agar tidak bisa diklik saat layar intro (mencegah bypass timer).
+   - Peserta wajib menekan tombol "Mulai Mengerjakan" untuk memulai timer dan membuka navigasi soal.
+   - File yang disentuh:
+     - nuxt-fe/pages/test/[id].vue
+
+Timestamp: 2026-02-04 22:20:00
 
 LATEST UPDATES - 02 Februari 2026
 ==============================
