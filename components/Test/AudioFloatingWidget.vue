@@ -2,7 +2,7 @@
   <Transition name="slide-up">
     <div v-if="currentSource" 
          @contextmenu.prevent 
-         class="fixed bottom-6 right-6 z-[60] group select-none flex flex-col items-end space-y-3">
+         class="fixed bottom-16 right-6 z-[60] group select-none flex flex-col items-end space-y-3">
       
       <!-- Minimalist Toggle Button (Visible when minimized) -->
       <button v-if="isMinimized" 
@@ -41,9 +41,9 @@
                 <Icon name="heroicons:minus-solid" class="w-5 h-5" />
               </button>
               <!-- Close Button -->
-              <button @click="stop" class="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+              <!-- <button @click="stop" class="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
                 <Icon name="heroicons:x-mark" class="w-5 h-5" />
-              </button>
+              </button> -->
             </div>
           </div>
 
