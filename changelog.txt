@@ -37,7 +37,16 @@ LATEST UPDATES - 04 Februari 2026
      - nuxt-fe/composables/useAudioPlayer.ts
      - nuxt-fe/pages/test/[id].vue
 
-Timestamp: 2026-02-04 22:50:00
+5. REDESIGN SIDEBAR MOBILE (Halaman Ujian)
+   - Mengganti sidebar mobile inline lama dengan komponen `MobileSidebarSheet.vue` baru.
+   - Implementasi desain "Glassmorphism" premium dengan background blur dan elemen animasi.
+   - Peningkatan UX dengan layout timer dan progress yang lebih jelas dan menarik.
+   - Animasi slide-up yang halus saat membuka ringkasan ujian di mobile.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/MobileSidebarSheet.vue (NEW)
+     - nuxt-fe/pages/test/[id].vue
+
+Timestamp: 2026-02-04 23:30:00
 
 LATEST UPDATES - 02 Februari 2026
 ==============================

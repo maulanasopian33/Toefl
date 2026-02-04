@@ -70,31 +70,18 @@
             </div>
           </button>
 
-          <!-- Mobile Sidebar Modal Overlay -->
-          <Transition name="fade">
-            <div v-if="isSidebarOpen" 
-                 @click.self="isSidebarOpen = false"
-                 class="lg:hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[50] flex items-end justify-center p-4">
-              <Transition name="slide-up">
-                <div v-if="isSidebarOpen" class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden relative">
-                  <div class="absolute top-4 right-4 z-10">
-                    <button @click="isSidebarOpen = false" class="p-2 w-10 h-10 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
-                      <Icon name="heroicons:x-mark" class="w-6 h-6" />
-                    </button>
-                  </div>
-                  <SidebarContent 
-                    :item-count="totalQuestionsCount"
-                    :answered-count="answeredQuestionsCount"
-                    :progress="progressPercentage"
-                    :formatted-time="formattedTime"
-                    :questions="currentSectionQuestions"
-                    :get-nav-button-class="getNavButtonClass"
-                    @go-to-question="(g, q) => { goToQuestion(g, q); isSidebarOpen = false; }"
-                  />
-                </div>
-              </Transition>
-            </div>
-          </Transition>
+          <!-- Mobile Sidebar Sheet (New Glassmorphism Redesign) -->
+          <MobileSidebarSheet
+            :is-open="isSidebarOpen"
+            :item-count="totalQuestionsCount"
+            :answered-count="answeredQuestionsCount"
+            :progress="progressPercentage"
+            :formatted-time="formattedTime"
+            :questions="currentSectionQuestions"
+            :get-nav-button-class="getNavButtonClass"
+            @close="isSidebarOpen = false"
+            @go-to-question="(g, q) => { goToQuestion(g, q); isSidebarOpen = false; }"
+          />
 
           <div class="bg-white min-h-[600px] rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 relative overflow-hidden">
             <!-- Decorative Elements -->
@@ -260,6 +247,7 @@ import AntiCheatWrapper from '@/components/Test/AntiCheatWrapper.vue';
 import SectionIntroScreen from '@/components/Test/SectionIntroScreen.vue';
 import QuestionView from '@/components/Test/QuestionView.vue';
 import SidebarContent from '@/components/Test/SidebarContent.vue';
+import MobileSidebarSheet from '@/components/Test/MobileSidebarSheet.vue';
 import AccessibilityFloating from '@/components/Test/AccessibilityFloating.vue';
 import HighEndAudioPlayer from '@/components/Test/HighEndAudioPlayer.vue';
 import AudioFloatingWidget from '@/components/Test/AudioFloatingWidget.vue';
