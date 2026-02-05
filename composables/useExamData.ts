@@ -14,7 +14,7 @@ interface Question {
 interface Group {
   id: string;
   passage: string | null;
-  audioUrl: string | null;
+  audioUrls: string[];
   questions: Question[];
 }
 

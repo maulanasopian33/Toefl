@@ -12,7 +12,7 @@ interface Question {
 interface Group {
   id: string;
   passage: string;
-  audioUrl?: string | null;
+  audioUrls: string[];
   isCollapsed: boolean;
   questions: Question[];
 }
@@ -113,7 +113,7 @@ export function useExamEditor() {
         id: `group-${Date.now()}`,
         passage: '',
         isCollapsed: false,
-        audioUrl: null,
+        audioUrls: [],
         questions: []
       });
     }
@@ -143,10 +143,16 @@ export function useExamEditor() {
     }
   };
 
-  const updateGroupMedia = (sectionId: string, groupIndex: number, field: 'audioUrl', value: string | null) => {
+  const updateGroupMedia = (sectionId: string, groupIndex: number, action: 'add' | 'delete', field: 'audioUrls', value: string | number) => {
     const section = data.value.find(s => s.id === sectionId);
     if (section?.groups[groupIndex]) {
-      section.groups[groupIndex][field] = value;
+      const group = section.groups[groupIndex];
+      if (action === 'add') {
+        if (!group.audioUrls) group.audioUrls = [];
+        group.audioUrls.push(value as string);
+      } else if (action === 'delete') {
+        group.audioUrls.splice(value as number, 1);
+      }
     }
   };
 

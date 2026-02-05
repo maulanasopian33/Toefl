@@ -42,7 +42,7 @@ function handleQuestionAudio(qIndex: number, action: 'select' | 'delete') {
 
 function onMediaSelect(url: string) {
   if (mediaTarget.value.type === 'group') {
-    emit('updateGroupMedia', 'audioUrl', url);
+    emit('updateGroupMedia', 'add', 'audioUrls', url);
   } else if (mediaTarget.value.type === 'question' && mediaTarget.value.qIndex !== undefined) {
     emit('updateQuestionMedia', mediaTarget.value.qIndex, 'audioUrl', url);
   }
@@ -94,23 +94,24 @@ function onMediaSelect(url: string) {
           </div>
         </div>
 
-        <!-- Audio Upload -->
         <div class="mb-8">
           <div class="flex items-center gap-2 mb-2">
             <Icon name="lucide:headphones" class="w-4 h-4 text-slate-500" />
-            <label class="font-semibold text-slate-700">File Audio</label>
+            <label class="font-semibold text-slate-700">File Audio Grup</label>
           </div>
-          <div v-if="group.audioUrl" class="flex items-center space-x-3">
-            <CustomAudioPlayer :src="`${config.public.MEDIA_URL}${group.audioUrl}`" />
-            <button @click="emit('updateGroupMedia', 'audioUrl', null)" class="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0">
-              <Icon name="lucide:trash-2" class="w-4 h-4" />
-            </button>
-          </div>
-          <div v-else @click="openGroupMedia">
-            <button class="w-full flex items-center justify-center px-4 py-4 bg-white text-slate-500 rounded-xl border-2 border-dashed border-slate-300 cursor-pointer hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all group">
-              <div class="flex flex-col items-center gap-2">
-                <Icon name="lucide:music" class="w-6 h-6 text-slate-400 group-hover:text-indigo-500" />
-                <span class="text-sm font-medium">Pilih Audio dari Pustaka</span>
+          
+          <div class="space-y-3">
+            <div v-for="(audio, index) in group.audioUrls" :key="index" class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-200">
+              <CustomAudioPlayer :src="`${config.public.MEDIA_URL}${audio}`" />
+              <button @click="emit('updateGroupMedia', 'delete', 'audioUrls', index)" class="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors flex-shrink-0">
+                <Icon name="lucide:trash-2" class="w-4 h-4" />
+              </button>
+            </div>
+            
+            <button @click="openGroupMedia" class="w-full flex items-center justify-center px-4 py-3 bg-white text-slate-500 rounded-xl border-2 border-dashed border-slate-300 cursor-pointer hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all group">
+              <div class="flex items-center gap-2">
+                <Icon name="lucide:music" class="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+                <span class="text-sm font-medium">Tambah Audio ke Grup</span>
               </div>
             </button>
           </div>

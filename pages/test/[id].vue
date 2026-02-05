@@ -176,7 +176,7 @@
 
             <QuestionView
               v-else-if="quizState === 'questions' && currentQuestion && currentGroup"
-              :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage, groupAudio: currentGroup.audioUrl }"
+              :question-data="{ ...currentQuestion, type: currentSection.name, passage: currentGroup.passage, groupAudios: currentGroup.audioUrls }"
               :group-id="currentGroup.id"
               :question-number="currentQuestionIndex + 1"
               :total-questions="currentGroup.questions.length"
@@ -408,11 +408,13 @@ const playNextAudioInSequence = async () => {
     });
   }
   
-  if (currentGroup.value?.audioUrl) {
-    tracks.push({
-      id: `group-${currentGroup.value.id}`,
-      url: currentGroup.value.audioUrl,
-      title: "Teks Bacaan (Audio)"
+  if (currentGroup.value?.audioUrls && currentGroup.value.audioUrls.length > 0) {
+    currentGroup.value.audioUrls.forEach((url, index) => {
+      tracks.push({
+        id: `group-${currentGroup.value!.id}-${index}`,
+        url: url,
+        title: `Teks Bacaan (Audio ${index + 1})`
+      });
     });
   }
   
@@ -440,15 +442,17 @@ const playNextAudioInSequence = async () => {
     const groupId = currentGroup.value?.id;
     const questionId = currentQuestion.value?.id;
 
-    if (currentGroup.value?.audioUrl && lastPlayedGroupId.value !== groupId) {
+    if (currentGroup.value?.audioUrls && currentGroup.value.audioUrls.length > 0 && lastPlayedGroupId.value !== groupId) {
+      // Play the FIRST audio of the group
       play({
-        id: `group-${groupId}`,
-        url: currentGroup.value.audioUrl,
-        title: "Teks Bacaan (Audio)"
+        id: `group-${groupId}-0`,
+        url: currentGroup.value.audioUrls[0],
+        title: "Teks Bacaan (Audio 1)"
       });
       lastPlayedGroupId.value = groupId || null;
     } else if (currentQuestion.value?.audioUrl && lastPlayedQuestionId.value !== questionId && lastPlayedGroupId.value === groupId) {
       // Only autoplay question audio if group audio was already played for THIS group
+      // Checking if any of group audios were played
       play({
         id: `question-${questionId}`,
         url: currentQuestion.value.audioUrl,
@@ -473,18 +477,35 @@ watch([quizState, currentSectionIndex, currentGroupIndex, currentQuestionIndex],
 // Watch for audio completion to trigger next in sub-sequence
 watch(() => isPlaying.value, (newIsPlaying, oldIsPlaying) => {
   if (oldIsPlaying && !newIsPlaying && currentSource.value) {
-    if (currentSource.value.id.startsWith('group-') && currentQuestion.value?.audioUrl) {
-      const qId = `question-${currentQuestion.value.id}`;
-      if (lastPlayedQuestionId.value === currentQuestion.value.id) return;
+    // Check if finished group audio and should play next group audio OR question audio
+    if (currentSource.value.id.startsWith('group-')) {
+      const parts = currentSource.value.id.split('-');
+      const currentIndex = parseInt(parts[2]);
+      
+      if (currentGroup.value?.audioUrls && currentIndex < currentGroup.value.audioUrls.length - 1) {
+        // Play next audio in group
+        const nextIndex = currentIndex + 1;
+        setTimeout(() => {
+          play({
+            id: `group-${currentGroup.value!.id}-${nextIndex}`,
+            url: currentGroup.value!.audioUrls[nextIndex],
+            title: `Teks Bacaan (Audio ${nextIndex + 1})`
+          });
+        }, 1000);
+      } else if (currentQuestion.value?.audioUrl) {
+        // Finished all group audios, play question audio
+        const qId = `question-${currentQuestion.value.id}`;
+        if (lastPlayedQuestionId.value === currentQuestion.value.id) return;
 
-      setTimeout(() => {
-        play({
-          id: qId,
-          url: currentQuestion.value!.audioUrl!,
-          title: `Pertanyaan ${currentQuestionIndex.value + 1}`
-        });
-        lastPlayedQuestionId.value = currentQuestion.value!.id;
-      }, 1000);
+        setTimeout(() => {
+          play({
+            id: qId,
+            url: currentQuestion.value!.audioUrl!,
+            title: `Pertanyaan ${currentQuestionIndex.value + 1}`
+          });
+          lastPlayedQuestionId.value = currentQuestion.value!.id;
+        }, 1000);
+      }
     }
   }
 });

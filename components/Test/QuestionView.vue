@@ -19,12 +19,14 @@
 
     <!-- Konten Utama: Passage & Soal -->
     <div class="grid grid-cols-1 gap-8">
-      <!-- Media: Group Audio (Passage) -->
-      <div v-if="questionData.groupAudio" class="">
+      <!-- Media: Group Audios (Passage) -->
+      <div v-if="questionData.groupAudios && questionData.groupAudios.length > 0" class="space-y-4">
         <HighEndAudioPlayer 
-          :id="`group-${groupId}`"
-          :src="questionData.groupAudio"
-          title="Teks Bacaan (Audio)"
+          v-for="(audio, index) in questionData.groupAudios"
+          :key="`group-${groupId}-${index}`"
+          :id="`group-${groupId}-${index}`"
+          :src="audio"
+          :title="`Teks Bacaan (Audio ${index + 1})`"
         />
       </div>
 

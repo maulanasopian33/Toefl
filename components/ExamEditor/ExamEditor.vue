@@ -418,7 +418,7 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                      @toggle="toggleGroup(activeSection.id,i)"
                      @moveGroup="d=>moveGroup(activeSection.id,i,d)"
                      @deleteGroup="deleteGroup(activeSection.id,i)"
-                     @updateGroupMedia="(f,v)=>updateGroupMedia(activeSection.id,i,f,v)"                     
+                     @updateGroupMedia="(a,f,v)=>updateGroupMedia(activeSection.id,i,a,f,v)"                     
                      @initPassageEditor="id=>initEditorFor(id,()=>g.passage,()=>updateFromEditor(id,h=>g.passage=h))"
                      @initQuestionEditor="p=>initEditorFor(p.editorId,()=>g.questions[p.questionIndex].question,()=>updateFromEditor(p.editorId,h=>g.questions[p.questionIndex].question=h))"
                      @toggleDir="toggleDir"

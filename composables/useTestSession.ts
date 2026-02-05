@@ -13,7 +13,7 @@ export interface Question {
   type: string;
   passage?: string; // Opsional karena mungkin tidak selalu ada (misal di writing/speaking)
   audioUrl?: string; // Opsional
-  groupAudio?: string | null; // Audio dari group/passage
+  groupAudios?: string[]; // Audios dari group/passage
   question: string;
   options?: Option[]; // Diubah menjadi array of Option
   correctAnswer?: string; // Opsional
@@ -23,7 +23,7 @@ export interface Question {
 export interface QuestionGroup {
   id: string;
   passage: string | null;
-  audioUrl: string | null;
+  audioUrls: string[];
   questions: Question[];
 }
 
