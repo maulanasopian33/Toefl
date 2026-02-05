@@ -39,6 +39,10 @@ export default defineNuxtConfig({
     preset: 'static' // Ini akan memaksa Nitro untuk menghasilkan file statis
   },
 
+  experimental: {
+    payloadExtraction: false
+  },
+
   modules: ['@nuxtjs/tailwindcss', '@nuxt/icon', '@pinia/nuxt', '@vite-pwa/nuxt'],
   pwa: {
     manifest: {
@@ -70,8 +74,9 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}'], 
+      globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}'],
     },
+
     client: {
       installPrompt: true
     },
