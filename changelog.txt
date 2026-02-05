@@ -1,3 +1,14 @@
+LATEST UPDATES - 05 Februari 2026
+==============================
+
+1. PERBAIKAN PWA GLOB PATTERNS (BUILD ERROR)
+   - Memperbaiki error `glob pattern matching` pada `_payload.json` yang menyebabkan build warning/error.
+   - Mengubah konfigurasi `workbox.globPatterns` menjadi eksplisit whitelist aset (`js, css, html, img, fonts`).
+   - File yang disentuh:
+     - nuxt-fe/nuxt.config.ts
+
+Timestamp: 2026-02-05 09:25:00
+
 LATEST UPDATES - 04 Februari 2026
 ==============================
 

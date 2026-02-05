@@ -70,8 +70,7 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
-      // Suppress dev-mode warnings about missing patterns like _payload.json
-      globPatterns: [], 
+      globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}'], 
     },
     client: {
       installPrompt: true
