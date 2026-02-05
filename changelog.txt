@@ -7,7 +7,16 @@ LATEST UPDATES - 05 Februari 2026
    - File yang disentuh:
      - nuxt-fe/nuxt.config.ts
 
-Timestamp: 2026-02-05 09:25:00
+2. IMPLEMENTASI UI & UPDATE PROMPT PWA
+   - Menambahkan komponen `PwaNotification.vue` untuk menangani notifikasi update dan install prompt.
+   - Fitur "New Content Available" dengan tombol refresh otomatis.
+   - Fitur "Install App" prompt untuk men-trigger native install banner.
+   - Integrasi global di `app.vue`.
+   - File yang disentuh:
+     - nuxt-fe/components/App/PwaNotification.vue (NEW)
+     - nuxt-fe/app.vue
+
+Timestamp: 2026-02-05 09:30:00
 
 LATEST UPDATES - 04 Februari 2026
 ==============================

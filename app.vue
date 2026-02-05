@@ -24,5 +24,6 @@ useHead({
     <NuxtLayout>
       <NuxtPage/>
     </NuxtLayout>
+    <AppPwaNotification />
   </div>
 </template>
