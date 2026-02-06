@@ -14,6 +14,7 @@ export interface ScoringTable {
   id?: number;
   name: string;
   description?: string;
+  is_default?: boolean;
   details?: ScoringDetail[];
   createdAt?: string;
   updatedAt?: string;

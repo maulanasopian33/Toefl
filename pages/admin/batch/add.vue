@@ -135,6 +135,26 @@
           </div>
         </section>
 
+        <!-- Konfigurasi Penilaian (Scoring) -->
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Konfigurasi Penilaian (Scoring)</h2>
+          </div>
+          <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Metode Penilaian</label>
+              <select v-model="formData.scoring_type" class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm cursor-pointer">
+                <option value="SCALE">SCALE (Menggunakan Tabel Konversi)</option>
+                <option value="RAW">RAW (Nilai Langsung / Jumlah Benar)</option>
+              </select>
+            </div>
+            <div v-if="formData.scoring_type === 'RAW'" class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Nilai Awal (Offset)</label>
+              <input v-model.number="formData.scoring_config.initialScore" type="number" class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-gray-700 text-sm" placeholder="0" />
+            </div>
+          </div>
+        </section>
+
         <!-- Sesi (Sessions) -->
         <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
           <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
@@ -264,6 +284,10 @@ const formData = reactive({
   currency: 'IDR',
   duration_minutes: null as number | null,
   special_instructions: '',
+  scoring_type: 'SCALE',
+  scoring_config: {
+    initialScore: 0
+  },
   sessions: [] as Session[]
 })
 

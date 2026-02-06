@@ -17,6 +17,7 @@ const { sections, fetchSections } = useScoring();
 const form = reactive<ScoringTable>({
   name: props.initialData?.name || '',
   description: props.initialData?.description || '',
+  is_default: props.initialData?.is_default || false,
   details: props.initialData?.details ? [...props.initialData.details] : []
 });
 
@@ -139,6 +140,26 @@ const importBulk = () => {
             rows="1"
             placeholder="Keterangan opsional..."
           ></textarea>
+        </div>
+        <div class="md:col-span-2 flex items-center gap-4 p-4 bg-indigo-50/50 rounded-[1.5rem] border border-indigo-100/50 transition-all">
+          <div class="p-2 bg-white rounded-xl shadow-sm">
+             <Icon name="lucide:star" :class="form.is_default ? 'text-amber-500 fill-amber-500' : 'text-gray-300'" class="w-5 h-5 transition-all" />
+          </div>
+          <div class="flex-grow">
+            <h4 class="text-sm font-black text-slate-900">Jadikan Tabel Default</h4>
+            <p class="text-[10px] text-slate-500 font-medium">Tabel ini akan digunakan sebagai referensi utama jika section tidak memiliki tabel khusus.</p>
+          </div>
+          <button 
+            type="button"
+            @click="form.is_default = !form.is_default"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent focus:ring-indigo-500/20"
+            :class="form.is_default ? 'bg-indigo-600' : 'bg-gray-200'"
+          >
+            <span
+              :class="form.is_default ? 'translate-x-6' : 'translate-x-1'"
+              class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+            />
+          </button>
         </div>
       </div>
     </section>

@@ -65,15 +65,31 @@
               </div>
             </div>
             
-            <h3 class="text-xl font-black text-slate-900 mb-1">{{ table.name }}</h3>
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="text-xl font-black text-slate-900 line-clamp-1">{{ table.name }}</h3>
+              <span v-if="table.is_default" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase tracking-tighter">
+                Default
+              </span>
+            </div>
             <p class="text-sm text-slate-500 font-medium line-clamp-2 min-h-[2.5rem]">{{ table.description || "Tidak ada deskripsi." }}</p>
           </div>
 
           <div class="px-8 py-6 bg-gray-50/50 border-t border-slate-50 flex-grow">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-4">
                <h4 class="text-[10px] font-black uppercase text-gray-400 tracking-widest leading-none">Rincian Data</h4>
                <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">{{ table.details?.length || 0 }} Baris Konversi</span>
             </div>
+            
+            <button 
+              v-if="!table.is_default" 
+              @click="setAsDefault(table)"
+              :disabled="isUpdatingDefault === table.id"
+              class="w-full py-2.5 px-4 bg-white border-2 border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/30 text-slate-600 hover:text-indigo-600 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 group/btn active:scale-95 disabled:opacity-50"
+            >
+              <Icon v-if="isUpdatingDefault === table.id" name="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+              <Icon v-else name="lucide:star" class="w-3.5 h-3.5 group-hover/btn:fill-indigo-600 transition-all" />
+              Set sebagai Default
+            </button>
           </div>
           
           <div class="px-8 py-5 bg-white border-t border-slate-50">
@@ -147,15 +163,30 @@ definePageMeta({
   permission: 'setting.manage' // Assuming this permission exists or adjust accordingly
 });
 
-const { tables, isLoading, error, fetchTables, deleteTable } = useScoring();
+const { tables, isLoading, error, fetchTables, deleteTable, updateTable } = useScoring();
 const { showNotification } = useNotification();
 
 const tableToDelete = ref<ScoringTable | null>(null);
 const isDeleting = ref(false);
+const isUpdatingDefault = ref<number | null>(null);
 
 onMounted(() => {
   fetchTables();
 });
+
+const setAsDefault = async (table: ScoringTable) => {
+  if (!table.id) return;
+  isUpdatingDefault.value = table.id;
+  try {
+    await updateTable(table.id, { ...table, is_default: true });
+    showNotification(`Tabel "${table.name}" sekarang menjadi default.`, 'success');
+    await fetchTables();
+  } catch (err) {
+    showNotification('Gagal mengatur tabel default.', 'error');
+  } finally {
+    isUpdatingDefault.value = null;
+  }
+};
 
 const openDeleteConfirmation = (table: ScoringTable) => {
   tableToDelete.value = table;
