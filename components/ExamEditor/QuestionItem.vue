@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 const props = defineProps<{sectionId:string,groupIndex:number,qIndex:number,q:any, questionsLength:number}>()
-const emit = defineEmits(['delete','move','updateOption','addOption','deleteOption','rtlToggle','initEditor', 'manageAudio'])
+const emit = defineEmits(['delete','move','updateOption','addOption','deleteOption','rtlToggle','initEditor', 'manageAudio', 'toggleOptionsAlignment'])
 const config = useRuntimeConfig()
 import CustomAudioPlayer from './CustomAudioPlayer.vue'
 const qId=`q-${props.sectionId}-${props.groupIndex}-${props.qIndex}`
@@ -60,6 +60,17 @@ function toggleOptionDir(index: number) {
       </button>
     </div>
 
+    <!-- Options Alignment Toggle (NEW) -->
+    <div class="mb-4 flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+      <div class="flex items-center gap-2">
+        <Icon :name="q.options_alignment === 'RTL' ? 'lucide:align-right' : 'lucide:align-left'" class="w-4 h-4 text-slate-500" />
+        <span class="text-xs font-semibold text-slate-700">Perataan Pilihan Jawaban: <span class="text-indigo-600 uppercase">{{ q.options_alignment || 'LTR' }}</span></span>
+      </div>
+      <button @click="emit('toggleOptionsAlignment')" class="text-[10px] font-bold uppercase tracking-wider bg-white border border-slate-300 px-3 py-1.5 rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition-all shadow-sm">
+        Ubah ke {{ q.options_alignment === 'RTL' ? 'LTR' : 'RTL' }}
+      </button>
+    </div>
+
     <!-- Question Audio -->
     <div class="mb-4">
       <div v-if="q.audioUrl" class="flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
@@ -86,8 +97,8 @@ function toggleOptionDir(index: number) {
              <Icon name="lucide:check" class="w-3.5 h-3.5 opacity-0 peer-checked:opacity-100" />
           </div>
         </label>
-        <div class="relative flex-grow">
-          <input :id="`opt-${qId}-${i}`" type="text" :value="opt" @input="e=>emit('updateOption',i,(e.target as HTMLInputElement).value)" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm p-2.5 pr-10 transition-shadow" placeholder="Tulis jawaban..."/>
+        <div class="relative flex-grow" :dir="q.options_alignment === 'RTL' ? 'rtl' : 'ltr'">
+          <input :id="`opt-${qId}-${i}`" type="text" :value="opt" @input="e=>emit('updateOption',i,(e.target as HTMLInputElement).value)" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm p-2.5 pr-10 transition-shadow" :class="{'text-right font-arabic': q.options_alignment === 'RTL'}" placeholder="Tulis jawaban..."/>
           <button @click="toggleOptionDir(i)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-indigo-600">
             <Icon name="lucide:languages" class="w-4 h-4" />
           </button>

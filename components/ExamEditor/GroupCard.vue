@@ -11,7 +11,7 @@ const config = useRuntimeConfig()
 
 const props = defineProps<{sectionId:string,groupIndex:number,groupsLength:number,group:any}>()
 const emit = defineEmits(['toggle','moveGroup','deleteGroup','updateGroupMedia','initPassageEditor','initQuestionEditor','toggleDir',
-  'addQuestion','deleteQuestion','moveQuestion','updateOption','addOption','deleteOption', 'updateQuestionMedia'])
+  'addQuestion','deleteQuestion','moveQuestion','updateOption','addOption','deleteOption', 'updateQuestionMedia', 'toggleOptionsAlignment'])
 const pid=`group-${props.sectionId}-${props.groupIndex}`
 
 function initializeEditors() {
@@ -128,7 +128,8 @@ function onMediaSelect(url: string) {
                           @updateOption="(o,t)=>emit('updateOption',qIndex,o,t)"
                           @addOption="questionIndexPayload => emit('addOption', questionIndexPayload)"
                           @deleteOption="o=>emit('deleteOption',qIndex,o)"
-                          @manageAudio="action => handleQuestionAudio(qIndex, action)" />
+                          @manageAudio="action => handleQuestionAudio(qIndex, action)"
+                          @toggleOptionsAlignment="emit('toggleOptionsAlignment', qIndex)" />
         </TransitionGroup>
 
         <button @click="emit('addQuestion')" class="mt-6 w-full py-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-sm transition-all duration-200 flex items-center justify-center gap-2 font-medium">

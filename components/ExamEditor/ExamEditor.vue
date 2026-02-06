@@ -39,6 +39,7 @@ const {
   addGroup, moveGroup, deleteGroup, toggleGroup, updateGroupMedia,
   addQuestion, deleteQuestion, moveQuestion,
   updateOption, addOption, deleteOption, updateQuestionMedia,
+  toggleOptionsAlignment,
   reorderSections
 } = useExamEditor();
 
@@ -428,7 +429,8 @@ function onDeleteSection(id:string){if(confirm('Hapus bagian ini?'))deleteSectio
                      @updateOption="(q,o,t)=>updateOption(activeSection.id,i,q,o,t)"
                      @addOption="qIndex => addOption(activeSection.id, i, qIndex)"
                      @deleteOption="(q,o) => deleteOption(activeSection.id, i, q, o)"
-                     @updateQuestionMedia="(q,f,v) => updateQuestionMedia(activeSection.id, i, q, f, v)" />
+                     @updateQuestionMedia="(q,f,v) => updateQuestionMedia(activeSection.id, i, q, f, v)"
+                     @toggleOptionsAlignment="q => toggleOptionsAlignment(activeSection.id, i, q)" />
           </div>
 
           <button @click="addGroup(activeSection.id)" class="mt-8 w-full py-4 rounded-2xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all duration-200 flex items-center justify-center gap-2 group">

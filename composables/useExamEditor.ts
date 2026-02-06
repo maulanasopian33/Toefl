@@ -7,6 +7,7 @@ interface Question {
   options: string[];
   correctAnswer: string;
   audioUrl?: string | null;
+  options_alignment?: 'LTR' | 'RTL';
 }
 
 interface Group {
@@ -163,7 +164,8 @@ export function useExamEditor() {
         id: `question-${Date.now()}`,
         question: '',
         options: [],
-        correctAnswer: ''
+        correctAnswer: '',
+        options_alignment: 'LTR'
       });
     }
   };
@@ -220,6 +222,14 @@ export function useExamEditor() {
       section.groups[groupIndex].questions[questionIndex][field] = value;
     }
   };
+  
+  const toggleOptionsAlignment = (sectionId: string, groupIndex: number, questionIndex: number) => {
+    const section = data.value.find(s => s.id === sectionId);
+    if (section?.groups[groupIndex]?.questions[questionIndex]) {
+      const q = section.groups[groupIndex].questions[questionIndex];
+      q.options_alignment = q.options_alignment === 'RTL' ? 'LTR' : 'RTL';
+    }
+  };
 
   const reorderSections = (newList: { id: string; name: string }[]) => {
     const reordered = newList.map(item => {
@@ -250,6 +260,7 @@ export function useExamEditor() {
     addOption,
     deleteOption,
     updateQuestionMedia,
+    toggleOptionsAlignment,
     reorderSections,
   };
 }

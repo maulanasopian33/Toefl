@@ -49,13 +49,18 @@
           <Icon name="heroicons:bars-3-bottom-right" class="w-4 h-4 mr-2" />
           Teks Bacaan (Passage)
         </h3>
-        <div dir="rtl" :class="[fontSizeClasses.prose, 'leading-relaxed font-arabic text-right custom-scrollbar max-h-96 overflow-y-auto pr-2']" v-html="questionData.passage"></div>
+        <div :dir="questionData.options_alignment === 'RTL' ? 'rtl' : 'ltr'" 
+             :class="[fontSizeClasses.prose, 'leading-relaxed custom-scrollbar max-h-96 overflow-y-auto pr-2', questionData.options_alignment === 'RTL' ? 'text-right font-arabic' : 'text-left']" 
+             v-html="questionData.passage"></div>
       </div>
 
       <!-- Question Text -->
       <div class="space-y-6">
-        <div dir="rtl" class="bg-white p-6 rounded-2xl border-r-4 border-emerald-500 shadow-sm">
-          <div :class="[fontSizeClasses.question]" class="max-w-none text-gray-900 font-bold text-right" v-html="questionData.question"></div>
+        <div :dir="questionData.options_alignment === 'RTL' ? 'rtl' : 'ltr'" 
+             class="bg-white p-6 rounded-2xl shadow-sm border-l-4"
+             :class="[questionData.options_alignment === 'RTL' ? 'border-r-4 border-l-0 border-emerald-500' : 'border-l-4 border-emerald-500']">
+          <div :class="[fontSizeClasses.question, questionData.options_alignment === 'RTL' ? 'text-right' : 'text-left']" 
+               class="max-w-none text-gray-900 font-bold" v-html="questionData.question"></div>
         </div>
 
         <!-- Jawaban (Options) -->
@@ -67,8 +72,10 @@
             :class="[
               localUserAnswer === option.id 
                 ? 'border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/10' 
-                : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50'
+                : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50',
+              questionData.options_alignment === 'RTL' ? 'flex-row-reverse' : 'flex-row'
             ]"
+            :dir="questionData.options_alignment === 'RTL' ? 'rtl' : 'ltr'"
           >
             <!-- Option Indicator (A, B, C, D) -->
             <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all duration-300"
@@ -88,10 +95,13 @@
               class="hidden"
             />
             
-            <div :class="[fontSizeClasses.option]" class="prose max-w-none font-bold text-gray-700" v-html="option.text"></div>
+            <div :class="[fontSizeClasses.option, questionData.options_alignment === 'RTL' ? 'text-right font-arabic' : 'text-left']" 
+                 class="prose max-w-none font-bold text-gray-700" v-html="option.text"></div>
 
             <!-- Check Icon when selected -->
-            <div v-if="localUserAnswer === option.id" class="absolute right-4">
+            <div v-if="localUserAnswer === option.id" 
+                 class="absolute"
+                 :class="[questionData.options_alignment === 'RTL' ? 'left-4' : 'right-4']">
               <Icon name="heroicons:check-circle-solid" class="w-6 h-6 text-emerald-600 animate-bounce-in" />
             </div>
           </label>
