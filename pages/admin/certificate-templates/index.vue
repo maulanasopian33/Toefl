@@ -72,7 +72,7 @@
               Kelola
             </button>
             <button
-              @click="confirmDeleteAction(template)"
+              @click="deleteTemplate(template.id!)"
               class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all active:scale-90"
             >
               <Icon name="lucide:trash-2" class="w-4 h-4" />
@@ -108,7 +108,6 @@
 import { ref, onMounted } from 'vue'
 import { useCertificateTemplates, type CertificateTemplate } from '@/composables/useCertificateTemplates'
 import TemplateModal from '@/components/admin/certificate/TemplateModal.vue'
-import { useNotificationPopup } from '@/composables/NotificationPopup'
 
 definePageMeta({
   layout: 'admin',
@@ -117,7 +116,6 @@ definePageMeta({
 })
 
 const { templates, isLoading, fetchTemplates, deleteTemplate, saveTemplate } = useCertificateTemplates()
-const { showConfirm } = useNotificationPopup()
 
 const isModalOpen = ref(false)
 const selectedTemplate = ref<CertificateTemplate | null>(null)
@@ -131,21 +129,6 @@ const handleSave = async (data: CertificateTemplate) => {
   const result = await saveTemplate(data)
   if (result) {
     isModalOpen.value = false
-  }
-}
-
-const confirmDeleteAction = async (template: CertificateTemplate) => {
-  const confirmed = await showConfirm(
-    `Template "${template.name}" akan dihapus secara permanen beserta semua formatnya.`,
-    {
-      title: 'Hapus Template?',
-      type: 'danger',
-      confirmText: 'Ya, Hapus'
-    }
-  )
-
-  if (confirmed) {
-    await deleteTemplate(template.id!)
   }
 }
 

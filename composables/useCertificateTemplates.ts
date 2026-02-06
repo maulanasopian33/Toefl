@@ -1,103 +1,105 @@
 import { ref } from 'vue'
+import { useFirebaseToken } from './FirebaseToken'
+import { useNotification } from './useNotification'
+
+export interface CertificateTemplateFormat {
+  id?: number;
+  templateId?: number;
+  name: string;
+  file_docx: string;
+  is_active: boolean;
+}
 
 export interface CertificateTemplate {
-  id: string
-  name: string
-  templateFile: string // URL/Path to DOCX file
-  previewImage?: string // Optional: generated preview of the docx
-  isActive: boolean
-  createdAt: string
-  config?: any 
+  id?: number;
+  name: string;
+  status: boolean;
+  formats: CertificateTemplateFormat[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export function useCertificateTemplates() {
-  const templates = ref<CertificateTemplate[]>([
-    {
-      id: 'tmpl-001',
-      name: 'Modern Classic Template',
-      templateFile: '/templates/classic.docx',
-      isActive: true,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'tmpl-002',
-      name: 'Professional Blue Template',
-      templateFile: '/templates/professional-blue.docx',
-      isActive: false,
-      createdAt: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-      id: 'tmpl-003',
-      name: 'Elegant Gold Template',
-      templateFile: '/templates/elegant-gold.docx',
-      isActive: false,
-      createdAt: new Date(Date.now() - 172800000).toISOString()
-    }
-  ])
-  
+  const config = useRuntimeConfig()
+  const { showNotification } = useNotification()
+  const templates = ref<CertificateTemplate[]>([])
   const isLoading = ref(false)
-  const error = ref<Error | null>(null)
+  const isSaving = ref(false)
 
   const fetchTemplates = async () => {
     isLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 500))
-    isLoading.value = false
-  }
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Unauthenticated')
 
-  const addTemplate = async (template: Omit<CertificateTemplate, 'id' | 'createdAt' | 'isActive'>) => {
-    isLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 600))
-    
-    const newTemplate: CertificateTemplate = {
-      ...template,
-      id: `tmpl-${Date.now()}`,
-      isActive: false,
-      createdAt: new Date().toISOString()
+      const response = await $fetch<{ status: boolean, data: CertificateTemplate[] }>(`${config.public.API_URL}/certificate-templates`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (response.status) {
+        templates.value = response.data
+      }
+    } catch (error) {
+      console.error('Error fetching templates:', error)
+      showNotification('Gagal mengambil data template sertifikat', 'error')
+    } finally {
+      isLoading.value = false
     }
-    
-    templates.value.unshift(newTemplate)
-    isLoading.value = false
-    return newTemplate
   }
 
-  const updateTemplate = async (id: string, data: Partial<CertificateTemplate>) => {
-    isLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 400))
-    
-    const index = templates.value.findIndex(t => t.id === id)
-    if (index !== -1) {
-      templates.value[index] = { ...templates.value[index], ...data }
+  const saveTemplate = async (template: CertificateTemplate) => {
+    isSaving.value = true
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Unauthenticated')
+
+      const response = await $fetch<{ status: boolean, message: string, data: CertificateTemplate }>(`${config.public.API_URL}/certificate-templates/save`, {
+        method: 'POST',
+        body: template,
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (response.status) {
+        showNotification(response.message, 'success')
+        await fetchTemplates()
+        return response.data
+      }
+    } catch (error) {
+      console.error('Error saving template:', error)
+      showNotification('Gagal menyimpan template sertifikat', 'error')
+    } finally {
+      isSaving.value = false
     }
-    isLoading.value = false
   }
 
-  const deleteTemplate = async (id: string) => {
-    isLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 400))
-    
-    templates.value = templates.value.filter(t => t.id !== id)
-    isLoading.value = false
-  }
+  const deleteTemplate = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus template ini?')) return
 
-  const setActiveTemplate = async (id: string) => {
-    isLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    templates.value = templates.value.map(t => ({
-      ...t,
-      isActive: t.id === id
-    }))
-    isLoading.value = false
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Unauthenticated')
+
+      const response = await $fetch<{ status: boolean, message: string }>(`${config.public.API_URL}/certificate-templates/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (response.status) {
+        showNotification(response.message, 'success')
+        await fetchTemplates()
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error)
+      showNotification('Gagal menghapus template sertifikat', 'error')
+    }
   }
 
   return {
     templates,
     isLoading,
-    error,
+    isSaving,
     fetchTemplates,
-    addTemplate,
-    updateTemplate,
-    deleteTemplate,
-    setActiveTemplate
+    saveTemplate,
+    deleteTemplate
   }
 }
