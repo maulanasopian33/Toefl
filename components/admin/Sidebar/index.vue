@@ -159,7 +159,7 @@ const permissionMap: Record<string, string> = {
   '/admin/payments': 'payment.view_all',
   '/admin/results': 'result.view_all',
   '/admin/certificates': 'system.app',
-  '/admin/reports': 'system.view_logs', // Placeholder
+  '/admin/reports/finance': 'payment.view_all',
   '/admin/log-activity': 'system.view_logs',
   '/admin/settings/roles': 'user.manage_role',
   '/admin/settings/permissions': 'user.manage_role',
