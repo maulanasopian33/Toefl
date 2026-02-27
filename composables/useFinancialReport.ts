@@ -75,6 +75,31 @@ export function useFinancialReport() {
   const batchBreakdown = computed(() => reportData.value?.batchBreakdown || [])
   const methodBreakdown = computed(() => reportData.value?.methodBreakdown || [])
 
+  const exportCSV = async (filters: { startDate?: string, endDate?: string, batchId?: string } = {}) => {
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Unauthenticated')
+
+      const response = await $fetch<Blob>(`${config.public.API_URL}/reports/finance/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: filters,
+        responseType: 'blob'
+      })
+
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `financial-report.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showNotification('Laporan keuangan berhasil diunduh', 'success')
+    } catch (error) {
+      console.error('Error exporting financial CSV:', error)
+      showNotification('Gagal mengunduh laporan keuangan', 'error')
+    }
+  }
+
   return {
     reportData,
     isLoading,
@@ -82,6 +107,7 @@ export function useFinancialReport() {
     trend,
     batchBreakdown,
     methodBreakdown,
-    fetchReport
+    fetchReport,
+    exportCSV
   }
 }

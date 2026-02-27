@@ -26,6 +26,9 @@ export interface AppSettings {
   currency: 'IDR' | 'USD'
   heroTitle?: string
   heroSubtitle?: string
+  paymentInstructionsBank?: { title: string, steps: string[] }[]
+  paymentInstructionsOffline?: { title: string, steps: string[] }[]
+  paymentOfflineDetails?: { location: string, hours: string, notes: string }
   [key: string]: any // Allow other properties
 }
 
@@ -53,6 +56,9 @@ function mapApiToAppSettings(apiData: any): AppSettings {
     currency: apiData.mata_uang,
     heroTitle: apiData.hero_title,
     heroSubtitle: apiData.hero_subtitle,
+    paymentInstructionsBank: apiData.payment_instructions_bank ? JSON.parse(apiData.payment_instructions_bank) : [],
+    paymentInstructionsOffline: apiData.payment_instructions_offline ? JSON.parse(apiData.payment_instructions_offline) : [],
+    paymentOfflineDetails: apiData.payment_offline_details ? JSON.parse(apiData.payment_offline_details) : { location: '', hours: '', notes: '' },
     createdAt: apiData.createdAt,
     updatedAt: apiData.updatedAt,
   }
@@ -82,6 +88,9 @@ function mapAppSettingsToApi(appSettings: AppSettings): any {
     mata_uang: appSettings.currency,
     hero_title: appSettings.heroTitle,
     hero_subtitle: appSettings.heroSubtitle,
+    payment_instructions_bank: JSON.stringify(appSettings.paymentInstructionsBank || []),
+    payment_instructions_offline: JSON.stringify(appSettings.paymentInstructionsOffline || []),
+    payment_offline_details: JSON.stringify(appSettings.paymentOfflineDetails || { location: '', hours: '', notes: '' }),
     // createdAt and updatedAt are usually handled by the backend
   }
 }
@@ -151,7 +160,7 @@ export function useAppSettings() {
       // Map internal camelCase to API snake_case for the PUT request
       const apiBody = mapAppSettingsToApi(updatedSettings);
 
-      console.log("API body sent to PUT /settings:", apiBody);
+      // Settings payload sent
       await $fetch(API_URL, {
         method: 'PUT',
         body: apiBody,

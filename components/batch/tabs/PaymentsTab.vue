@@ -189,7 +189,7 @@ const showPaymentDetails = (payment) => {
 };
 
 const handleConfirmPayment = (paymentData) => {
-  console.log('Data konfirmasi diterima:', paymentData);
+  // Payment confirmation
 
   const paymentInArray = props.batch.payments.find((p) => p.id === paymentData.id);
   if (paymentInArray) {

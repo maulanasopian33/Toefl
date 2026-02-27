@@ -76,6 +76,31 @@ export function useExamReport() {
   const sectionStats = computed(() => reportData.value?.sectionStats || [])
   const difficulty = computed(() => reportData.value?.difficulty || { hardest: [], easiest: [] })
 
+  const exportCSV = async (batchId?: string) => {
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Unauthenticated')
+
+      const response = await $fetch<Blob>(`${config.public.API_URL}/reports/exam/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: batchId ? { batchId } : {},
+        responseType: 'blob'
+      })
+
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `exam-report-${batchId || 'all'}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showNotification('Laporan CSV berhasil diunduh', 'success')
+    } catch (error) {
+      console.error('Error exporting CSV:', error)
+      showNotification('Gagal mengunduh CSV', 'error')
+    }
+  }
+
   return {
     reportData,
     isLoading,
@@ -83,6 +108,7 @@ export function useExamReport() {
     distribution,
     sectionStats,
     difficulty,
-    fetchReport
+    fetchReport,
+    exportCSV
   }
 }

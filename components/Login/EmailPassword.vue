@@ -82,13 +82,18 @@ const isValid = computed(() => {
   return emailRegex.test(email.value) && isPasswordValid.value;
 });
 
+const { log } = useLogger();
+
 const handleLogin = async () => {
   if (!isValid.value) return;
   try {
     startLoading();
+    await log({ action: 'LOGIN_ATTEMPT', module: 'auth', details: { email: email.value } });
     await loginEmailPassword(email.value, password.value);
-  } catch (error) {
+    await log({ action: 'LOGIN_SUCCESS', module: 'auth', details: { email: email.value } });
+  } catch (error: any) {
     console.error('[Login] Error:', error);
+    await log({ action: 'LOGIN_FAILURE', module: 'auth', level: 'error', details: { email: email.value, error: error.message } });
   } finally {
     stopLoading();
   }

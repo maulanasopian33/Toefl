@@ -79,27 +79,25 @@ const pendingPayment = ref<any>(null);
 const isLoading = ref(false);
 
 const fetchPendingPayment = async () => {
-  const user = $auth?.currentUser;
-  if (!user) return;
-
   isLoading.value = true;
   try {
-    const token = await user.getIdToken();
-    const response: any = await $fetch(`${config.public.API_URL}/payments/user/${user.uid}`, {
+    const token = await useFirebaseToken();
+    if (!token) return;
+
+    const response: any = await $fetch(`${config.public.API_URL}/payments/user/${$auth?.currentUser?.uid}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-
-    // Asumsi response bisa berupa array atau object { data: [] }
+    
     const payments = Array.isArray(response) ? response : (response.data || []);
     
     if (Array.isArray(payments)) {
-      // Cari pembayaran dengan status pending
-      pendingPayment.value = payments.find((p: any) => p.status === 'pending' || p.status === 'UNPAID');
+      // Cari pembayaran dengan status pending atau failed (karena failed butuh reupload/bayar lagi)
+      pendingPayment.value = payments.find((p: any) => ['pending', 'unpaid', 'failed'].includes(p.status.toLowerCase()));
     }
   } catch (error) {
-    console.error('Gagal memuat data pembayaran:', error);
+    // console.error('Gagal memuat data pembayaran:', error);
   } finally {
     isLoading.value = false;
   }

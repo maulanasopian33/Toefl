@@ -103,7 +103,6 @@ async function saveAllChanges() {
   await nextTick();
 
   // --- DEBUGGING: Tampilkan data yang akan dikirim ---
-  // console.log("Data yang akan disimpan:", JSON.parse(JSON.stringify(data.value)));
   // showNotification("Mode Debug: Data ditampilkan di console.", "success");
   // isSaving.value = false;
 

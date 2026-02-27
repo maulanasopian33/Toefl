@@ -1,46 +1,54 @@
 import { useFirebaseToken } from './FirebaseToken'
 
-interface LogPayload {
-  level: 'error' | 'warn' | 'info';
-  message: string;
-  metadata?: any;
+export interface LogPayload {
+  action: string;
+  module: string;
+  details?: any;
+  level?: 'info' | 'warn' | 'error';
 }
 
-export const useLogger = () => {
-  const config = useRuntimeConfig();
-  const apiUrl = `${config.public.API_URL}/logs/client`;
+export function useLogger() {
+  const config = useRuntimeConfig()
 
-  /**
-   * Mengirim log ke server backend.
-   * @param payload Objek berisi level, message, dan metadata optional.
-   */
-  const logToServer = async (payload: LogPayload) => {
+  const log = async (payload: LogPayload) => {
     try {
-      const authToken = await useFirebaseToken().catch(() => null);
+      // In Nuxt client side, we can get UI context
+      const route = useRoute()
       
-      // Kita tetap kirim log meskipun token tidak ada (jika API mengizinkan)
-      // atau log error tetap tercatat di console.
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+      const enrichedPayload = {
+        ...payload,
+        source: 'frontend',
+        details: {
+          ...payload.details,
+          path: route.fullPath,
+          userAgent: window.navigator.userAgent,
+          timestamp: new Date().toISOString()
+        }
       }
 
-      await $fetch(apiUrl, {
+      // We send this to a dedicated logging endpoint
+      // No need to wait for it (fire and forget)
+      const token = await useFirebaseToken()
+      
+      $fetch(`${config.public.API_URL}/logs/audit`, {
         method: 'POST',
-        headers,
-        body: payload,
-      });
-    } catch (err) {
-      // Jika gagal kirim log ke server, jangan sampai menyebabkan loop error.
-      // Cukup log ke console secara lokal.
-      console.error('Failed to send log to server:', err);
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: enrichedPayload
+      }).catch(err => {
+        // Silently fail to not interrupt UX
+        console.error('Failed to send audit log:', err)
+      })
+
+    } catch (error) {
+      // Avoid infinite loop if logging fails
     }
-  };
+  }
 
   return {
-    logToServer,
-  };
-};
+    log,
+    // Helper methods
+    logNavigation: (to: string) => log({ action: 'NAVIGATE', module: 'navigation', details: { to } }),
+    logError: (error: string, context?: any) => log({ action: 'ERROR', module: 'system', level: 'error', details: { error, ...context } }),
+    logAdminAction: (action: string, details?: any) => log({ action, module: 'admin', details })
+  }
+}

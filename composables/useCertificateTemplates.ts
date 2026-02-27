@@ -47,7 +47,7 @@ export function useCertificateTemplates() {
     }
   }
 
-  const saveTemplate = async (template: CertificateTemplate) => {
+  const saveTemplate = async (data: FormData) => {
     isSaving.value = true
     try {
       const token = await useFirebaseToken()
@@ -55,7 +55,7 @@ export function useCertificateTemplates() {
 
       const response = await $fetch<{ status: boolean, message: string, data: CertificateTemplate }>(`${config.public.API_URL}/certificate-templates/save`, {
         method: 'POST',
-        body: template,
+        body: data,
         headers: { Authorization: `Bearer ${token}` }
       })
 

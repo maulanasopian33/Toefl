@@ -55,12 +55,11 @@ export function useExamEditor() {
   };
 
   const saveSectionDetails = (payload: { id?: string; name: string; type: string; instructions: string; scoring_table_id?: number | null }) => {
-    console.log("payload", payload);
+    // Payload prepared
 
     if (payload.id) { // Update
       const section = data.value.find(s => s.id === payload.id);
-      console.log("section", section);
-      console.log("data", data);
+      // Form data processed
 
       if (section) {
         section.name = payload.name;
@@ -77,7 +76,7 @@ export function useExamEditor() {
         });
       }
     } else { // Create
-      console.log("buat baru");
+      // Creating new entry
 
       data.value.push({
         id: `section-${Date.now()}`,

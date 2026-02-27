@@ -1,4 +1,24 @@
-LATEST UPDATES - 05 Februari 2026
+LATEST UPDATES - 27 Februari 2026
+==============================
+
+1. PENINGKATAN KEAMANAN & PENGALAMAN PENGGUNA (PRODUCTION READY)
+   - Menghapus seluruh debug `console.log` pada berbagai halaman dan komponen (index.vue, test/[id].vue, anti.vue, ExamEditor.vue, dll) untuk meningkatkan performa dan privasi data di sisi client.
+   - Refactor logika status pembayaran pada `pages/payment/[id].vue`:
+     - Menambahkan deteksi otomatis status "Menunggu Verifikasi" menggunakan array `proofs` dari API.
+     - Menampilkan bukti transfer terakhir yang diunggah secara dinamis sebagai referensi pengguna.
+     - Memperbaiki alur "Reupload" agar pengguna tetap bisa mengunggah bukti baru jika diperlukan atau jika bukti sebelumnya belum diverifikasi.
+   - Sinkronisasi metadata ujian: Menambahkan dukungan tampilan `start_date` dan `end_date` yang diambil dari API untuk validasi client-side.
+   - File yang disentuh:
+     - nuxt-fe/pages/index.vue
+     - nuxt-fe/pages/test/[id].vue
+     - nuxt-fe/pages/anti.vue
+     - nuxt-fe/pages/payment/[id].vue
+     - nuxt-fe/components/ExamEditor/ExamEditor.vue
+     - nuxt-fe/composables/Auth.ts
+     - nuxt-fe/composables/useExamEditor.ts (dan composables lainnya)
+
+Timestamp: 2026-02-27 10:45:00
+
 ==============================
 
 1. PERBAIKAN PWA GLOB PATTERNS (BUILD ERROR)
@@ -137,6 +157,42 @@ LATEST UPDATES - 01 Februari 2026
 
 
 Timestamp: 2026-02-01 18:20:00
+
+LATEST UPDATES - 2026-02-27
+==============================
+
+1. CRUD TEMPLATE SERTIFIKAT DINAMIS
+   - Modal Template yang disederhanakan: Nama, Upload DOCX, dan Status
+   - Support pengiriman file langsung melalui FormData
+   - Integrasi reuse useCertificates untuk deteksi real-time
+   - Notifikasi sukses/gagal yang lebih informatif
+
+2. NOTIFIKASI DASHBOARD DINAMIS
+   - Notifikasi pembayaran otomatis muncul saat status 'pending/unpaid'
+   - Notifikasi sertifikat otomatis muncul saat data tersedia di API
+
+6. DYNAMIC PAYMENT INSTRUCTIONS
+   - Integrasi instruksi pembayaran dinamis pada halaman pembayaran user.
+   - Penambahan UI editor instruksi pembayaran (Bank & Offline) di Admin Settings.
+   - Update composable `useAppSettings.ts` untuk menangani JSON parsing instruksi secara otomatis.
+   - File tersentuh: `composables/useAppSettings.ts`, `pages/admin/settings/general.vue`, `pages/payment/[id].vue`.
+
+22. OPTIMASI & LOGGING FRONTEND
+   - Penambahan `useLogger` composable untuk pelacakan aktivitas dari sisi client.
+   - Implementasi Nuxt plugin untuk penangkapan error global dan log navigasi otomatis.
+   - Pembuatan Halaman Audit Log Admin untuk memantau aktivitas sistem secara real-time.
+   - Integrasi logging pada flow Login (Email & Google).
+   - Perbaikan UI dan handling error pada pengerjaan tes terkait jadwal.
+
+7. REPORTING & DATA EXPORT (CSV & PDF)
+   - Implementasi fitur download CSV pada semua halaman laporan admin.
+   - Penambahan fitur cetak PDF professional dengan optimasi print styles (@media print).
+   - Update composable laporan untuk mendukung fetching blob CSV.
+   - Perbaikan UI laporan dengan tombol kontrol export yang modern.
+   - File tersentuh: `composables/use...Report.ts`, `pages/admin/reports/*.vue`.
+
+Timestamp: 2026-02-27 10:30:00
+
 
 LATEST UPDATES - 29 Januari 2026
 ==============================

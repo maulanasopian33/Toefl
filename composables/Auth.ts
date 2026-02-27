@@ -87,7 +87,7 @@ export const useAuthActions = () => {
     const role = claims.value.role;
 
     // --- DEBUGGING POINT 2: Periksa role yang digunakan untuk redirect ---
-    console.log('[AuthActions] Redirecting based on role:', role);
+    // Redirect based on role
 
     if (role === 'admin') {
       return navigateTo('/admin');

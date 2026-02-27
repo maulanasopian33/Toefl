@@ -42,7 +42,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 const config = useRuntimeConfig();
 
-console.log(config.test);
+// Test config
 // State untuk mengontrol visibilitas popup
 const showPopup = ref(false);
 // Timestamp saat dokumen terakhir kali tidak terlihat (hidden)
@@ -70,7 +70,7 @@ const closePopup = () => {
 // Fungsi untuk menonaktifkan pintasan keyboard developer tools
 const disableDeveloperTools = (event) => {
   // F12
-  console.log(event.keyCode  + " - mode layar penuh: " + isFullscreen.value);
+  // Fullscreen update
   if (event.keyCode === 123) {
     handleActionDetected();
     event.preventDefault();
@@ -135,7 +135,7 @@ const requestFullscreen = async () => {
       handleActionDetected(); // Beri tahu pengguna jika tidak didukung
       return; // Keluar dari fungsi jika tidak didukung
     }
-    console.log("Aplikasi masuk mode layar penuh.");
+    // Fullscreen entered
     // isFullscreen.value akan diperbarui oleh event listener 'fullscreenchange'
   } catch (error) {
     console.error("Gagal masuk mode layar penuh:", error);
@@ -159,7 +159,7 @@ const exitFullscreen = async () => {
       handleActionDetected(); // Beri tahu pengguna jika tidak didukung
       return;
     }
-    console.log("Aplikasi keluar mode layar penuh.");
+    // Fullscreen exited
     // isFullscreen.value akan diperbarui oleh event listener 'fullscreenchange'
   } catch (error) {
     console.error("Gagal keluar mode layar penuh:", error);
@@ -213,8 +213,7 @@ const handleVisibilityChange = () => {
       lastHiddenDurationMinutes.value = Math.floor(seconds / 60);
       lastHiddenDurationSeconds.value = seconds % 60;
 
-      console.log(`Tab was hidden for: ${lastHiddenDurationMinutes.value} minutes and ${lastHiddenDurationSeconds.value} seconds.`);
-      console.log(`Total hidden duration: ${totalHiddenDuration.value / 1000} seconds.`);
+      // Tab visibility log
       lastHiddenTime.value = 0; // Reset last hidden time
     }
   }

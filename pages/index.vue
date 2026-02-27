@@ -98,13 +98,13 @@ const openRegistrationModal = () => {
 };
 
 const handleStartTest = (batchId: string) => {
-  console.log('Mulai tes untuk batch:', batchId);
+  // Start test
   // Arahkan ke halaman ujian dengan ID batch
   navigateTo(`/test/${batchId}`);
 };
 
 const handleJoinBatch = (batchId: string) => {
-  console.log('Join batch dipilih:', batchId);
+  // Join batch
   // Arahkan pengguna ke halaman detail batch
   navigateTo(`/batch/${batchId}`);
 };

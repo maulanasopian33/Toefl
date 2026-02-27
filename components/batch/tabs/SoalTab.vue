@@ -137,7 +137,7 @@ const props = defineProps({
   batch: { type: Object, required: true },
 });
 
-console.log(props.batch);
+// Batch data
 
 const router = useRouter();
 

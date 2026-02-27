@@ -14,7 +14,7 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3 no-print">
         <!-- Batch Selector -->
         <select 
           v-model="selectedBatchId"
@@ -28,10 +28,26 @@
         
         <button
           @click="fetchReport(selectedBatchId)"
-          class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform active:scale-95 whitespace-nowrap"
+          class="inline-flex items-center gap-2 rounded-2xl bg-gray-100 px-6 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-200 transition-all transform active:scale-95 whitespace-nowrap"
         >
           <Icon name="lucide:refresh-cw" class="w-5 h-5" :class="{ 'animate-spin': isLoading }" />
-          Update Analisis
+          Update
+        </button>
+
+        <button
+          @click="exportCSV(selectedBatchId)"
+          class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all transform active:scale-95 whitespace-nowrap"
+        >
+          <Icon name="lucide:file-spreadsheet" class="w-5 h-5" />
+          CSV
+        </button>
+
+        <button
+          @click="handlePrint()"
+          class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform active:scale-95 whitespace-nowrap"
+        >
+          <Icon name="lucide:printer" class="w-5 h-5" />
+          Cetak
         </button>
       </div>
     </header>
@@ -243,7 +259,13 @@ definePageMeta({
   permission: 'system.app'
 })
 
-const { isLoading, summary, distribution, sectionStats, difficulty, fetchReport } = useExamReport()
+const { isLoading, summary, distribution, sectionStats, difficulty, fetchReport, exportCSV } = useExamReport()
+
+const handlePrint = () => {
+  if (process.client) {
+    window.print()
+  }
+}
 
 const selectedBatchId = ref('')
 const batches = ref<any[]>([])
@@ -336,5 +358,27 @@ select {
   background-position: right 1rem center;
   background-size: 1.25rem;
   padding-right: 3rem;
+}
+@media print {
+  .no-print, header .flex-wrap, .lg:col-span-4 button {
+    display: none !important;
+  }
+  .animate-fade-in-up {
+    animation: none !important;
+  }
+  .bg-white {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .grid {
+    display: block !important;
+  }
+  .lg:col-span-8, .lg:col-span-12, .lg:col-span-4 {
+    width: 100% !important;
+    margin-bottom: 2rem !important;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+  }
 }
 </style>

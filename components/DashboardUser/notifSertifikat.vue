@@ -1,8 +1,9 @@
 <template>
   <!-- Notifikasi Pembayaran Berhasil / Sertifikat Siap -->
   <div 
+    v-if="totalItems > 0 && !isLoading"
     id="certificateReadyNotification" 
-    class="relative overflow-hidden rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm transition-all hover:shadow-md mb-6"
+    class="relative overflow-hidden rounded-[2.5rem] border border-emerald-100 bg-white p-8 shadow-xl shadow-emerald-900/5 transition-all hover:shadow-md"
   >
     <!-- Background Decoration -->
     <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-50/50 blur-3xl pointer-events-none"></div>
@@ -30,15 +31,14 @@
           Pembayaran Anda telah terverifikasi. Sertifikat hasil tes Anda kini sudah tersedia dan dapat diunduh.
         </p>
 
-        <!-- Action Buttons -->
         <div class="mt-5 flex flex-wrap gap-3">
           <button 
             id="viewCertificateButton"
-            class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-            @click="$emit('click-download')"
+            class="flex items-center gap-3 rounded-2xl bg-emerald-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-emerald-600/20 transition-all hover:bg-emerald-700 hover:scale-105 active:scale-95"
+            @click="navigateTo('/profile')"
           >
-            <Icon name="lucide:download" class="h-4 w-4" />
-            Lihat & Unduh Sertifikat
+            <Icon name="lucide:award" class="h-5 w-5" />
+            <span>Lihat Sertifikat Saya</span>
           </button>
         </div>
       </div>
@@ -47,7 +47,15 @@
 </template>
 
 <script lang="ts" setup>
-defineEmits(['click-download']);
+import { onMounted } from 'vue';
+import { useCertificates } from '@/composables/useCertificates';
+
+const emit = defineEmits(['click-download']);
+const { certificates, totalItems, fetchCertificates, isLoading } = useCertificates();
+
+onMounted(() => {
+  fetchCertificates(1, 1); // Cukup cek apakah ada minimal 1 sertifikat
+});
 </script>
 
 <style>

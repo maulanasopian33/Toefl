@@ -160,7 +160,7 @@ export const useAdminResultDetail = (userId: Ref<string>, batchId: Ref<string>) 
     }
   );
 
-  console.log("data", data);
+  // Process results data
   
 
   return { result: data, isLoading: pending, error, refresh };

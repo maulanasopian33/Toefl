@@ -106,6 +106,17 @@ export default [
       { name: 'Riwayat Sertifikat', link: '/admin/certificates/history' },
     ],
   },
+  // Penilaian
+  {
+    name: 'Penilaian',
+    link: '#',
+    icon: `<svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6 3h12a2 2 0 0 1 2 2v10.5l-3-1.5-3 1.5-3-1.5-3 1.5-3-1.5V5a2 2 0 0 1 2-2zm3 4v2h6V7z"/>
+    </svg>`,
+    children: [
+      { name: 'Tabel Skoring', link: '/admin/penilaian/scoring-tables' },
+    ],
+  },
 
   // REPORTS
   {

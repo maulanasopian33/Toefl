@@ -161,6 +161,134 @@
           </div>
         </section>
 
+        <!-- Dynamic Payment Instructions -->
+        <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
+          <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
+            <h2 class="text-base font-extrabold text-gray-900 tracking-tight">Instruksi Pembayaran</h2>
+            <p class="mt-1 text-sm text-gray-400 font-medium">
+              Atur panduan pembayaran untuk metode Bank dan Offline (Loket).
+            </p>
+          </div>
+
+          <div class="p-8 space-y-10">
+            <!-- Bank Instructions -->
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-black text-gray-900 flex items-center gap-2">
+                  <Icon name="lucide:building-2" class="w-4 h-4 text-emerald-600" />
+                  Instruksi Bank (Virtual Account)
+                </h3>
+                <button 
+                  @click="addInstructionGroup('bank')"
+                  class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-all"
+                >
+                  <Icon name="lucide:plus-circle" class="w-4 h-4" />
+                  Tambah Grup
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(group, gIdx) in form.paymentInstructionsBank" :key="gIdx" class="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 relative group/instr shadow-sm">
+                  <button @click="removeInstructionGroup('bank', gIdx)" class="absolute top-4 right-4 text-gray-300 hover:text-rose-500 transition-all opacity-0 group-hover/instr:opacity-100">
+                    <Icon name="lucide:trash-2" class="w-4 h-4" />
+                  </button>
+
+                  <div class="space-y-4">
+                    <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Judul Grup</label>
+                      <input v-model="group.title" type="text" class="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-sm font-bold text-gray-700" placeholder="Contoh: ATM BCA" />
+                    </div>
+
+                    <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Langkah-langkah</label>
+                      <div class="space-y-2">
+                        <div v-for="(step, sIdx) in group.steps" :key="sIdx" class="flex gap-2">
+                          <input v-model="group.steps[sIdx]" type="text" class="flex-grow px-4 py-2 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium text-gray-600" :placeholder="`Langkah ${sIdx + 1}`" />
+                          <button @click="removeStep('bank', gIdx, sIdx)" class="p-2 text-gray-300 hover:text-rose-500 transition-all">
+                            <Icon name="lucide:x" class="w-4 h-4" />
+                          </button>
+                        </div>
+                        <button @click="addStep('bank', gIdx)" class="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-1">
+                          <Icon name="lucide:plus" class="w-3 h-3" /> Tambah Langkah
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Offline Instructions -->
+            <div class="space-y-6 pt-6 border-t border-gray-100">
+              <!-- ... headers ... -->
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-black text-gray-900 flex items-center gap-2">
+                  <Icon name="lucide:store" class="w-4 h-4 text-emerald-600" />
+                  Instruksi Offline (Loket)
+                </h3>
+                <button 
+                  @click="addInstructionGroup('offline')"
+                  class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-all"
+                >
+                  <Icon name="lucide:plus-circle" class="w-4 h-4" />
+                  Tambah Grup
+                </button>
+              </div>
+
+              <!-- Detail Loket Offline -->
+              <div v-if="form.paymentOfflineDetails" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100/50 mb-6">
+                <div class="md:col-span-2">
+                   <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                     <Icon name="lucide:map-pin" class="w-3 h-3" /> Info Loket Fisik
+                   </h4>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-1">Lokasi Pembayaran</label>
+                  <input v-model="form.paymentOfflineDetails.location" type="text" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-bold text-gray-700" placeholder="Contoh: Gedung Rektorat Lt. 1" />
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-1">Jam Operasional</label>
+                  <input v-model="form.paymentOfflineDetails.hours" type="text" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-bold text-gray-700" placeholder="Contoh: Senin - Jumat, 08:00 - 15:00" />
+                </div>
+                <div class="md:col-span-2 space-y-2">
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase tracking-widest pl-1">Catatan Tambahan</label>
+                  <textarea v-model="form.paymentOfflineDetails.notes" rows="2" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium text-gray-600" placeholder="Contoh: Tunjukkan Tagihan ID ini kepada petugas."></textarea>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(group, gIdx) in form.paymentInstructionsOffline" :key="gIdx" class="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 relative group/instr shadow-sm">
+                  <button @click="removeInstructionGroup('offline', gIdx)" class="absolute top-4 right-4 text-gray-300 hover:text-rose-500 transition-all opacity-0 group-hover/instr:opacity-100">
+                    <Icon name="lucide:trash-2" class="w-4 h-4" />
+                  </button>
+
+                  <div class="space-y-4">
+                    <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Judul Grup</label>
+                      <input v-model="group.title" type="text" class="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-sm font-bold text-gray-700" placeholder="Contoh: Loket Keuangan" />
+                    </div>
+
+                    <div class="space-y-2">
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Langkah-langkah</label>
+                      <div class="space-y-2">
+                        <div v-for="(step, sIdx) in group.steps" :key="sIdx" class="flex gap-2">
+                          <input v-model="group.steps[sIdx]" type="text" class="flex-grow px-4 py-2 bg-white border border-gray-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-medium text-gray-600" :placeholder="`Langkah ${sIdx + 1}`" />
+                          <button @click="removeStep('offline', gIdx, sIdx)" class="p-2 text-gray-300 hover:text-rose-500 transition-all">
+                            <Icon name="lucide:x" class="w-4 h-4" />
+                          </button>
+                        </div>
+                        <button @click="addStep('offline', gIdx)" class="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-1">
+                          <Icon name="lucide:plus" class="w-3 h-3" /> Tambah Langkah
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Branding & Logo -->
         <section class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden ring-1 ring-gray-900/5">
           <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/50">
@@ -603,6 +731,42 @@ const handleMediaSelect = (url: string) => {
     faviconPreviewUrl.value = url; // Update preview for favicon
   }
   showMediaModal.value = false; // Close the modal after selection
+}
+
+const addInstructionGroup = (type: 'bank' | 'offline') => {
+  if (!form.value) return
+  const field = type === 'bank' ? 'paymentInstructionsBank' : 'paymentInstructionsOffline'
+  if (!form.value[field]) {
+    form.value[field] = []
+  }
+  form.value[field]?.push({ title: '', steps: [''] })
+}
+
+const removeInstructionGroup = (type: 'bank' | 'offline', index: number) => {
+  if (!form.value) return
+  const field = type === 'bank' ? 'paymentInstructionsBank' : 'paymentInstructionsOffline'
+  form.value[field]?.splice(index, 1)
+}
+
+const addStep = (type: 'bank' | 'offline', gIdx: number) => {
+  if (!form.value) return
+  const field = type === 'bank' ? 'paymentInstructionsBank' : 'paymentInstructionsOffline'
+  const target = form.value[field]
+  if (target?.[gIdx]) {
+    target[gIdx].steps.push('')
+  }
+}
+
+const removeStep = (type: 'bank' | 'offline', gIdx: number, sIdx: number) => {
+  if (!form.value) return
+  const field = type === 'bank' ? 'paymentInstructionsBank' : 'paymentInstructionsOffline'
+  const target = form.value[field]
+  if (target?.[gIdx]) {
+    target[gIdx].steps.splice(sIdx, 1)
+    if (target[gIdx].steps.length === 0) {
+      target[gIdx].steps.push('')
+    }
+  }
 }
 const handleSave = async () => {
   if (!form.value || isSaving.value) return // Check isSaving at the very beginning

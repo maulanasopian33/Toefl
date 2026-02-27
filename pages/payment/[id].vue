@@ -64,8 +64,8 @@
             Bukti pembayaran Anda telah kami terima dan sedang dalam proses pengecekan oleh admin. Mohon tunggu 1x24 jam.
           </p>
           
-          <div v-if="payment.payment_proof" class="mt-6 mb-2">
-            <img :src="payment.payment_proof" alt="Bukti Transfer" class="mx-auto max-h-64 rounded-lg border border-slate-200 shadow-sm object-contain bg-slate-50" />
+          <div v-if="latestProofUrl" class="mt-6 mb-2">
+            <img :src="latestProofUrl" alt="Bukti Transfer" class="mx-auto max-h-64 rounded-lg border border-slate-200 shadow-sm object-contain bg-slate-50" />
           </div>
 
           <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 inline-block text-left">
@@ -73,7 +73,7 @@
                 <Icon name="lucide:file-check" class="h-5 w-5 text-slate-400" />
                 <div class="text-sm">
                    <p class="font-medium text-slate-900">Bukti Transfer Terkirim</p>
-                   <a v-if="payment.payment_proof" :href="payment.payment_proof" target="_blank" class="text-blue-600 hover:underline text-xs">Lihat Bukti</a>
+                   <a v-if="latestProofUrl" :href="latestProofUrl" target="_blank" class="text-blue-600 hover:underline text-xs">Lihat Bukti</a>
                 </div>
              </div>
           </div>
@@ -209,7 +209,20 @@ const isPaid = computed(() => {
 });
 
 const isVerificationPending = computed(() => {
-  return !isPaid.value && !!payment.value?.proofs;
+  // Status pending dan sudah ada bukti (baik di field payment_proof atau di array proofs)
+  return payment.value?.status === 'pending' && (!!payment.value?.payment_proof || (payment.value?.proofs && payment.value?.proofs.length > 0));
+});
+
+const latestProofUrl = computed(() => {
+  if (payment.value?.proofs && payment.value?.proofs.length > 0) {
+    // Ambil bukti terakhir dari array
+    const lastProof = payment.value.proofs[payment.value.proofs.length - 1];
+    return lastProof.imageUrl.startsWith('http') ? lastProof.imageUrl : `${config.public.API_URL}${lastProof.imageUrl}`;
+  }
+  if (payment.value?.payment_proof) {
+     return payment.value.payment_proof.startsWith('http') ? payment.value.payment_proof : `${config.public.API_URL}${payment.value.payment_proof}`;
+  }
+  return null;
 });
 
 const fetchPaymentDetail = async () => {
@@ -253,6 +266,7 @@ const fetchPaymentDetail = async () => {
 
 onMounted(() => {
   fetchPaymentDetail();
+  fetchAppSettings();
 });
 
 // Computed Properties untuk PaymentMethodInfo
@@ -277,64 +291,73 @@ const paymentAccountNumber = computed(() => {
   return payment.value?.vaNumber || '8800' + (payment.value?.externalId || '123456');
 });
 
-const offlineDetails = ref({
-  location: 'Gedung Rektorat Lt. 1, Loket Keuangan',
-  hours: 'Senin - Jumat, 08:00 - 15:00 WIB',
-  notes: 'Tunjukkan ID Tagihan ini kepada petugas loket untuk melakukan pembayaran tunai.'
+// Use useAppSettings for dynamic data
+const { settings, fetchSettings: fetchAppSettings } = useAppSettings()
+
+const offlineDetails = computed(() => {
+  return settings.value?.paymentOfflineDetails || {
+    location: 'Gedung Rektorat Lt. 1, Loket Keuangan',
+    hours: 'Senin - Jumat, 08:00 - 15:00 WIB',
+    notes: 'Tunjukkan ID Tagihan ini kepada petugas loket untuk melakukan pembayaran tunai.'
+  };
 });
 
 const formatCurrency = (val: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
 };
 
-const bankInstructions = [
-  {
-    title: 'ATM BCA',
-    steps: [
-      'Masukkan Kartu ATM BCA & PIN.',
-      'Pilih menu Transaksi Lainnya > Transfer > ke Rekening BCA Virtual Account.',
-      'Masukkan nomor Virtual Account yang tertera di atas.',
-      'Periksa detail pembayaran (Nama & Nominal), lalu tekan Ya.',
-      'Simpan struk sebagai bukti pembayaran yang sah.'
-    ]
-  },
-  {
-    title: 'm-BCA (BCA Mobile)',
-    steps: [
-      'Buka aplikasi BCA Mobile dan login.',
-      'Pilih menu m-Transfer > BCA Virtual Account.',
-      'Masukkan nomor Virtual Account yang tertera.',
-      'Pastikan nama dan nominal tagihan sesuai, masukkan PIN m-BCA.',
-      'Pembayaran selesai. Status akan otomatis terupdate.'
-    ]
-  },
-  {
-    title: 'Internet Banking BCA (KlikBCA)',
-    steps: [
-      'Login ke KlikBCA Individual.',
-      'Pilih menu Transfer Dana > Transfer ke BCA Virtual Account.',
-      'Masukkan nomor Virtual Account.',
-      'Validasi detail pembayaran dan lanjutkan proses dengan KeyBCA.',
-      'Transaksi selesai.'
-    ]
-  }
-];
-
-const offlineInstructions = [
-  {
-    title: 'Cara Pembayaran di Loket',
-    steps: [
-      'Datang ke lokasi pembayaran pada jam operasional.',
-      'Ambil nomor antrian untuk layanan keuangan.',
-      'Tunjukkan ID Tagihan atau halaman ini kepada petugas.',
-      'Lakukan pembayaran tunai sesuai nominal.',
-      'Simpan bukti pembayaran fisik yang diberikan petugas.'
-    ]
-  }
-];
-
 const paymentInstructions = computed(() => {
-  return paymentMethodType.value === 'offline' ? offlineInstructions : bankInstructions;
+  if (paymentMethodType.value === 'offline') {
+    return (settings.value?.paymentInstructionsOffline && settings.value.paymentInstructionsOffline.length > 0)
+      ? settings.value.paymentInstructionsOffline
+      : [
+          {
+            title: 'Cara Pembayaran di Loket',
+            steps: [
+              'Datang ke lokasi pembayaran pada jam operasional.',
+              'Ambil nomor antrian untuk layanan keuangan.',
+              'Tunjukkan ID Tagihan atau halaman ini kepada petugas.',
+              'Lakukan pembayaran tunai sesuai nominal.',
+              'Simpan bukti pembayaran fisik yang diberikan petugas.'
+            ]
+          }
+        ];
+  } else {
+    return (settings.value?.paymentInstructionsBank && settings.value.paymentInstructionsBank.length > 0)
+      ? settings.value.paymentInstructionsBank
+      : [
+          {
+            title: 'ATM BCA',
+            steps: [
+              'Masukkan Kartu ATM BCA & PIN.',
+              'Pilih menu Transaksi Lainnya > Transfer > ke Rekening BCA Virtual Account.',
+              'Masukkan nomor Virtual Account yang tertera di atas.',
+              'Periksa detail pembayaran (Nama & Nominal), lalu tekan Ya.',
+              'Simpan struk sebagai bukti pembayaran yang sah.'
+            ]
+          },
+          {
+            title: 'm-BCA (BCA Mobile)',
+            steps: [
+              'Buka aplikasi BCA Mobile dan login.',
+              'Pilih menu m-Transfer > BCA Virtual Account.',
+              'Masukkan nomor Virtual Account yang tertera.',
+              'Pastikan nama dan nominal tagihan sesuai, masukkan PIN m-BCA.',
+              'Pembayaran selesai. Status akan otomatis terupdate.'
+            ]
+          },
+          {
+            title: 'Internet Banking BCA (KlikBCA)',
+            steps: [
+              'Login ke KlikBCA Individual.',
+              'Pilih menu Transfer Dana > Transfer ke BCA Virtual Account.',
+              'Masukkan nomor Virtual Account.',
+              'Validasi detail pembayaran dan lanjutkan proses dengan KeyBCA.',
+              'Transaksi selesai.'
+            ]
+          }
+        ];
+  }
 });
 
 // Logic Upload Manual

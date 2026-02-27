@@ -140,7 +140,7 @@ const handleJoinBatch = async () => {
     // Emit event untuk memberitahu parent (halaman [id].vue) agar memperbarui data batch
     emit('update-batch', response.data); // Asumsi API mengembalikan data batch terbaru
 
-    console.log(response.data);
+    // Join response
     
   } catch (error: any) {
     console.error("Gagal join batch:", error);

@@ -14,7 +14,7 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3 no-print">
         <!-- Date Filters -->
         <div class="flex items-center bg-gray-50 rounded-2xl p-1.5 border border-gray-100 shadow-sm">
            <input 
@@ -32,10 +32,26 @@
         
         <button
           @click="fetchReport(filters)"
-          class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform active:scale-95 whitespace-nowrap"
+          class="inline-flex items-center gap-2 rounded-2xl bg-gray-100 px-6 py-3.5 text-sm font-bold text-gray-600 hover:bg-gray-200 transition-all transform active:scale-95 whitespace-nowrap"
         >
           <Icon name="lucide:refresh-cw" class="w-5 h-5" :class="{ 'animate-spin': isLoading }" />
-          Update Data
+          Update
+        </button>
+
+        <button
+          @click="exportCSV(filters)"
+          class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all transform active:scale-95 whitespace-nowrap"
+        >
+          <Icon name="lucide:file-spreadsheet" class="w-5 h-5" />
+          CSV
+        </button>
+
+        <button
+          @click="handlePrint()"
+          class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform active:scale-95 whitespace-nowrap"
+        >
+          <Icon name="lucide:printer" class="w-5 h-5" />
+          Cetak
         </button>
       </div>
     </header>
@@ -96,8 +112,8 @@
           </div>
           <p class="text-xs font-bold text-indigo-100 mb-1">Butuh data lengkap?</p>
           <h4 class="text-lg font-black leading-tight mb-4">Unduh Laporan Excel</h4>
-          <button class="w-full py-3 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:bg-slate-50 transition-colors shadow-sm">
-             Download .xlsx
+          <button @click="exportCSV(filters)" class="w-full py-3 bg-white text-indigo-600 rounded-2xl font-black text-sm hover:bg-slate-50 transition-colors shadow-sm">
+             Download CSV
           </button>
         </div>
       </div>
@@ -226,7 +242,13 @@ definePageMeta({
   permission: 'system.app'
 })
 
-const { isLoading, summary, trend, batchBreakdown, methodBreakdown, fetchReport } = useFinancialReport()
+const { isLoading, summary, trend, batchBreakdown, methodBreakdown, fetchReport, exportCSV } = useFinancialReport()
+
+const handlePrint = () => {
+  if (process.client) {
+    window.print()
+  }
+}
 
 // Default filters: Current month
 const now = new Date()
@@ -281,5 +303,28 @@ onMounted(() => {
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.5;
   cursor: pointer;
+}
+@media print {
+  .no-print, header .flex-wrap, .group button {
+    display: none !important;
+  }
+  .animate-fade-in-up {
+    animation: none !important;
+  }
+  .bg-white {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .grid {
+    display: block !important;
+  }
+  div[class*="lg:col-span-"] {
+    width: 100% !important;
+    margin-bottom: 2rem !important;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 </style>

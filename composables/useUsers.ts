@@ -190,7 +190,7 @@ export function useUsers() {
 
   // Initial fetch
   onMounted(fetchUsers)
-console.log(users);
+// Process users list
 
   return {
     // Data & State

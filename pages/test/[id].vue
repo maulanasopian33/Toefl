@@ -284,29 +284,26 @@ let clockInterval: NodeJS.Timeout | null = null;
 // --- Time Control Logic ---
 const currentTime = ref(new Date());
 
-console.log("currentTime", currentTime.value);
 
-console.log("testMetadata", testMetadata.value);
-console.log("testMetadata", testMetadata.value?.start_date);
 
 const scheduledStartTime = computed(() => {
   return testMetadata.value?.start_date ? new Date(testMetadata.value.start_date) : null;
 });
 
-console.log("scheduledStartTime", scheduledStartTime.value);
+
 
 const scheduledEndTime = computed(() => {
   return testMetadata.value?.end_date ? new Date(testMetadata.value.end_date) : null;
 });
 
-console.log("scheduledEndTime", scheduledEndTime.value);
+
 
 const isTestEnded = computed(() => {
   if (!scheduledEndTime.value) return false;
   return currentTime.value > scheduledEndTime.value;
 });
 
-console.log("isTestEnded", isTestEnded.value);
+
 
 const isTestOpen = computed(() => {
   // Jika test sudah berakhir, maka pasti tidak open
@@ -318,7 +315,7 @@ const isTestOpen = computed(() => {
   return currentTime.value >= scheduledStartTime.value;
 });
 
-console.log("isTestOpen", isTestOpen.value);
+
 
 const countdown = computed(() => {
   if (!scheduledStartTime.value) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
@@ -333,7 +330,7 @@ const countdown = computed(() => {
   return { days, hours, minutes, seconds };
 });
 
-console.log("countdown", countdown.value);
+
 
 
 onMounted(() => {
@@ -514,7 +511,7 @@ watch(testMetadata, (newMetadata) => {
   if (newMetadata && newMetadata.sectionOrder.length > 0) {
     // Check for history in store
     if (testSessionStore.testId === testId && testSessionStore.sectionsData.length > 0) {
-      console.log('Restoring session from store...');
+      // Session restored
       currentSectionIndex.value = testSessionStore.currentSectionIndex;
       currentGroupIndex.value = testSessionStore.currentGroupIndex;
       currentQuestionIndex.value = testSessionStore.currentQuestionIndex;
