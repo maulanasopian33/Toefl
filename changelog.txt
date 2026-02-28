@@ -260,3 +260,20 @@ LATEST UPDATES - 26 Januari 2026
    - File yang diubah: components/batch/tabs/SoalTab.vue
 
 Timestamp: 2026-01-26 11:15:00
+
+LATEST UPDATES - 28 Februari 2026
+==============================
+
+1. PERBAIKAN ROUTING & STANDARISASI AUDIT LOG (404 ERROR)
+   - Memperbaiki error 404 pada halaman log dengan merelokasi directory ke path standar: /admin/audit-logs.
+   - Sinkronisasi penamaan fitur menjadi 'Audit Log' di seluruh aplikasi untuk konsistensi.
+   - Memperbarui link navigasi pada Sidebar, data navigasi (
+avItems.ts), dan pintasan pada halaman Panduan Penggunaan.
+   - Menyesuaikan permission check pada middleware menjadi system.view_logs.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/audit-logs/index.vue (RENAMED)
+     - nuxt-fe/data/navItems.ts
+     - nuxt-fe/components/admin/Sidebar/index.vue
+     - nuxt-fe/pages/admin/support/docs.vue
+
+Timestamp: 2026-02-28 12:08:14

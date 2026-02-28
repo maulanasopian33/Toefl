@@ -102,6 +102,6 @@ const docs = [
 const shortcuts = [
   { name: 'Tambah Batch Baru', href: '/admin/batch/add', icon: 'lucide:plus-circle' },
   { name: 'Lihat Transaksi', href: '/admin/payments', icon: 'lucide:credit-card' },
-  { name: 'Audit Log System', href: '/admin/log-activity', icon: 'lucide:shield-check' }
+  { name: 'Audit Log System', href: '/admin/audit-logs', icon: 'lucide:shield-check' }
 ];
 </script>
