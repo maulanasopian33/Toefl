@@ -42,6 +42,14 @@
           </div>
         </template>
       </DashboardStatCard>
+
+      <DashboardStatCard label="Antrean Proses" :value="counts?.queuePending">
+        <template #icon>
+          <div class="bg-blue-100 p-3 rounded-lg">
+            <Icon name="lucide:loader-2" class="w-6 h-6 text-blue-600" :class="{ 'animate-spin': counts?.queuePending > 0 }" />
+          </div>
+        </template>
+      </DashboardStatCard>
     </DashboardStatGrid>
 
     <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">

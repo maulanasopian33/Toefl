@@ -14,7 +14,7 @@
            <p class="text-slate-500 font-medium">Kelola tabel konversi skor TOEFL/TOAFL untuk perhitungan nilai otomatis.</p>
         </div>
         <div class="mt-4 sm:mt-0">
-          <NuxtLink to="/admin/settings/scoring-tables/new" class="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-6 py-3.5 text-sm font-black text-white hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 transform active:scale-95">
+          <NuxtLink to="/admin/penilaian/scoring-tables/new" class="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-6 py-3.5 text-sm font-black text-white hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 transform active:scale-95">
             <Icon name="lucide:plus-circle" class="h-5 w-5" />
             Tambah Tabel Baru
           </NuxtLink>
@@ -44,7 +44,7 @@
         </div>
         <h3 class="text-xl font-black text-slate-900">Belum Ada Tabel Scoring</h3>
         <p class="mt-2 text-slate-400 max-w-xs mx-auto font-medium">Buat tabel konversi pertama Anda untuk mulai menggunakan sistem penilaian otomatis.</p>
-        <NuxtLink to="/admin/settings/scoring-tables/new" class="mt-8 px-8 py-3.5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 transform active:scale-95">Mulai Buat Tabel</NuxtLink>
+        <NuxtLink to="/admin/penilaian/scoring-tables/new" class="mt-8 px-8 py-3.5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 transform active:scale-95">Mulai Buat Tabel</NuxtLink>
       </div>
 
       <!-- Content Grid -->
@@ -56,7 +56,7 @@
                  <Icon name="lucide:layout-template" class="w-6 h-6 text-indigo-600" />
               </div>
               <div class="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                <NuxtLink :to="`/admin/settings/scoring-tables/${table.id}`" class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                <NuxtLink :to="`/admin/penilaian/scoring-tables/${table.id}`" class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
                   <Icon name="lucide:pencil" class="h-4 w-4" />
                 </NuxtLink>
                 <button @click="openDeleteConfirmation(table)" class="p-2.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
@@ -93,7 +93,7 @@
           </div>
           
           <div class="px-8 py-5 bg-white border-t border-slate-50">
-             <NuxtLink :to="`/admin/settings/scoring-tables/${table.id}`" class="w-full flex items-center justify-center gap-2 py-2 text-xs font-black text-indigo-600 hover:text-indigo-700 transition-colors">
+             <NuxtLink :to="`/admin/penilaian/scoring-tables/${table.id}`" class="w-full flex items-center justify-center gap-2 py-2 text-xs font-black text-indigo-600 hover:text-indigo-700 transition-colors">
                 Detail Tabel <Icon name="lucide:chevron-right" class="w-4 h-4" />
              </NuxtLink>
           </div>

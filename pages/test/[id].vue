@@ -99,7 +99,7 @@
             </div>
 
             <!-- Error State -->
-            <div v-else-if="error" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-12 space-y-6">
+            <div v-else-if="error && !isExpired" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-12 space-y-6">
               <div class="p-4 bg-red-50 rounded-full border border-red-100">
                 <Icon name="heroicons:exclamation-triangle" class="h-16 w-16 text-red-500" />
               </div>
@@ -114,7 +114,7 @@
             </div>
 
             <!-- Test Ended State -->
-            <div v-else-if="isTestEnded" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-8">
+            <div v-else-if="isTestEnded || isExpired" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-8">
               <div class="p-6 bg-gray-100 rounded-full border border-gray-200">
                 <Icon name="heroicons:clock" class="h-20 w-20 text-gray-400" />
               </div>
@@ -208,11 +208,27 @@
                   <Icon name="svg-spinners:blocks-scale" class="h-12 w-12 text-emerald-500" />
                   <p class="text-emerald-700 font-bold tracking-tight">Menyimpan Respons Anda...</p>
                 </div>
-                <div v-else-if="finalScore" class="space-y-2">
-                  <p class="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Skor Akhir Anda</p>
-                  <p class="text-7xl font-black text-emerald-600 drop-shadow-md">
-                    {{ finalScore.score }}<span class="text-gray-300 text-3xl font-medium">/{{ finalScore.totalQuestions }}</span>
-                  </p>
+                <div v-else-if="finalScore" class="space-y-4">
+                  <template v-if="finalScore.status === 'PENDING'">
+                    <div class="flex flex-col items-center space-y-3">
+                      <Icon name="svg-spinners:ring-resize" class="h-10 w-10 text-emerald-500" />
+                      <div class="space-y-1">
+                        <p class="text-sm font-black text-gray-800 uppercase tracking-wider">Hasil Sedang Dihitung</p>
+                        <p class="text-[10px] text-gray-400 font-medium">Jangan khawatir, jawaban Anda sudah aman tersimpan.</p>
+                      </div>
+                    </div>
+                  </template>
+                  <template v-else-if="finalScore.status === 'COMPLETED'">
+                    <p class="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Skor Akhir Anda</p>
+                    <p class="text-7xl font-black text-emerald-600 drop-shadow-md">
+                      {{ finalScore.score }}<span class="text-gray-300 text-3xl font-medium">/{{ finalScore.totalQuestions }}</span>
+                    </p>
+                  </template>
+                  <template v-else>
+                     <div class="p-3 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold">
+                       Gagal menghitung skor otomatis. Silakan cek riwayat tes nanti.
+                     </div>
+                  </template>
                 </div>
               </div>
 
@@ -265,7 +281,7 @@ definePageMeta({
 
 const {
   testMetadata, sectionDetails, sectionsData, finalScore,
-  isLoadingMetadata, isLoadingSection, isSubmitting, error, fetchTestMetadata,
+  isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, error, fetchTestMetadata,
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
 

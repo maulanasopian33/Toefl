@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl">
       <!-- Header -->
       <header class="mb-8">
-        <NuxtLink to="/admin/settings/scoring-tables" class="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-indigo-600 mb-6 group transition-colors">
+        <NuxtLink to="/admin/penilaian/scoring-tables" class="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-indigo-600 mb-6 group transition-colors">
           <div class="p-1.5 bg-gray-100 rounded-lg group-hover:bg-indigo-50 transition-colors">
              <Icon name="lucide:arrow-left" class="h-4 w-4" />
           </div>
@@ -24,7 +24,7 @@
       <TableForm 
         :is-saving="isSaving" 
         @save="handleSave" 
-        @cancel="navigateTo('/admin/settings/scoring-tables')" 
+        @cancel="navigateTo('/admin/penilaian/scoring-tables')" 
       />
     </div>
   </div>
@@ -50,7 +50,7 @@ const handleSave = async (data: ScoringTable) => {
   try {
     await createTable(data);
     showNotification('Tabel scoring berhasil dibuat.', 'success');
-    navigateTo('/admin/settings/scoring-tables');
+    navigateTo('/admin/penilaian/scoring-tables');
   } catch (err: any) {
     showNotification(err.message || 'Gagal membuat tabel scoring.', 'error');
   } finally {

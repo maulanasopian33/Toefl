@@ -10,6 +10,7 @@ export interface TestHistory {
   batchName: string;
   completedDate: string;
   score: number;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED';
   maxScore?: number;
   detailsUrl?: string;
   // Properti untuk halaman detail
@@ -29,7 +30,7 @@ export interface TestHistory {
  */
 export const useTestHistory = () => {
   const config = useRuntimeConfig();
-  const { logToServer } = useLogger();
+  const { logError } = useLogger();
 
   const { data, pending, error, refresh } = useAsyncData<TestHistory[]>(
     'test-history-list',
@@ -47,11 +48,7 @@ export const useTestHistory = () => {
 
   watch(error, (newErr) => {
     if (newErr) {
-      logToServer({
-        level: 'error',
-        message: 'Failed to fetch test history list',
-        metadata: { error: newErr.message }
-      });
+      logError('Failed to fetch test history list', { error: newErr.message });
     }
   });
 
@@ -70,7 +67,7 @@ export const useTestHistory = () => {
  */
 export const useTestHistoryDetail = (historyId: string) => {
   const config = useRuntimeConfig();
-  const { logToServer } = useLogger();
+  const { logError } = useLogger();
 
   const { data, pending, error, refresh } = useAsyncData<TestHistory>(
     `test-history-detail-${historyId}`,
@@ -88,11 +85,7 @@ export const useTestHistoryDetail = (historyId: string) => {
 
   watch(error, (newErr) => {
     if (newErr) {
-      logToServer({
-        level: 'error',
-        message: `Failed to fetch test history detail for ${historyId}`,
-        metadata: { error: newErr.message, historyId }
-      });
+      logError(`Failed to fetch test history detail for ${historyId}`, { error: newErr.message, historyId });
     }
   });
 

@@ -63,10 +63,24 @@
                 </div>
 
                 <div class="flex items-center gap-8">
-                  <!-- Skor -->
-                  <div class="flex flex-col items-center sm:items-end">
-                    <p class="text-4xl font-extrabold text-emerald-600 leading-none drop-shadow-sm">{{ history.score }}</p>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Total Score</p>
+                  <!-- Skor atau Status -->
+                  <div class="flex flex-col items-center sm:items-end min-w-[100px]">
+                    <template v-if="history.status === 'PENDING'">
+                      <div class="flex items-center space-x-2 text-emerald-500 animate-pulse">
+                        <Icon name="svg-spinners:ring-resize" class="w-5 h-5" />
+                        <span class="text-[10px] font-black uppercase tracking-widest">Memproses...</span>
+                      </div>
+                    </template>
+                    <template v-else-if="history.status === 'FAILED'">
+                      <div class="text-rose-500 flex items-center space-x-1">
+                        <Icon name="heroicons:x-circle" class="w-5 h-5" />
+                        <span class="text-[10px] font-black uppercase tracking-widest">Gagal</span>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <p class="text-4xl font-extrabold text-emerald-600 leading-none drop-shadow-sm">{{ history.score }}</p>
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Total Score</p>
+                    </template>
                   </div>
 
                   <!-- Tombol Aksi -->

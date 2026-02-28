@@ -2,6 +2,7 @@ import { useFirebaseToken } from './FirebaseToken'
 
 export interface LogPayload {
   action: string;
+  message: string;
   module: string;
   details?: any;
   level?: 'info' | 'warn' | 'error';
@@ -37,6 +38,7 @@ export function useLogger() {
       }).catch(err => {
         // Silently fail to not interrupt UX
         console.error('Failed to send audit log:', err)
+        console.error('Payload attempted:', JSON.stringify(enrichedPayload, null, 2))
       })
 
     } catch (error) {
@@ -47,8 +49,18 @@ export function useLogger() {
   return {
     log,
     // Helper methods
-    logNavigation: (to: string) => log({ action: 'NAVIGATE', module: 'navigation', details: { to } }),
-    logError: (error: string, context?: any) => log({ action: 'ERROR', module: 'system', level: 'error', details: { error, ...context } }),
-    logAdminAction: (action: string, details?: any) => log({ action, module: 'admin', details })
+    logNavigation: (to: string) => log({ action: 'NAVIGATE', message: `Navigated to ${to}`, module: 'navigation', details: { to } }),
+    logError: (error: string, context?: any) => log({ action: 'ERROR', message: error, module: 'system', level: 'error', details: { error, ...context } }),
+    logAdminAction: (action: string, details?: any) => log({ action, message: action, module: 'admin', details }),
+    // Compatibility for legacy calls
+    logToServer: (legacyPayload: { level?: any, message: string, metadata?: any }) => {
+      return log({
+        action: legacyPayload.message || 'LEGACY_LOG',
+        message: legacyPayload.message || 'LEGACY_LOG', // Add message field
+        module: 'frontend-adaptive',
+        details: legacyPayload.metadata,
+        level: legacyPayload.level || 'info'
+      })
+    }
   }
 }

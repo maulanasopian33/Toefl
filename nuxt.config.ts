@@ -75,6 +75,30 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/.*\/uploads\/.*\.mp3/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'exam-audio-cache',
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+            }
+          }
+        },
+        {
+          urlPattern: /^https:\/\/.*\/media\/.*\.mp3/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'media-audio-cache',
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 60 * 60 * 24 * 7
+            }
+          }
+        }
+      ]
     },
 
     client: {

@@ -65,12 +65,13 @@ export function useTestSession(testId: string) {
   const testMetadata = ref<TestMetadata | null>(null);
   const sectionDetails = ref<SectionDetail[]>([]); // State untuk detail section
   const sectionsData = ref<Section[]>([]);
-  const finalScore = ref<{ score: number; totalQuestions: number } | null>(null);
+  const finalScore = ref<{ score?: number; totalQuestions?: number; status: 'PENDING' | 'COMPLETED' | 'FAILED' } | null>(null);
 
   // --- Loading & Error State ---
   const isLoadingMetadata = ref(true);
   const isLoadingSection = ref(false);
   const isSubmitting = ref(false);
+  const isExpired = ref(false);
   const error = ref<Error | null>(null);
 
   /**
@@ -89,11 +90,22 @@ export function useTestSession(testId: string) {
 
     } catch (e: any) {
       error.value = e;
+      
+      // Check for expired exam (403 Forbidden with specific message)
+      if (e.response?.status === 403 && (e.response?._data?.message?.includes('berakhir') || e.message?.includes('berakhir'))) {
+        isExpired.value = true;
+      }
+
       const { logToServer } = useLogger();
       logToServer({
         level: 'error',
-        message: 'Failed to fetch test metadata',
-        metadata: { testId, error: e.message }
+        message: `Failed to fetch test metadata for ${testId}`,
+        metadata: { 
+          testId, 
+          error: e.message,
+          status: e.response?.status,
+          url: e.request
+        }
       });
     } finally {
       isLoadingMetadata.value = false;
@@ -150,7 +162,7 @@ export function useTestSession(testId: string) {
     try {
       const token = await useFirebaseToken();
       if (!token) throw new Error('Token autentikasi tidak ditemukan.');
-      const response = await $fetch<{ score: number; totalQuestions: number }>(`${API_BASE_URL}/submit`, {
+      const response = await $fetch<{ score?: number; totalQuestions?: number; status: 'PENDING' | 'COMPLETED' | 'FAILED' }>(`${API_BASE_URL}/submit`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: {answers},
@@ -174,7 +186,7 @@ export function useTestSession(testId: string) {
 
   return {
     testMetadata, sectionDetails, sectionsData, finalScore,
-    isLoadingMetadata, isLoadingSection, isSubmitting, error,
+    isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, error,
     fetchTestMetadata, fetchSectionData, submitAnswers,
   };
 }

@@ -1,6 +1,18 @@
 LATEST UPDATES - 27 Februari 2026
 ==============================
 
+1. PERBAIKAN ROUTING TABEL SKORING (404 ERROR)
+   - Memperbaiki link internal dan redirect pada modul Tabel Skoring yang masih mengarah ke path lama (`/admin/settings/scoring-tables`).
+   - Semua navigasi sekarang diarahkan ke path yang benar: `/admin/penilaian/scoring-tables`.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/penilaian/scoring-tables/index.vue
+     - nuxt-fe/pages/admin/penilaian/scoring-tables/new.vue
+     - nuxt-fe/pages/admin/penilaian/scoring-tables/[id].vue
+
+Timestamp: 2026-02-27 21:40:00
+
+==============================
+
 1. PENINGKATAN KEAMANAN & PENGALAMAN PENGGUNA (PRODUCTION READY)
    - Menghapus seluruh debug `console.log` pada berbagai halaman dan komponen (index.vue, test/[id].vue, anti.vue, ExamEditor.vue, dll) untuk meningkatkan performa dan privasi data di sisi client.
    - Refactor logika status pembayaran pada `pages/payment/[id].vue`:
@@ -183,6 +195,7 @@ LATEST UPDATES - 2026-02-27
    - Pembuatan Halaman Audit Log Admin untuk memantau aktivitas sistem secara real-time.
    - Integrasi logging pada flow Login (Email & Google).
    - Perbaikan UI dan handling error pada pengerjaan tes terkait jadwal.
+   - Optimasi PWA Workbox runtime caching untuk file audio guna mencegah quota exceeded pada browser peserta.
 
 7. REPORTING & DATA EXPORT (CSV & PDF)
    - Implementasi fitur download CSV pada semua halaman laporan admin.

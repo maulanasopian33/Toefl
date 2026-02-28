@@ -108,23 +108,22 @@
                      <Icon name="lucide:image" class="w-4 h-4 text-gray-400" />
                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Bukti Pembayaran</p>
                   </div>
-                  <a :href="editablePayment.payment_proof" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+                  <div class="group relative overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-xl">
                     <img
                       :src="editablePayment.payment_proof"
                       alt="Bukti Pembayaran"
-                      class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                      class="w-full h-auto max-h-96 object-contain bg-gray-50"
                     />
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <div class="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30 text-white flex items-center gap-2 text-xs font-bold">
-                          <Icon name="lucide:maximize-2" class="w-4 h-4" />
-                          Lihat Ukuran Penuh
-                       </div>
+                    <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                       <a :href="editablePayment.payment_proof" target="_blank" class="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/30 text-white hover:bg-white/30 transition-all shadow-lg" title="Open in New Tab">
+                          <Icon name="lucide:external-link" class="w-5 h-5" />
+                       </a>
                     </div>
-                  </a>
+                  </div>
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="mt-8 flex items-center justify-end gap-3 pt-4 border-t border-gray-50">
+                <div class="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-gray-50">
                   <template v-if="!isEditing">
                     <button 
                       type="button"
@@ -133,21 +132,36 @@
                     >
                        Tutup
                     </button>
+                    
+                    <!-- Confirmation Actions for Pending -->
+                    <template v-if="editablePayment.status === 'Pending'">
+                      <button
+                        type="button"
+                        @click="$emit('markAsFailed', editablePayment)"
+                        class="px-5 py-2.5 rounded-xl border border-rose-200 text-rose-600 font-bold hover:bg-rose-50 transition-all flex items-center gap-2 text-sm"
+                      >
+                        <Icon name="lucide:x-circle" class="w-4 h-4" />
+                        Tolak
+                      </button>
+                      <button
+                        type="button"
+                        @click="$emit('markAsPaid', editablePayment)"
+                        class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/20 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
+                      >
+                        <Icon name="lucide:check-circle" class="w-4 h-4" />
+                        Terima & Verifikasi
+                      </button>
+                    </template>
+
+                    <!-- Default Edit Action if not Pending or if already Paid -->
                     <button 
+                      v-else
                       type="button"
                       @click="isEditing = true"
                       class="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-all flex items-center gap-2 text-sm"
                     >
                        <Icon name="lucide:edit-2" class="w-3.5 h-3.5" />
-                       Edit
-                    </button>
-                    <button
-                      v-if="editablePayment && editablePayment.status !== 'Paid'"
-                      @click="$emit('markAsPaid', editablePayment)"
-                      class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/20 transition-all transform active:scale-95 flex items-center gap-2 text-sm"
-                    >
-                      <Icon name="lucide:check-circle" class="w-4 h-4" />
-                      Tandai Lunas
+                       Edit Detail
                     </button>
                   </template>
                   <template v-else>
