@@ -14,7 +14,7 @@ export const useBatchParticipantDelete = async (participantId: string) => {
     };
   }
 
-  const { data, pending, error, refresh } = await useFetch(`${config.public.API_URL}/batch-participant/${participantId}`, {
+  const { data, pending, error, refresh } = await useFetch(`${config.public.API_URL}/participants/${participantId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${authToken}`,
