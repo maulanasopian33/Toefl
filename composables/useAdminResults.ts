@@ -119,10 +119,11 @@ export const useAdminResults = (batchId: Ref<string>) => {
       // Handle both { data: [...] } and directly [...] response formats
       const rawData = Array.isArray(response) ? response : (response.data || []);
       
-      // Transform data: map 'idResult' or similar to 'id' if 'id' is missing
+      // Transform data: map 'idResult' or 'id_result' to 'id' if 'id' is missing
+      // Do NOT synthesize a fallback ID as the backend rejects non-database ID formats
       results.value = rawData.map((res: any) => ({
         ...res,
-        id: res.id || res.idResult || `res-${res.userId}-${new Date(res.submittedAt).getTime()}`
+        id: res.id || res.idResult || res.id_result
       }));
     } catch (e: any) {
       error.value = e;
