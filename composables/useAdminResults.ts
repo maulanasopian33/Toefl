@@ -84,7 +84,7 @@ export const useAdminBatches = () => {
       });
 
       // Transformasi data dari { idBatch, namaBatch } menjadi { id, name }
-      return response.data.map(batch => ({ id: batch.idBatch, name: batch.name }));
+      return response.data.map(batch => ({ id: batch.idBatch, name: (batch as any).namaBatch || (batch as any).name }));
     },
     {
       default: () => [],
@@ -192,4 +192,38 @@ export const useAdminAnswerDetails = (attemptId: Ref<string>) => {
   );
 
   return { answerDetails: data, isAnswersLoading: pending, answersError: error, fetchAnswerDetails: execute };
+};
+
+/**
+ * @composable useRecalculateBatch
+ * @description Menghitung ulang semua skor dalam satu batch (hanya admin).
+ */
+export const useRecalculateBatch = () => {
+  const isRecalculating = ref(false);
+  const error = ref<string | null>(null);
+
+  const recalculate = async (batchId: string) => {
+    isRecalculating.value = true;
+    error.value = null;
+
+    try {
+      const token = await useFirebaseToken();
+      if (!token) throw new Error('Autentikasi pengguna gagal.');
+
+      const response = await $fetch<{ message: string; summary: any }>(`${useRuntimeConfig().public.API_URL}/results/recalculate-batch`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: { batchId }
+      });
+
+      return response;
+    } catch (e: any) {
+      error.value = e.data?.message || e.message || 'Gagal menghitung ulang batch.';
+      throw e;
+    } finally {
+      isRecalculating.value = false;
+    }
+  };
+
+  return { recalculate, isRecalculating, recalculateError: error };
 };

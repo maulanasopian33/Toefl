@@ -6,13 +6,25 @@
         <h1 class="text-3xl font-bold text-slate-800">Hasil Tes per Batch</h1>
         <p class="mt-1 text-slate-600">Tinjau hasil tes dari semua peserta dalam satu batch.</p>
       </div>
-      <!-- Pemilih Batch -->
-      <div class="w-full sm:w-64">
-        <label for="batch-selector" class="sr-only">Pilih Batch</label>
-        <select id="batch-selector" v-model="selectedBatchId" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-          <option v-if="isBatchesLoading" value="">Memuat batch...</option>
-          <option v-for="batch in batches" :key="batch.id" :value="batch.id">{{ batch.name }}</option>
-        </select>
+      <!-- Pemilih Batch & Aksi -->
+      <div class="flex items-center gap-3">
+        <div class="w-full sm:w-64">
+          <label for="batch-selector" class="sr-only">Pilih Batch</label>
+          <select id="batch-selector" v-model="selectedBatchId" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            <option v-if="isBatchesLoading" value="">Memuat batch...</option>
+            <option v-for="batch in batches" :key="batch.id" :value="batch.id">{{ batch.name }}</option>
+          </select>
+        </div>
+        <button 
+          @click="handleRecalculate" 
+          :disabled="isRecalculating || !selectedBatchId"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold shadow-sm"
+          title="Hitung ulang semua skor untuk batch ini"
+        >
+          <Icon v-if="isRecalculating" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="lucide:refresh-cw" class="w-4 h-4" />
+          <span class="hidden sm:inline">Hitung Ulang Skor</span>
+        </button>
       </div>
     </header>
 
@@ -190,6 +202,7 @@ definePageMeta({
 const { batches, isLoading: isBatchesLoading } = useAdminBatches();
 const selectedBatchId = ref("");
 const { results, isLoading, error, refresh } = useAdminResults(selectedBatchId);
+const { recalculate, isRecalculating } = useRecalculateBatch();
 
 // Search & Pagination State
 const searchQuery = ref('');
@@ -282,6 +295,25 @@ const handleSort = (key: string) => {
   } else {
     sortKey.value = key;
     sortOrder.value = 'asc';
+  }
+};
+
+const handleRecalculate = async () => {
+  if (!selectedBatchId.value) return;
+  
+  const isConfirmed = confirm(
+    `Apakah Anda yakin ingin menghitung ulang semua skor untuk batch "${selectedBatchName.value}"?\n\n` +
+    `Proses ini akan memperbarui nilai seluruh peserta berdasarkan konfigurasi penilaian terbaru.`
+  );
+
+  if (!isConfirmed) return;
+
+  try {
+    const response = await recalculate(selectedBatchId.value);
+    alert(`Berhasil! ${response.summary.success} peserta telah dihitung ulang.`);
+    if (refresh) refresh();
+  } catch (e: any) {
+    alert(`Gagal menghitung ulang: ${e.data?.message || e.message}`);
   }
 };
 
