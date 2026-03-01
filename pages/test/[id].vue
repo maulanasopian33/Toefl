@@ -99,7 +99,7 @@
             </div>
 
             <!-- Error State -->
-            <div v-else-if="error && !isExpired" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-12 space-y-6">
+            <div v-else-if="error && !isExpired && !isNotStarted" class="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-12 space-y-6">
               <div class="p-4 bg-red-50 rounded-full border border-red-100">
                 <Icon name="heroicons:exclamation-triangle" class="h-16 w-16 text-red-500" />
               </div>
@@ -129,7 +129,7 @@
             </div>
 
             <!-- Waiting for Exam Start -->
-            <div v-else-if="!isTestOpen" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-12">
+            <div v-else-if="!isTestOpen || isNotStarted" class="flex flex-col items-center justify-center h-full min-h-[500px] py-12 px-4 text-center space-y-12">
               <div class="relative">
                 <div class="absolute inset-0 bg-emerald-100 rounded-full blur-2xl opacity-40 animate-pulse"></div>
                 <div class="relative bg-white p-6 rounded-[2.5rem] shadow-2xl border border-emerald-50 ring-1 ring-emerald-100">
@@ -281,7 +281,7 @@ definePageMeta({
 
 const {
   testMetadata, sectionDetails, sectionsData, finalScore,
-  isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, error, fetchTestMetadata,
+  isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, isNotStarted, error, fetchTestMetadata,
   fetchSectionData, submitAnswers,
 } = useTestSession(testId);
 
@@ -315,6 +315,7 @@ const scheduledEndTime = computed(() => {
 
 
 const isTestEnded = computed(() => {
+  if (isNotStarted.value) return false;
   if (!scheduledEndTime.value) return false;
   return currentTime.value > scheduledEndTime.value;
 });
@@ -322,6 +323,9 @@ const isTestEnded = computed(() => {
 
 
 const isTestOpen = computed(() => {
+  // Jika exam belum mulai menurut flag backend
+  if (isNotStarted.value) return false;
+
   // Jika test sudah berakhir, maka pasti tidak open
   if (isTestEnded.value) return false;
 

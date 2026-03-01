@@ -72,6 +72,7 @@ export function useTestSession(testId: string) {
   const isLoadingSection = ref(false);
   const isSubmitting = ref(false);
   const isExpired = ref(false);
+  const isNotStarted = ref(false);
   const error = ref<Error | null>(null);
 
   /**
@@ -92,8 +93,24 @@ export function useTestSession(testId: string) {
       error.value = e;
       
       // Check for expired exam (403 Forbidden with specific message)
-      if (e.response?.status === 403 && (e.response?._data?.message?.includes('berakhir') || e.message?.includes('berakhir'))) {
-        isExpired.value = true;
+      if (e.response?.status === 403) {
+        const message = e.response?._data?.message || e.message || '';
+        if (message.includes('berakhir')) {
+          isExpired.value = true;
+        } else if (message.includes('belum dimulai')) {
+          isNotStarted.value = true;
+          // Populate minimal metadata from response if available to show countdown
+          if (e.response?._data?.start_date) {
+            testMetadata.value = {
+              id: testId,
+              name: 'Ujian Belum Dimulai',
+              start_date: e.response._data.start_date,
+              totalTime: 0,
+              totalQuestions: 0,
+              sectionOrder: []
+            };
+          }
+        }
       }
 
       const { logToServer } = useLogger();
@@ -186,7 +203,7 @@ export function useTestSession(testId: string) {
 
   return {
     testMetadata, sectionDetails, sectionsData, finalScore,
-    isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, error,
+    isLoadingMetadata, isLoadingSection, isSubmitting, isExpired, isNotStarted, error,
     fetchTestMetadata, fetchSectionData, submitAnswers,
   };
 }
