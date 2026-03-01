@@ -456,6 +456,22 @@ LATEST UPDATES - 26 Januari 2026
 
 Timestamp: 2026-01-26 11:15:00
 
+LATEST UPDATES - 01 Maret 2026 (Part 2)
+==============================
+
+1. PERBAIKAN FITUR HAPUS HASIL TES (ADMIN)
+   - Memperbaiki issue `undefined` ID saat menghapus hasil tes dari halaman Batch Results.
+   - Sinkronisasi mapping field `idResult` dari API ke property `id` pada frontend.
+   - Menambahkan fallback ID generation untuk memastikan stabilitas fitur pengerjaan ulang/penghapusan.
+   - Penambahan unit test untuk memverifikasi logika mapping dan penanganan response API.
+   - File yang disentuh:
+     - nuxt-fe/composables/useAdminResults.ts
+     - nuxt-fe/tests/composables/useAdminResults.test.ts (BARU)
+
+Timestamp: 2026-03-01 19:40:00
+
+==============================
+
 LATEST UPDATES - 01 Maret 2026
 ==============================
 

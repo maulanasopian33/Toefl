@@ -109,9 +109,6 @@
                       <p class="text-[10px] font-bold text-gray-400 opacity-60 uppercase">{{ test.submittedAt }}</p>
                     </div>
                   </div>
-                  <span :class="test.passed ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border">
-                    {{ test.passed ? 'Lulus' : 'Gagal' }}
-                  </span>
                 </div>
                 <div v-if="!userData?.riwayat_ujian?.length" class="p-12 text-center">
                    <p class="text-xs font-bold text-gray-300 uppercase tracking-widest">Belum Ada Riwayat</p>

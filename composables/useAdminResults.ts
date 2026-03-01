@@ -112,11 +112,18 @@ export const useAdminResults = (batchId: Ref<string>) => {
       const token = await useFirebaseToken();
       if (!token) throw new Error('Autentikasi pengguna gagal.');
 
-      const response = await $fetch<AdminTestResult[]>(`${useRuntimeConfig().public.API_URL}/results/${batchId.value}`, {
+      const response = await $fetch<any>(`${useRuntimeConfig().public.API_URL}/results/${batchId.value}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      results.value = response;
+      // Handle both { data: [...] } and directly [...] response formats
+      const rawData = Array.isArray(response) ? response : (response.data || []);
+      
+      // Transform data: map 'idResult' or similar to 'id' if 'id' is missing
+      results.value = rawData.map((res: any) => ({
+        ...res,
+        id: res.id || res.idResult || `res-${res.userId}-${new Date(res.submittedAt).getTime()}`
+      }));
     } catch (e: any) {
       error.value = e;
       const { logToServer } = useLogger();

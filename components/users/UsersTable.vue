@@ -101,9 +101,9 @@
               <div class="flex flex-col gap-1">
                 <div class="font-bold text-gray-900 flex items-center gap-2">
                    <Icon name="lucide:contact-2" class="w-4 h-4 text-indigo-400" />
-                   {{ user.detailuser.nim || '-' }}
+                   {{ user.detailuser?.nim || '-' }}
                 </div>
-                <p class="text-xs text-slate-500 pl-6">{{ user.detailuser.fakultas || '-' }} &middot; {{ user.detailuser.prodi || '-' }}</p>
+                <p class="text-xs text-slate-500 pl-6">{{ user.detailuser?.fakultas || '-' }} &middot; {{ user.detailuser?.prodi || '-' }}</p>
               </div>
             </td>
 
