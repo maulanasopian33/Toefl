@@ -130,8 +130,31 @@ export const useAdminResults = (batchId: Ref<string>) => {
     }
   };
 
+  const deleteResult = async (resultId: string) => {
+    try {
+      const token = await useFirebaseToken();
+      if (!token) throw new Error('Autentikasi pengguna gagal.');
+
+      await $fetch(`${useRuntimeConfig().public.API_URL}/results/${resultId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Refresh local data
+      fetchData();
+    } catch (e: any) {
+      const { logToServer } = useLogger();
+      logToServer({
+        level: 'error',
+        message: 'Failed to delete result',
+        metadata: { resultId, error: e.message }
+      });
+      throw e;
+    }
+  };
+
   watch(batchId, fetchData, { immediate: true });
-  return { results, isLoading, error, refresh: fetchData };
+  return { results, isLoading, error, refresh: fetchData, deleteResult };
 };
 
 /**

@@ -144,7 +144,7 @@
                       {{ formatDate(result.submittedAt) }}
                    </div>
                 </td>
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-4 text-right flex items-center justify-end gap-1">
                   <NuxtLink 
                     :to="`/admin/results/${result.userId}/${selectedBatchId}`" 
                     class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all inline-flex items-center justify-center"
@@ -152,6 +152,13 @@
                   >
                     <Icon name="lucide:eye" class="w-4 h-4" />
                   </NuxtLink>
+                  <button 
+                    @click="handleDelete(result)" 
+                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all inline-flex items-center justify-center"
+                    title="Hapus Hasil"
+                  >
+                    <Icon name="lucide:trash-2" class="w-4 h-4" />
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -201,7 +208,7 @@ definePageMeta({
 // --- State & Composables ---
 const { batches, isLoading: isBatchesLoading } = useAdminBatches();
 const selectedBatchId = ref("");
-const { results, isLoading, error, refresh } = useAdminResults(selectedBatchId);
+const { results, isLoading, error, refresh, deleteResult } = useAdminResults(selectedBatchId);
 const { recalculate, isRecalculating } = useRecalculateBatch();
 
 // Search & Pagination State
@@ -314,6 +321,27 @@ const handleRecalculate = async () => {
     if (refresh) refresh();
   } catch (e: any) {
     alert(`Gagal menghitung ulang: ${e.data?.message || e.message}`);
+  }
+};
+
+const handleDelete = async (result: any) => {
+  const name = result.namaLengkap || result.userName;
+  const isConfirmed = confirm(
+    `Apakah Anda yakin ingin menghapus hasil tes dari "${name}"?\n\n` +
+    `Tindakan ini permanen dan akan menghapus semua jawaban yang terkait.`
+  );
+
+  if (!isConfirmed) return;
+
+  try {
+    // result.id is in format "res-44", deleteResult expects the backend ID format
+    // but the composable is flexible or we can pass the whole ID.
+    // Based on backend implementation: resultId.startsWith('res-') ? resultId.substring(4) : resultId;
+    // So passing result.id is fine.
+    await deleteResult(result.id);
+    alert('Hasil tes berhasil dihapus.');
+  } catch (e: any) {
+    alert(`Gagal menghapus hasil: ${e.message}`);
   }
 };
 
