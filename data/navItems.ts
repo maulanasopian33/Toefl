@@ -134,12 +134,15 @@ export default [
 
   // LOGS
   {
-    name: 'Audit Log',
-    link: '/admin/audit-logs',
+    name: 'Logs',
+    link: '#',
     icon: `<svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
-      <path d="M9 4v16h2V4zm5 0v16h2V4z"/>
     </svg>`,
+    children: [
+      { name: 'Audit DB Log', link: '/admin/audit-logs' },
+      { name: 'System File Log', link: '/admin/system-logs' },
+    ],
   },
 
   // SETTINGS

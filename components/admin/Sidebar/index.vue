@@ -162,6 +162,7 @@ const permissionMap: Record<string, string> = {
   '/admin/reports/finance': 'payment.view_all',
   '/admin/reports/exam': 'result.view_all',
   '/admin/audit-logs': 'system.view_logs',
+  '/admin/system-logs': 'system.app',
   '/admin/settings/roles': 'user.manage_role',
   '/admin/settings/permissions': 'user.manage_role',
   '/admin/settings/exam': 'setting.update',

@@ -256,10 +256,228 @@ LATEST UPDATES - 26 Januari 2026
    - Menambahkan ringkasan statistik (Total Section, Group, Soal).
    - Menambahkan ikon spesifik untuk tipe section (Listening, Reading, Structure).
    - Meningkatkan desain list section dan group dengan hover effects.
+     - nuxt-fe/components/ExamEditor/Sidebar.vue
+     - nuxt-fe/package.json
+
+2. DUKUNGAN AUDIO PADA HALAMAN UJIAN (QUESTION VIEW)
+   - Implementasi tampilan audio untuk group/passage (listening passage) dan audio specific pada tiap soal.
+   - Menambahkan field `groupAudio` pada interface `Question`.
+   - Menyesuaikan prop passing pada `pages/test/[id].vue`.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/QuestionView.vue
+     - nuxt-fe/pages/test/[id].vue
+     - nuxt-fe/composables/useTestSession.ts
+
+3. PERBAIKAN SISTEM TIMER & NAVIGASI (Halaman Ujian)
+   - Konversi unit timer dari menit ke detik agar sinkron dengan metadata API.
+   - Menambahkan proteksi navigasi soal (Sidebar & Section Tab) agar tidak bisa diklik saat layar intro (mencegah bypass timer).
+   - Peserta wajib menekan tombol "Mulai Mengerjakan" untuk memulai timer dan membuka navigasi soal.
+   - File yang disentuh:
+     - nuxt-fe/pages/test/[id].vue
+
+4. PENINGKATAN WIDGET AUDIO FLOATING (Halaman Ujian)
+   - Menambahkan daftar putar (Track List) pada widget audio yang menampilkan semua audio yang tersedia pada soal/passage saat ini.
+   - Menambahkan fitur minimize ("Hide") agar widget bisa disembunyikan menjadi tombol kecil tanpa menghentikan audio.
+   - Highlighting pada track yang sedang diputar dengan animasi visualizer.
+   - Integrasi state track otomatis antara halaman ujian dan widget audio.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/AudioFloatingWidget.vue
+     - nuxt-fe/composables/useAudioPlayer.ts
+     - nuxt-fe/pages/test/[id].vue
+
+5. REDESIGN SIDEBAR MOBILE (Halaman Ujian)
+   - Mengganti sidebar mobile inline lama dengan komponen `MobileSidebarSheet.vue` baru.
+   - Implementasi desain "Glassmorphism" premium dengan background blur dan elemen animasi.
+   - Peningkatan UX dengan layout timer dan progress yang lebih jelas dan menarik.
+   - Animasi slide-up yang halus saat membuka ringkasan ujian di mobile.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/MobileSidebarSheet.vue (NEW)
+     - nuxt-fe/pages/test/[id].vue
+
+Timestamp: 2026-02-04 23:30:00
+
+LATEST UPDATES - 02 Februari 2026
+==============================
+
+1. NOTIFIKASI PERTANYAAN TANPA JAWABAN BENAR
+   - Menambahkan kotak informasi (v-if) yang mendeteksi pertanyaan tanpa jawaban benar.
+   - Menampilkan jumlah total, nomor grup, dan nomor soal yang bermasalah secara dinamis.
+   - Memudahkan admin dalam validasi soal sebelum disimpan.
+   - File yang disentuh:
+     - nuxt-fe/components/ExamEditor/ExamEditor.vue
+
+Timestamp: 2026-02-02 22:54:00
+
+LATEST UPDATES - 01 Februari 2026 (Part 3)
+==============================
+
+1. PERBAIKAN URL AUDIO INSTRUKSI
+   - Menambahkan prefix `MEDIA_URL` (CDN) pada elemen audio di `SectionIntroScreen.vue`.
+   - Hal ini memastikan file audio instruksi dipanggil dari server media yang benar.
+   - File yang disentuh:
+     - nuxt-fe/components/Test/SectionIntroScreen.vue
+
+Timestamp: 2026-02-01 21:18:00
+
+LATEST UPDATES - 01 Februari 2026 (Part 2)
+==============================
+
+1. FITUR RESUME TEST (LOCAL PERSISTENCE)
+   - Implementasi penyimpanan otomatis progres tes (jawaban dan waktu) menggunakan Pinia & LocalStorage.
+   - Menambahkan banner "Melanjutkan dari progres terakhir" saat sesi dipulihkan.
+   - Dashboard (HeroSection) sekarang mendeteksi sesi aktif:
+     - Tombol "Lanjutkan Tes" aktif jika ada riwayat.
+     - Tombol "Mulai Tes Baru" menampilkan konfirmasi jika ada riwayat aktif.
+   - Sesi otomatis dibersihkan saat tes selesai disubmit.
+   - Unit test ditambahkan untuk memverifikasi logika persistensi store.
+   - File yang disentuh:
+     - nuxt-fe/stores/testSessionStore.ts
+     - nuxt-fe/pages/test/[id].vue
+     - nuxt-fe/components/DashboardUser/heroSection.vue
+     - nuxt-fe/tests/resumeSession.test.ts
+
+Timestamp: 2026-02-01 19:42:00
+
+LATEST UPDATES - 01 Februari 2026
+==============================
+
+1. INTEGRASI PWA (PROGRESSIVE WEB APP)
+   - Menambahkan modul `@vite-pwa/nuxt` untuk dukungan PWA.
+   - Konfigurasi manifest PWA dengan ikon kustom (192x192, 512x512).
+   - Implementasi caching strategy menggunakan Workbox untuk aset statis.
+   - Menambahkan folder `public/icons` untuk aset PWA.
+   - Membuat unit test untuk memastikan konfigurasi PWA valid.
+   - File yang disentuh:
+     - nuxt-fe/nuxt.config.ts
+     - nuxt-fe/package.json
+     - nuxt-fe/public/icons/pwa-192x192.png
+     - nuxt-fe/public/icons/pwa-512x512.png
+     - nuxt-fe/tests/pwa.test.ts
+   - Mengoptimalkan konfigurasi Workbox untuk menghilangkan peringatan build di mode development.
+2. PERBAIKAN URL AVATAR & DEPLOYMENT
+   - Memperbaiki logika `getAvatarUrl` di `BatchParticipants.vue` agar lebih fleksibel dengan path langsung.
+   - Menambahkan `MEDIA_URL` pada Github Action `deploy-toafl.yml` untuk sinkronisasi konfigurasi production.
+   - Menambahkan `MEDIA_URL` ke `runtimeConfig` di `nuxt.config.ts` (sudah tersedia).
+   - File yang disentuh:
+     - nuxt-fe/components/batch/detail/BatchParticipants.vue
+     - nuxt-fe/.github/workflows/deploy-toafl.yml
+
+
+Timestamp: 2026-02-01 18:20:00
+
+LATEST UPDATES - 2026-02-27
+==============================
+
+1. CRUD TEMPLATE SERTIFIKAT DINAMIS
+   - Modal Template yang disederhanakan: Nama, Upload DOCX, dan Status
+   - Support pengiriman file langsung melalui FormData
+   - Integrasi reuse useCertificates untuk deteksi real-time
+   - Notifikasi sukses/gagal yang lebih informatif
+
+2. NOTIFIKASI DASHBOARD DINAMIS
+   - Notifikasi pembayaran otomatis muncul saat status 'pending/unpaid'
+   - Notifikasi sertifikat otomatis muncul saat data tersedia di API
+
+6. DYNAMIC PAYMENT INSTRUCTIONS
+   - Integrasi instruksi pembayaran dinamis pada halaman pembayaran user.
+   - Penambahan UI editor instruksi pembayaran (Bank & Offline) di Admin Settings.
+   - Update composable `useAppSettings.ts` untuk menangani JSON parsing instruksi secara otomatis.
+   - File tersentuh: `composables/useAppSettings.ts`, `pages/admin/settings/general.vue`, `pages/payment/[id].vue`.
+
+22. OPTIMASI & LOGGING FRONTEND
+   - Penambahan `useLogger` composable untuk pelacakan aktivitas dari sisi client.
+   - Implementasi Nuxt plugin untuk penangkapan error global dan log navigasi otomatis.
+   - Pembuatan Halaman Audit Log Admin untuk memantau aktivitas sistem secara real-time.
+   - Integrasi logging pada flow Login (Email & Google).
+   - Perbaikan UI dan handling error pada pengerjaan tes terkait jadwal.
+   - Optimasi PWA Workbox runtime caching untuk file audio guna mencegah quota exceeded pada browser peserta.
+
+7. REPORTING & DATA EXPORT (CSV & PDF)
+   - Implementasi fitur download CSV pada semua halaman laporan admin.
+   - Penambahan fitur cetak PDF professional dengan optimasi print styles (@media print).
+   - Update composable laporan untuk mendukung fetching blob CSV.
+   - Perbaikan UI laporan dengan tombol kontrol export yang modern.
+   - File tersentuh: `composables/use...Report.ts`, `pages/admin/reports/*.vue`.
+
+Timestamp: 2026-02-27 10:30:00
+
+
+LATEST UPDATES - 29 Januari 2026
+==============================
+
+1. PENINGKATAN KEAMANAN & UX (FRONTEND - PRODUCTION READY)
+   - Menambahkan Global Error Page (`error.vue`) untuk menangani error 404/500 dengan UX yang ramah.
+   - Memperbaiki link navigasi Sidebar di `navItems.ts`:
+     - Mengarahkan "Section" ke `/admin/bank/soal` (sebelumnya broken `/admin/sections`).
+     - Menyembunyikan link "Group Soal" dan "Tambah Soal" yang belum diimplementasikan.
+   - Refactor `admin/bank/soal` dan `admin/bank-soal`:
+     - Menggunakan `onRequest` interceptor pada `useFetch` untuk memastikan token autentikasi selalu valid (refresh otomatis).
+     - Memperbaiki tipe data TypeScript dan penanganan error.
+   - Implementasi **Dynamic Favicon & Title**:
+     - `app.vue` sekarang memuat pengaturan aplikasi (`appName`, `faviconUrl`) dari database.
+     - Browser tab akan otomatis menampilkan logo dan nama aplikasi yang sesuai dengan konfigurasi white-label.
+   - Implementasi **Kontrol Akses Ujian (Test Access Control)**:
+     - Menambahkan logika pengecekan `end_date` pada halaman ujian (`pages/test/[id].vue`).
+     - Ujian tidak dapat diakses (terkunci) jika waktu sekarang melewati jadwal selesai.
+     - Menambahkan tampilan "Ujian Telah Berakhir" yang informatif.
+   - File yang disentuh: 
+     - nuxt-fe/error.vue
+     - nuxt-fe/data/navItems.ts
+     - nuxt-fe/pages/admin/bank/soal/index.vue
+     - nuxt-fe/pages/admin/bank-soal/index.vue
+     - nuxt-fe/app.vue
+     - nuxt-fe/composables/useTestSession.ts
+     - nuxt-fe/pages/test/[id].vue
+
+Timestamp: 2026-01-29 12:05:00
+
+LATEST UPDATES - 26 Januari 2026
+==============================
+
+1. UPDATE DESAIN HALAMAN EDIT BATCH
+   - Menyamakan desain halaman Edit Batch dengan halaman Add Batch.
+   - Mengubah tema warna menjadi Biru (Blue) untuk membedakan mode Edit.
+   - Memperbarui komponen Header, Form, dan Tombol agar konsisten.
+   - File yang diubah: pages/admin/batch/edit/[id].vue
+
+2. UPDATE PAGE PROFILE ADMIN
+   - Mengubah sumber data profil (Nama, Foto, Role) menggunakan API userdb.
+   - Menampilkan data detail user (NIM, Fakultas, Prodi) dan info akun (Member Since, Last Login).
+   - Memperbarui layout dengan desain premium dan ikonik.
+   - File yang diubah: pages/admin/profile.vue
+
+3. REDESIGN TAB MANAJEMEN SOAL (SOAL TAB)
+   - Memperbarui UI menjadi lebih premium dan informatif.
+   - Menambahkan ringkasan statistik (Total Section, Group, Soal).
+   - Menambahkan ikon spesifik untuk tipe section (Listening, Reading, Structure).
+   - Meningkatkan desain list section dan group dengan hover effects.
    - Menyamakan nama field dengan data real dari API (namaSection, idSection, dsb).
    - File yang diubah: components/batch/tabs/SoalTab.vue
 
 Timestamp: 2026-01-26 11:15:00
+
+LATEST UPDATES - 01 Maret 2026
+==============================
+
+1. HALAMAN BARU: SYSTEM FILE LOG VIEWER (/admin/system-logs)
+   - Membuat halaman terpisah untuk membaca log teknis server (file-based Winston log) dari Dashboard Admin.
+   - Fitur:
+     - Panel kiri: Daftar file log tersedia dengan ukuran, tipe (HTTP/Application), dan tanggal modifikasi.
+     - Panel kanan: Viewer isi file dengan pewarnaan sintaks (merah=error, kuning=warn, hijau=info, oranye=4xx/5xx).
+     - Konfigurasi jumlah baris yang ditampilkan (50, 100, 200, 500 baris terakhir).
+     - Link navigasi ke halaman Audit DB Log dan sebaliknya.
+   - Membuat composable `useSystemLogs.ts` untuk mengelola state dan fetch data dari API baru.
+   - Memperbarui navigasi Sidebar: menu "Audit Log" diubah menjadi grup "Logs" dengan dua sub-menu:
+     - "Audit DB Log" → /admin/audit-logs (bestehende Seite)
+     - "System File Log" → /admin/system-logs (baru)
+   - Menambahkan permission mapping `system.app` pada Sidebar untuk route baru.
+   - File yang disentuh:
+     - nuxt-fe/composables/useSystemLogs.ts (BARU)
+     - nuxt-fe/pages/admin/system-logs/index.vue (BARU)
+     - nuxt-fe/data/navItems.ts
+     - nuxt-fe/components/admin/Sidebar/index.vue
+
+Timestamp: 2026-03-01 12:11:00
 
 LATEST UPDATES - 28 Februari 2026
 ==============================
