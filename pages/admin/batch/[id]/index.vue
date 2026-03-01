@@ -135,6 +135,7 @@
             :batch="batch" 
             :title="activeTab" 
             @requestAddParticipant="isAddParticipantModalOpen = true" 
+            @refresh="refresh"
           />
         </Transition>
       </div>
@@ -185,7 +186,7 @@ definePageMeta({
 // -------------------------------------------------
 // Mengambil data menggunakan composable
 // -------------------------------------------------
-const { batch } = useBatchDetails(id);
+const { batch, refresh } = useBatchDetails(id);
 
 
 console.log(batch);

@@ -80,9 +80,18 @@
               </span>
             </td>
             <td class="px-6 py-3 text-right">
-              <button class="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-blue-50">
-                <Icon name="lucide:more-horizontal" class="w-4 h-4" />
-              </button>
+              <div class="flex items-center justify-end gap-2">
+                <button 
+                  @click="handleRemoveParticipant(p)"
+                  class="text-slate-400 hover:text-rose-600 transition-colors p-1 rounded-md hover:bg-rose-50"
+                  title="Hapus Peserta"
+                >
+                  <Icon name="lucide:trash-2" class="w-4 h-4" />
+                </button>
+                <button class="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-blue-50">
+                  <Icon name="lucide:more-horizontal" class="w-4 h-4" />
+                </button>
+              </div>
             </td>
           </tr>
           <tr v-if="paginatedParticipants.length === 0">
@@ -129,6 +138,12 @@ const props = defineProps({
   batch: { type: Object, required: true },
 });
 
+const emit = defineEmits(['requestAddParticipant', 'refresh']);
+
+const { showConfirm, showAlert } = useNotificationPopup();
+
+import { useBatchParticipantDelete as deleteParticipant } from '@/composables/BatchParticipant/delete';
+
 const q = ref('');
 const filterStatus = ref('');
 const currentPage = ref(1);
@@ -138,6 +153,31 @@ const itemsPerPage = 10;
 watch([q, filterStatus], () => {
   currentPage.value = 1;
 });
+
+const handleRemoveParticipant = async (participant) => {
+  const confirmed = await showConfirm(
+    `Apakah Anda yakin ingin menghapus "${participant.user?.name}" dari batch ini?`,
+    {
+      title: 'Hapus Peserta',
+      type: 'danger',
+      confirmText: 'Ya, Hapus'
+    }
+  );
+
+  if (confirmed) {
+    try {
+      const { error } = await deleteParticipant(participant.id);
+      if (error.value) {
+        showAlert(error.value.data?.message || 'Gagal menghapus peserta', { type: 'error' });
+      } else {
+        showAlert('Peserta berhasil dihapus', { type: 'success' });
+        emit('refresh');
+      }
+    } catch (err) {
+      showAlert('Terjadi kesalahan sistem saat menghapus peserta', { type: 'error' });
+    }
+  }
+};
 
 const filteredParticipants = computed(() => {
   let items = props.batch.participants || [];

@@ -127,6 +127,25 @@
                 <input v-model="formData.price" type="number" class="w-full pl-11 pr-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm" placeholder="0" required />
               </div>
             </div>
+            <div class="space-y-2 flex items-center gap-4 pt-4 md:col-span-3 lg:col-span-1">
+              <div class="flex items-center gap-3">
+                <div 
+                  @click="formData.is_auto_paid = !formData.is_auto_paid"
+                  :class="[formData.is_auto_paid ? 'bg-blue-500' : 'bg-gray-200']"
+                  class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                >
+                  <span
+                    aria-hidden="true"
+                    :class="[formData.is_auto_paid ? 'translate-x-5' : 'translate-x-0']"
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                  />
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-gray-700">Auto Lunas (Auto Paid)</span>
+                  <span class="block text-[10px] text-gray-400 font-medium">Peserta langsung dianggap lunas saat join</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -294,6 +313,7 @@ const formData = reactive({
   currency: 'IDR',
   duration_minutes: null as number | null,
   special_instructions: '',
+  is_auto_paid: false,
   scoring_type: 'SCALE',
   scoring_config: {
     initialScore: 0
@@ -367,6 +387,7 @@ onMounted(async () => {
       formData.currency = b.currency || 'IDR'
       formData.duration_minutes = b.duration_minutes
       formData.special_instructions = b.special_instructions
+      formData.is_auto_paid = !!b.is_auto_paid
       
       // Scoring config
       formData.scoring_type = b.scoring_type || 'SCALE'

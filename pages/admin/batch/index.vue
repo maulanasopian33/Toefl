@@ -48,12 +48,26 @@ const { showConfirm, showAlert } = useNotificationPopup();
 const goAdd = () => navigateTo('/admin/batch/add');
 const goEdit = (batch : string) => navigateTo(`/admin/batch/edit/${batch.idBatch}`);
 const goView = (batch : string) => navigateTo(`/admin/batch/${batch.idBatch}`);
-const confirmDelete = async (batch : any) => {
-  const confirmed = await showConfirm(`Hapus batch "${batch.namaBatch}"?`);
+const confirmDelete = async (batchItem : any) => {
+  const confirmed = await showConfirm(
+    `Apakah Anda yakin ingin menghapus batch "${batchItem.name}"? Batch yang sudah memiliki peserta tidak dapat dihapus.`,
+    { type: 'danger', title: 'Konfirmasi Hapus' }
+  );
+  
   if (confirmed) {
-    await useBatchDelete(batch.idBatch);
-    showAlert('Batch berhasil dihapus');
-    refresh();
+    try {
+      const { data: resData, error: deleteError } = await useBatchDelete(batchItem.idBatch);
+      
+      if (deleteError.value) {
+        const msg = deleteError.value.data?.message || 'Gagal menghapus batch';
+        showAlert(msg, { type: 'error', title: 'Gagal' });
+      } else {
+        showAlert('Batch berhasil dihapus', { type: 'success', title: 'Berhasil' });
+        refresh();
+      }
+    } catch (err: any) {
+      showAlert(err.message || 'Terjadi kesalahan sistem', { type: 'error' });
+    }
   }
 };
 </script>
