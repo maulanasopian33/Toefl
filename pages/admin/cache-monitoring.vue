@@ -64,7 +64,7 @@
           <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hit Rate</span>
         </div>
         <div class="text-3xl font-black text-slate-900 mb-1">
-          {{ cacheData?.stats?.keyspace_hit_rate || '0%' }}
+          {{ cacheData?.stats?.hit_rate || '0%' }}
         </div>
         <p class="text-xs text-slate-400 font-medium">Efisiensi pengambilan data dari cache.</p>
       </div>
@@ -78,7 +78,7 @@
           <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Keys</span>
         </div>
         <div class="text-3xl font-black text-slate-900 mb-1">
-          {{ totalKeys }}
+          {{ cacheData?.total_keys || 0 }}
         </div>
         <p class="text-xs text-slate-400 font-medium">Jumlah entri data tersimpan saat ini.</p>
       </div>
@@ -92,34 +92,87 @@
           <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Redis Uptime</span>
         </div>
         <div class="text-2xl font-black text-slate-900 mb-1 truncate">
-          {{ formatUptime(cacheData?.server?.uptime_in_seconds) }}
+          {{ formatUptime(cacheData?.uptime_in_seconds) }}
         </div>
         <p class="text-xs text-slate-400 font-medium">Waktu sejak Redis server dijalankan.</p>
       </div>
     </div>
 
+    <!-- Active Keys (Explorer) -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden mb-10">
+      <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+          <Icon name="lucide:search" class="w-5 h-5 text-indigo-500" />
+          Key Explorer (Sample Limit 100)
+        </h3>
+        <span class="text-xs font-bold text-slate-400 italic">Klik ikon sampah untuk menghapus key secara individu</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <th class="px-8 py-4">No</th>
+              <th class="px-4 py-4">Key Name</th>
+              <th class="px-4 py-4">Type/Category</th>
+              <th class="px-8 py-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <tr v-for="(key, index) in cacheData?.keys" :key="key" class="hover:bg-slate-50/80 transition-colors group/row">
+              <td class="px-8 py-4 text-xs font-bold text-slate-400">{{ index + 1 }}</td>
+              <td class="px-4 py-4">
+                <code class="px-2 py-1 bg-slate-100 text-indigo-600 rounded-lg text-xs font-bold">{{ key }}</code>
+              </td>
+              <td class="px-4 py-4">
+                <span 
+                  class="px-2.5 py-1 text-[10px] font-black uppercase rounded-full"
+                  :class="getKeyStyle(key)"
+                >
+                  {{ key.split(':')[0] }}
+                </span>
+              </td>
+              <td class="px-8 py-4 text-right">
+                <button 
+                  @click="handleDeleteSingleKey(key)"
+                  class="p-2 text-slate-300 hover:text-rose-600 transition-colors group-hover/row:scale-110 active:scale-95"
+                  title="Hapus key ini"
+                >
+                  <Icon name="lucide:trash-2" class="w-4 h-4" />
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!cacheData?.keys?.length">
+              <td colspan="4" class="px-8 py-10 text-center text-slate-400 font-medium italic">
+                Tidak ada key aktif saat ini.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Recommendations & Recommendations -->
+      <!-- Recommendations -->
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
           <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
               <Icon name="lucide:zap" class="w-5 h-5 text-amber-500" />
-              Rekomendasi Optimal (VPS 1GB)
+              Saran Konfigurasi (Optimalisasi VPS 1GB)
             </h3>
           </div>
           <div class="p-8 pb-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div v-for="(rec, key) in cacheData?.recommendations" :key="key" class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ key.replace(/_/g, ' ') }}</div>
-                <div class="font-bold text-slate-700 mb-2 truncate">{{ rec.value }}</div>
+              <div v-for="rec in cacheData?.recommendations" :key="rec.key" class="p-5 rounded-2xl border transition-all" :class="rec.status === 'optimal' ? 'bg-green-50/30 border-green-100' : 'bg-amber-50/30 border-amber-100'">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ rec.key }}</div>
+                <div class="font-bold text-slate-800 mb-2 truncate">{{ rec.value }}</div>
                 <div class="flex items-start gap-2">
                   <Icon 
                     :name="rec.status === 'optimal' ? 'lucide:check-circle' : 'lucide:alert-triangle'" 
                     class="w-4 h-4 mt-0.5 flex-shrink-0"
                     :class="rec.status === 'optimal' ? 'text-green-500' : 'text-amber-500'"
                   />
-                  <p class="text-xs text-slate-500 leading-relaxed">{{ rec.message }}</p>
+                  <p class="text-xs text-slate-600 leading-relaxed font-medium">{{ rec.message }}</p>
                 </div>
               </div>
             </div>
@@ -161,7 +214,7 @@
 
             <!-- Global Flush -->
             <div class="space-y-4">
-              <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Tindakan Berbahaya</label>
+              <label class="text-xs font-black text-slate-400 uppercase tracking-widest text-rose-500">Tindakan Berbahaya</label>
               <button 
                 @click="confirmFlushAll"
                 class="w-full flex items-center justify-center gap-2 py-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-sm border border-rose-100 hover:bg-rose-100 transition-all active:scale-95 shadow-sm shadow-rose-100/50"
@@ -232,26 +285,41 @@ const fetchStatus = async () => {
 
 const memoryPercentage = computed(() => {
   if (!cacheData.value?.memory) return 0
-  const used = parseInt(cacheData.value.memory.used_memory) || 0
-  const max = parseInt(cacheData.value.memory.maxmemory) || 134217728 // Default 128MB
+  const used = parseInt(cacheData.value.memory.used_memory_bytes) || 0
+  const max = parseInt(cacheData.value.memory.maxmemory_bytes) || 128 * 1024 * 1024 // Fallback 128MB
+  if (max === 0) return 0
   return (used / max) * 100
 })
 
-const totalKeys = computed(() => {
-  const keyspace = cacheData.value?.keyspace?.db0 || ''
-  const match = keyspace.match(/keys=(\d+)/)
-  return match ? match[1] : 0
-})
-
 const formatUptime = (seconds: number) => {
-  if (!seconds) return '-'
+  if (seconds === undefined || seconds === null) return '-'
   const d = Math.floor(seconds / (3600 * 24))
   const h = Math.floor((seconds % (3600 * 24)) / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   
-  if (d > 0) return `${d} Hari, ${h} Jam`
-  if (h > 0) return `${h} Jam, ${m} Menit`
+  if (d > 0) return `${d}d ${h}h ${m}m`
+  if (h > 0) return `${h}h ${m}m`
   return `${m} Menit`
+}
+
+const getKeyStyle = (key: string) => {
+  if (key.startsWith('batch:')) return 'bg-blue-100 text-blue-700'
+  if (key.startsWith('exam:')) return 'bg-amber-100 text-amber-700'
+  if (key.startsWith('settings:')) return 'bg-green-100 text-green-700'
+  if (key.startsWith('scoring:')) return 'bg-purple-100 text-purple-700'
+  return 'bg-slate-100 text-slate-700'
+}
+
+const handleDeleteSingleKey = async (key: string) => {
+  try {
+    const res: any = await clearCacheByPattern(key)
+    if (res.status) {
+      showNotification(`Key "${key}" berhasil dihapus.`, 'success')
+      fetchStatus()
+    }
+  } catch (err: any) {
+    showNotification(err.message, 'error')
+  }
 }
 
 const handleFlushPattern = async () => {
@@ -261,7 +329,7 @@ const handleFlushPattern = async () => {
     const res: any = await clearCacheByPattern(pattern.value)
     if (res.status) {
       showNotification(
-        `${res.data.deleted_count} entri dengan pola "${pattern.value}" berhasil dihapus.`,
+        `Berhasil menghapus pola "${pattern.value}".`,
         'success'
       )
       pattern.value = ''
