@@ -123,14 +123,16 @@
               
               <!-- Rincian Skor Sesi -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div v-for="(score, section) in attempt.sectionScores" :key="section" class="flex flex-col p-5 bg-white border border-gray-100 rounded-3xl hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group/item">
+                <div v-for="(score, sectionKey) in attempt.sectionScores" :key="String(sectionKey)" class="flex flex-col p-5 bg-white border border-gray-100 rounded-3xl hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group/item">
                   <div class="flex items-center justify-between gap-4 mb-4">
                     <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 group-hover/item:scale-110 transition-transform">
-                      <Icon :name="getSectionIcon(section as string)" class="h-5 w-5" />
+                      <Icon :name="getSectionIcon(String(sectionKey))" class="h-5 w-5" />
                     </div>
-                    <p class="text-3xl font-black text-indigo-600 tracking-tighter tabular-nums">{{ score }}</p>
+                    <p class="text-3xl font-black text-indigo-600 tracking-tighter tabular-nums">
+                      {{ typeof score === 'object' ? score.convertedScore : score }}
+                    </p>
                   </div>
-                  <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest capitalize px-1">{{ section }}</p>
+                  <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest capitalize px-1">{{ sectionKey }}</p>
                 </div>
               </div>
             </div>
@@ -323,11 +325,11 @@ const formatDate = (isoString: string | undefined): string => {
   });
 };
 
-const getSectionIcon = (sectionName: string): string => {
-  const lowerSection = sectionName.toLowerCase();
-  if (lowerSection.includes("istima'")) return 'lucide:headphones';
-  if (lowerSection.includes('tarakib')) return 'lucide:book-marked';
-  if (lowerSection.includes("qira'ah")) return 'lucide:book-open-text';
+const getSectionIcon = (sectionName: string | unknown): string => {
+  const name = String(sectionName || '').toLowerCase();
+  if (name.includes("istima'") || name.includes('listening')) return 'lucide:headphones';
+  if (name.includes('tarakib') || name.includes('structure') || name.includes('expression')) return 'lucide:book-marked';
+  if (name.includes("qira'ah") || name.includes('reading')) return 'lucide:book-open-text';
   return 'lucide:file-text';
 };
 </script>

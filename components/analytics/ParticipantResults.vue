@@ -47,9 +47,11 @@
             </td>
             <td class="py-4 px-4 text-sm font-medium text-gray-700">{{ item.batch?.name || '-' }}</td>
             <td class="py-4 px-4">
-              <div v-if="item.sectionScores" class="flex flex-wrap gap-1">
-                <span v-for="(val, key) in item.sectionScores" :key="key" class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-[10px] font-bold whitespace-nowrap cursor-help" :title="key">
-                  {{ key.split(' ')[0] }}: {{ val }}
+              <div v-if="item.sectionScores && Object.keys(item.sectionScores).length > 0" class="flex flex-wrap gap-1">
+                <span v-for="(val, key) in item.sectionScores" :key="String(key)"
+                  class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-[10px] font-bold whitespace-nowrap"
+                  :title="String(key)">
+                  {{ String(key).split(' ')[0] }}: {{ typeof val === 'object' ? val.convertedScore : val }}
                 </span>
               </div>
               <span v-else class="text-gray-400 text-xs">-</span>
@@ -61,7 +63,10 @@
               </div>
             </td>
             <td class="py-4 px-4 text-center">
-              <span class="text-lg font-black text-indigo-600">{{ item.score }}</span>
+              <div class="flex flex-col items-center gap-1">
+                <span class="text-lg font-black text-indigo-600">{{ item.score }}</span>
+                <span v-if="item.cefr_level" class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-indigo-50 text-indigo-500">{{ item.cefr_level }}</span>
+              </div>
             </td>
             <td class="py-4 px-4 text-sm text-gray-500">{{ new Date(item.submittedAt).toLocaleDateString() }}</td>
             <td class="py-4 px-4">

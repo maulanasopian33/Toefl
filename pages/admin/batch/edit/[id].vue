@@ -175,6 +175,19 @@
               <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Nilai Awal (Offset)</label>
               <input v-model.number="formData.scoring_config.initialScore" type="number" class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm" placeholder="0" />
             </div>
+
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Standar Penilaian (Formulasi Skor)</label>
+              <select v-model="formData.scoring_config.exam_standard" class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm cursor-pointer">
+                <option value="TOEFL_PBT">TOEFL PBT Standar (Rata-rata x 10/3)</option>
+                <option value="TOAFL">TOAFL (Total Skor Murni)</option>
+              </select>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Passing Grade / Batas Lulus (Opsional)</label>
+              <input v-model.number="formData.passing_score" type="number" class="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-sm" placeholder="Contoh: 450" />
+            </div>
           </div>
         </section>
 
@@ -315,8 +328,10 @@ const formData = reactive({
   special_instructions: '',
   is_auto_paid: false,
   scoring_type: 'SCALE',
+  passing_score: null as number | null,
   scoring_config: {
-    initialScore: 0
+    initialScore: 0,
+    exam_standard: 'TOEFL_PBT'
   },
   sessions: [] as Session[]
 })
@@ -388,10 +403,14 @@ onMounted(async () => {
       formData.duration_minutes = b.duration_minutes
       formData.special_instructions = b.special_instructions
       formData.is_auto_paid = !!b.is_auto_paid
+      formData.passing_score = b.passing_score || null
       
       // Scoring config
       formData.scoring_type = b.scoring_type || 'SCALE'
-      formData.scoring_config = b.scoring_config || { initialScore: 0 }
+      formData.scoring_config = {
+        initialScore: b.scoring_config?.initialScore || 0,
+        exam_standard: b.scoring_config?.exam_standard || 'TOEFL_PBT'
+      }
       
       // Map sessions
       if (b.sessions && Array.isArray(b.sessions)) {
@@ -432,6 +451,7 @@ const handleSubmit = async () => {
       // Ensure numbers are numbers
       max_participants: formData.max_participants ? Number(formData.max_participants) : null,
       min_participants: formData.min_participants ? Number(formData.min_participants) : null,
+      passing_score: formData.passing_score ? Number(formData.passing_score) : null,
       price: Number(formData.price),
       duration_minutes: formData.duration_minutes ? Number(formData.duration_minutes) : null,
       // Convert empty strings to null for optional dates

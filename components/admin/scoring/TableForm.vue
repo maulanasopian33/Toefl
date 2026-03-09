@@ -112,6 +112,44 @@ const importBulk = () => {
     bulkText.value = '';
   }
 };
+
+// Auto Generate Feature
+const showAutoGenerate = ref(false);
+const autoTotalQuestions = ref(50);
+const autoMaxScore = ref(300);
+
+const generateAuto = () => {
+  if (autoTotalQuestions.value <= 0 || autoMaxScore.value <= 0) return;
+  
+  const newDetails: ScoringDetail[] = [];
+  for (let i = 0; i <= autoTotalQuestions.value; i++) {
+    const converted = Math.round((i / autoTotalQuestions.value) * autoMaxScore.value);
+    newDetails.push({
+      section_category: activeCategory.value,
+      correct_count: i,
+      converted_score: converted
+    });
+  }
+
+  if (form.details) {
+    form.details = form.details.filter(d => d.section_category !== activeCategory.value);
+    form.details.push(...newDetails);
+  } else {
+    form.details = newDetails;
+  }
+  
+  showAutoGenerate.value = false;
+};
+
+const togglePanel = (panel: 'bulk' | 'auto') => {
+  if (panel === 'bulk') {
+    showBulkImport.value = !showBulkImport.value;
+    if (showBulkImport.value) showAutoGenerate.value = false;
+  } else {
+    showAutoGenerate.value = !showAutoGenerate.value;
+    if (showAutoGenerate.value) showBulkImport.value = false;
+  }
+};
 </script>
 
 <template>
@@ -174,18 +212,29 @@ const importBulk = () => {
           </h2>
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Sesuaikan nilai berdasarkan jumlah jawaban benar</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
            <button 
-             @click="showBulkImport = !showBulkImport"
-             class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+             @click="togglePanel('auto')"
+             class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all flex items-center gap-1.5"
+             :class="showAutoGenerate ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : ''"
            >
+             <Icon name="lucide:wand-2" class="w-4 h-4" /> 
+             {{ showAutoGenerate ? 'Batal Generate' : 'Generate Otomatis' }}
+           </button>
+           <button 
+             @click="togglePanel('bulk')"
+             class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1.5"
+             :class="showBulkImport ? 'bg-blue-50 border-blue-200 text-blue-600' : ''"
+           >
+             <Icon name="lucide:file-code-2" class="w-4 h-4" /> 
              {{ showBulkImport ? 'Batal Bulk' : 'Bulk Import' }}
            </button>
+           <div class="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
            <button 
              @click="addRow"
              class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center gap-2"
            >
-             <Icon name="lucide:plus" class="w-4 h-4" /> Tambah Baris
+             <Icon name="lucide:plus" class="w-4 h-4" /> Manual
            </button>
         </div>
       </div>
@@ -205,15 +254,59 @@ const importBulk = () => {
 
       <div class="p-8">
         <!-- Bulk Import Area -->
-        <div v-if="showBulkImport" class="mb-8 p-6 bg-indigo-50 rounded-3xl border border-indigo-100 space-y-4">
-          <label class="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Input Data Massal (Benar [spasi/koma/tab] Nilai) untuk {{ getCategoryLabel(activeCategory) }}</label>
+        <div v-if="showBulkImport" class="mb-8 p-6 bg-blue-50 rounded-3xl border border-blue-100 shadow-inner space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div>
+            <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Icon name="lucide:file-code-2" class="w-4 h-4" />
+              Input Data Massal (Spasi/Enter) untuk <span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded ml-1">{{ getCategoryLabel(activeCategory) }}</span>
+            </label>
+            <p class="text-xs text-blue-400 mt-1 font-medium">Format: `JumlahBenar NilaiKonversi` per baris. Contoh: `0 0`, `1 8`, `40 300`.</p>
+          </div>
           <textarea 
             v-model="bulkText" 
-            class="w-full h-32 px-4 py-3 bg-white border border-indigo-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm font-mono"
-            placeholder="0 21&#10;1 22&#10;2 23..."
+            class="w-full h-32 px-4 py-3 bg-white border border-blue-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none text-sm font-mono placeholder:text-gray-300"
+            placeholder="0 0&#10;1 8&#10;2 15&#10;..."
           ></textarea>
           <div class="flex justify-end">
-            <button @click="importBulk" class="px-6 py-2.5 bg-indigo-600 text-white font-black text-xs rounded-xl shadow-lg shadow-indigo-200/50">Impor Sekarang</button>
+            <button @click="importBulk" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-lg shadow-blue-200/50 transition-all">Impor Sekarang</button>
+          </div>
+        </div>
+
+        <!-- Auto Generate Area -->
+        <div v-if="showAutoGenerate" class="mb-8 p-6 bg-emerald-50 rounded-3xl border border-emerald-100 shadow-inner space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div>
+            <label class="block text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+              <Icon name="lucide:sparkles" class="w-4 h-4" />
+              Generate Tabel Proporsional (TOAFL/Custom) untuk <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded ml-1">{{ getCategoryLabel(activeCategory) }}</span>
+            </label>
+            <p class="text-xs text-emerald-500 mt-1 font-medium">Sistem akan otomatis menghitung deret nilai dari 0 hingga skor maksimal secara proporsional berdasarkan jumlah soal.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-2xl border border-emerald-100">
+             <div class="space-y-1.5">
+                <label class="text-xs font-bold text-gray-700">Jumlah Total Soal</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                    <Icon name="lucide:hash" class="w-4 h-4" />
+                  </div>
+                  <input v-model.number="autoTotalQuestions" type="number" class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all font-bold text-gray-700" placeholder="Misal: 40" min="1" max="150" />
+                </div>
+             </div>
+             <div class="space-y-1.5">
+                <label class="text-xs font-bold text-gray-700">Skor Konversi Maksimal</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                    <Icon name="lucide:target" class="w-4 h-4" />
+                  </div>
+                  <input v-model.number="autoMaxScore" type="number" class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all font-bold text-gray-700" placeholder="Misal: 300" min="1" max="1000" />
+                </div>
+             </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button @click="generateAuto" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-lg shadow-emerald-200/50 transition-all flex items-center gap-2">
+              <Icon name="lucide:wand-2" class="w-4 h-4" /> Buat Tabel Sekarang
+            </button>
           </div>
         </div>
 
@@ -247,9 +340,17 @@ const importBulk = () => {
           </button>
         </div>
 
-        <div v-if="filteredDetails.length === 0 && !showBulkImport" class="py-12 text-center">
-           <Icon name="lucide:list-x" class="w-12 h-12 text-gray-100 mx-auto mb-3" />
-           <p class="text-sm text-gray-400 font-medium">Belum ada rincian untuk kategori <span class="text-indigo-400 font-black">{{ getCategoryLabel(activeCategory) }}</span></p>
+        <div v-if="filteredDetails.length === 0 && !showBulkImport && !showAutoGenerate" class="py-12 text-center bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-100">
+           <div class="inline-flex p-4 rounded-full bg-white shadow-sm border border-gray-50 mb-3 text-indigo-300">
+             <Icon name="lucide:list-minus" class="w-8 h-8" />
+           </div>
+           <p class="text-sm text-gray-500 font-bold mb-1">Belum ada rincian konversi</p>
+           <p class="text-xs text-gray-400 font-medium">Kategori: <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">{{ getCategoryLabel(activeCategory) }}</span></p>
+           
+           <div class="mt-6 flex flex-wrap justify-center gap-3">
+             <button @click="togglePanel('auto')" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 shadow-sm hover:border-emerald-300 hover:text-emerald-600 transition-all">Generate Otomatis</button>
+             <button @click="addRow" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold shadow-sm hover:bg-indigo-100 transition-all">Input Manual</button>
+           </div>
         </div>
       </div>
     </section>
