@@ -84,8 +84,78 @@
                 <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100 flex gap-4">
                   <Icon name="lucide:info" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <p class="text-[11px] text-amber-800 leading-relaxed font-bold">
-                    Gunakan variabel <code class="bg-white px-1.5 py-0.5 rounded-md text-amber-600">\{{nama}}</code> di dalam file DOCX untuk menampilkan nama peserta secara otomatis.
+                    Pastikan pemetaan variabel di bawah ini sama persis dengan yang ada di dalam file DOCX (misal: <code class="bg-white px-1.5 py-0.5 rounded-md text-amber-600">\{{nama}}</code> atau <code class="bg-white px-1.5 py-0.5 rounded-md text-amber-600">\{{skor}}</code>).
                   </p>
+                </div>
+
+                <!-- Mapping Data Section -->
+                <div class="space-y-4 pt-4 border-t border-gray-100">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="text-xs font-black text-gray-900 uppercase tracking-widest">Pemetaan Variabel (Jinja)</h4>
+                      <p class="text-[10px] text-gray-400 font-bold mt-0.5">Hubungkan kode DOCX dengan data sistem</p>
+                    </div>
+                    <button 
+                      @click="addMappingRow" 
+                      class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                    >
+                      <Icon name="lucide:plus" class="w-3.5 h-3.5" /> Tambah Variabel
+                    </button>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div v-for="(mapping, index) in form.mapping_data" :key="index" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                      <div class="flex-grow grid grid-cols-2 gap-3">
+                        <div class="relative">
+                          <input 
+                            v-model="mapping.jinja" 
+                            type="text" 
+                            class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-mono text-gray-700"
+                            placeholder="{{nama_variabel}}"
+                          />
+                          <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400">
+                            <Icon name="lucide:code-2" class="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div class="relative">
+                          <input 
+                            v-model="mapping.db" 
+                            type="text" 
+                            class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-bold text-gray-700 disabled:bg-gray-100"
+                            placeholder="namaPeserta"
+                            list="db-variables"
+                          />
+                          <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400">
+                            <Icon name="lucide:database" class="w-4 h-4" />
+                          </div>
+                          <!-- Datalist for autosuggestion -->
+                          <datalist id="db-variables">
+                            <option value="participantName">Nama Peserta</option>
+                            <option value="batchName">Nama Batch</option>
+                            <option value="totalScore">Skor Total</option>
+                            <option value="cefrLevel">Level CEFR</option>
+                            <option value="passed">Status Lulus</option>
+                            <option value="testDate">Tanggal Tes</option>
+                            <option value="listeningScore">Skor Listening</option>
+                            <option value="structureScore">Skor Structure</option>
+                            <option value="readingScore">Skor Reading</option>
+                          </datalist>
+                        </div>
+                      </div>
+                      <button 
+                        @click="removeMappingRow(index)" 
+                        class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-50 group-hover:opacity-100"
+                        title="Hapus Baris"
+                      >
+                        <Icon name="lucide:trash-2" class="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div v-if="form.mapping_data.length === 0" class="py-6 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                      <p class="text-xs text-gray-400 font-bold">Belum ada pemetaan variabel ditambahkan.</p>
+                      <button @click="addMappingRow" class="text-indigo-600 hover:text-indigo-700 text-xs font-black underline mt-1">Tambah sekarang</button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -129,10 +199,25 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'save'])
 const { isSaving } = useCertificateTemplates()
 
+const parseMappingData = (raw: any): Array<{ jinja: string, db: string }> => {
+  if (!raw) return []
+  if (Array.isArray(raw)) return raw
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 const form = reactive({
   id: props.initialData?.id || null,
   name: props.initialData?.name || '',
-  status: props.initialData?.status ?? true
+  status: props.initialData?.status ?? true,
+  mapping_data: parseMappingData(props.initialData?.formats?.[0]?.mapping_data)
 })
 
 const existingFile = ref(props.initialData?.formats?.[0]?.file_docx || '')
@@ -144,6 +229,14 @@ const isFormValid = computed(() => {
 
 const triggerFileUpload = () => {
   document.getElementById('template-file-upload')?.click()
+}
+
+const addMappingRow = () => {
+  form.mapping_data.push({ jinja: '', db: '' })
+}
+
+const removeMappingRow = (index: number) => {
+  form.mapping_data.splice(index, 1)
 }
 
 const handleFileChange = (event: any) => {
@@ -160,6 +253,15 @@ const handleSave = () => {
   if (form.id) formData.append('id', form.id.toString())
   formData.append('name', form.name)
   formData.append('status', form.status.toString())
+  
+  // Append mapping data as JSON string
+  if (form.mapping_data && form.mapping_data.length > 0) {
+    // Clean up empty rows
+    const cleanMapping = form.mapping_data.filter(m => m.jinja && m.jinja.trim() !== '' && m.db && m.db.trim() !== '');
+    formData.append('mapping_data', JSON.stringify(cleanMapping))
+  } else {
+    formData.append('mapping_data', '[]')
+  }
   
   if (selectedFile.value) {
     formData.append('file_docx', selectedFile.value)

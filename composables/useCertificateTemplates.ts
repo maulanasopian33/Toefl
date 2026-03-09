@@ -7,6 +7,7 @@ export interface CertificateTemplateFormat {
   templateId?: number;
   name: string;
   file_docx: string;
+  mapping_data?: Array<{ jinja: string, db: string }>;
   is_active: boolean;
 }
 
