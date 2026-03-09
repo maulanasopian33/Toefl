@@ -80,16 +80,16 @@ export default [
     ],
   },
 
-  // RESULTS
+  // ANALYTICS & RESULTS
   {
-    name: 'Results',
+    name: 'Analytics',
     link: '#',
     icon: `<svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M5 3h14a2 2 0 0 1 2 2v16l-4-3H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 5v7h2V8zm4 3v4h2v-4zm4-2v6h2v-6z"/>
     </svg>`,
     children: [
+      { name: 'Analytics Dashboard', link: '/admin/analytics' },
       { name: 'Hasil per Batch', link: '/admin/results/batch' },
-      { name: 'Hasil per Peserta', link: '/admin/results/peserta' },
     ],
   },
 
@@ -126,8 +126,6 @@ export default [
       <path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 2v5h5zM7 13v2h4v-2zm0 4v2h7v-2z"/>
     </svg>`,
     children: [
-      { name: 'Laporan Ujian', link: '/admin/reports/exam' },
-      { name: 'Laporan Peserta', link: '/admin/reports/peserta' },
       { name: 'Laporan Keuangan', link: '/admin/reports/finance' },
     ],
   },
