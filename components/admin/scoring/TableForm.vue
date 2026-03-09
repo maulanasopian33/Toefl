@@ -29,11 +29,7 @@ onMounted(async () => {
 });
 
 const sectionCategories = computed(() => {
-  // Get unique idSections from database
-  if (sections.value && sections.value.length > 0) {
-    return Array.from(new Set(sections.value.map(s => s.idSection)));
-  }
-  // Fallback if DB empty or still loading
+  // Use standard fixed categories instead of dynamic DB fetching
   return ['listening', 'structure', 'reading'];
 });
 
@@ -47,8 +43,12 @@ watch(sectionCategories, (newVal) => {
 });
 
 const getCategoryLabel = (cat: string) => {
-  const section = sections.value.find(s => s.idSection === cat);
-  return section ? `${section.namaSection} (${cat})` : cat;
+  const labels: Record<string, string> = {
+    'listening': 'Listening / Istima\'',
+    'structure': 'Structure / Tarakib',
+    'reading': 'Reading / Qira\'ah'
+  };
+  return labels[cat] || cat;
 };
 
 const filteredDetails = computed(() => {
