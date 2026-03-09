@@ -1,63 +1,159 @@
 <template>
-  <div class="min-h-screen bg-[#F8FAFC] p-4 lg:p-10">
-    <header class="mb-10 space-y-2">
-      <h1 class="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
-        <div class="p-3 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-600/20">
-          <Icon name="lucide:book-open" class="w-8 h-8 text-white" />
-        </div>
-        Panduan Penggunaan
-      </h1>
-      <p class="text-slate-500 font-medium text-lg">
-        Pelajari cara mengelola platform ini dengan efisien.
-      </p>
-    </header>
+  <div class="min-h-screen bg-[#F8FAFC]">
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <!-- Main Content -->
-      <div class="lg:col-span-8 space-y-6">
-        <section v-for="section in docs" :key="section.title" class="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-6">
-          <h2 class="text-2xl font-black text-slate-800 flex items-center gap-3">
-            <span class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-emerald-600 text-sm border border-slate-100">{{ section.id }}</span>
-            {{ section.title }}
-          </h2>
-          
-          <div class="space-y-4">
-            <div v-for="item in section.items" :key="item.q" class="p-6 rounded-3xl bg-slate-50 border border-slate-100 group transition-all hover:bg-white hover:shadow-lg hover:shadow-slate-200/50">
-              <h3 class="font-bold text-slate-900 mb-2 flex items-center justify-between">
-                {{ item.q }}
-                <Icon name="lucide:chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
-              </h3>
-              <p class="text-sm text-slate-500 leading-relaxed">{{ item.a }}</p>
+    <!-- Page Header -->
+    <div class="px-6 lg:px-10 py-8 border-b border-slate-100 bg-white">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-600/25">
+            <Icon name="lucide:book-open" class="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Panduan Penggunaan</h1>
+            <p class="text-sm text-slate-500 font-medium mt-0.5">Temukan jawaban dan panduan penggunaan platform</p>
+          </div>
+        </div>
+        <!-- Search -->
+        <div class="hidden md:flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl w-72">
+          <Icon name="lucide:search" class="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari panduan..."
+            class="bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none w-full font-medium"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex h-[calc(100vh-129px)]">
+      <!-- ───── Sidebar Navigation ───── -->
+      <aside class="hidden lg:flex flex-col w-72 xl:w-80 border-r border-slate-100 bg-white overflow-y-auto shrink-0">
+        <div class="p-5 space-y-1">
+          <!-- Loading skeleton -->
+          <template v-if="isLoading && categories.length === 0">
+            <div v-for="i in 4" :key="i" class="space-y-2 mb-4">
+              <div class="h-4 bg-slate-100 rounded-lg w-3/4 animate-pulse"></div>
+              <div v-for="j in 3" :key="j" class="h-9 bg-slate-50 rounded-xl animate-pulse ml-2"></div>
+            </div>
+          </template>
+
+          <div v-for="cat in filteredCategories" :key="cat.category" class="mb-4">
+            <!-- Category Header -->
+            <div class="flex items-center gap-2.5 px-3 py-2 mb-1">
+              <Icon :name="cat.icon" class="w-4 h-4 text-emerald-600" />
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ cat.category }}</span>
+            </div>
+            <!-- Articles -->
+            <button
+              v-for="article in cat.articles"
+              :key="article.slug"
+              @click="openArticle(article.slug)"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left group mb-0.5"
+              :class="activeDoc?.slug === article.slug
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+            >
+              <Icon
+                name="lucide:file-text"
+                class="w-4 h-4 flex-shrink-0 transition-colors"
+                :class="activeDoc?.slug === article.slug ? 'text-emerald-500' : 'text-slate-300 group-hover:text-slate-500'"
+              />
+              <span class="text-sm font-semibold truncate">{{ article.title }}</span>
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="!isLoading && filteredCategories.length === 0" class="text-center py-12">
+            <Icon name="lucide:search-x" class="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p class="text-xs text-slate-400 font-bold">Tidak ditemukan</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ───── Article Content ───── -->
+      <main class="flex-1 overflow-y-auto">
+        <!-- Welcome Screen -->
+        <div v-if="!activeDoc && !isLoadingDoc" class="h-full flex flex-col items-center justify-center text-center px-8">
+          <div class="max-w-md space-y-5">
+            <div class="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto">
+              <Icon name="lucide:book-open-check" class="w-10 h-10 text-emerald-500" />
+            </div>
+            <div>
+              <h2 class="text-2xl font-black text-slate-900">Selamat Datang di Panduan</h2>
+              <p class="text-slate-500 font-medium text-sm mt-2 leading-relaxed">
+                Pilih salah satu panduan dari daftar di sebelah kiri untuk memulai.
+              </p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+              <button
+                v-for="cat in categories.slice(0, 3)"
+                :key="cat.category"
+                @click="cat.articles[0] && openArticle(cat.articles[0].slug)"
+                class="px-4 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+              >
+                <Icon :name="cat.icon" class="w-3.5 h-3.5 inline mr-1.5" />
+                {{ cat.category }}
+              </button>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
 
-      <!-- Quick Links Sidebar -->
-      <aside class="lg:col-span-4 space-y-6">
-        <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
-          <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-          <div class="relative z-10 space-y-4">
-            <h3 class="text-xl font-black">Butuh Bantuan Lebih?</h3>
-            <p class="text-indigo-100 text-sm font-medium leading-relaxed">
-              Tim dukungan kami siap membantu Anda menyelesaikan kendala teknis atau pertanyaan seputar platform.
-            </p>
-            <NuxtLink to="/admin/support/contact" class="inline-flex items-center gap-2 bg-white text-indigo-600 px-6 py-3 rounded-2xl font-black text-sm shadow-lg hover:bg-slate-50 transition-all active:scale-95">
-              Hubungi Kami
-              <Icon name="lucide:headphones" class="w-4 h-4" />
-            </NuxtLink>
+        <!-- Doc Loading Skeleton -->
+        <div v-else-if="isLoadingDoc" class="max-w-3xl mx-auto px-8 py-10 space-y-6">
+          <div class="h-8 bg-slate-100 rounded-xl w-2/3 animate-pulse"></div>
+          <div class="h-4 bg-slate-100 rounded w-1/3 animate-pulse"></div>
+          <div class="space-y-3 mt-8">
+            <div v-for="i in 12" :key="i" class="h-4 bg-slate-50 rounded animate-pulse" :style="{ width: `${60 + Math.random() * 40}%` }"></div>
           </div>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm space-y-6">
-          <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Pintasan Cepat</h3>
-          <div class="space-y-3">
-            <NuxtLink v-for="link in shortcuts" :key="link.name" :to="link.href" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors group">
-              <div class="p-2 rounded-xl bg-slate-50 group-hover:bg-white transition-colors">
-                <Icon :name="link.icon" class="w-5 h-5 text-slate-400 group-hover:text-indigo-600" />
-              </div>
-              <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900">{{ link.name }}</span>
+        <!-- Article Content -->
+        <div v-else-if="activeDoc" class="max-w-3xl mx-auto px-8 py-10">
+          <AdminSupportDocReaderContent :doc="activeDoc">
+            <template #header-actions>
+              <button
+                @click="openInPopup(activeDoc)"
+                class="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-black transition-all active:scale-95"
+                title="Buka di Jendela Mengambang"
+              >
+                <Icon name="lucide:external-link" class="w-4 h-4" />
+                Pop-out
+              </button>
+            </template>
+          </AdminSupportDocReaderContent>
+        </div>
+      </main>
+
+      <!-- ───── Right Sidebar ───── -->
+      <aside class="hidden xl:flex flex-col w-64 border-l border-slate-100 bg-white shrink-0 overflow-y-auto">
+        <div class="p-6 space-y-6">
+          <!-- Support Card -->
+          <div class="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl p-5 text-white">
+            <Icon name="lucide:headphones" class="w-8 h-8 mb-3 opacity-80" />
+            <h3 class="font-black text-sm mb-1">Butuh Bantuan Lebih?</h3>
+            <p class="text-indigo-100 text-xs leading-relaxed mb-3">Hubungi tim support kami.</p>
+            <NuxtLink to="/admin/support/contact" class="inline-flex items-center gap-1.5 bg-white text-indigo-600 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all">
+              Hubungi <Icon name="lucide:arrow-right" class="w-3.5 h-3.5" />
             </NuxtLink>
+          </div>
+
+          <!-- Quick Links -->
+          <div>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Pintasan Cepat</h3>
+            <div class="space-y-1">
+              <NuxtLink
+                v-for="link in shortcuts"
+                :key="link.href"
+                :to="link.href"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
+              >
+                <div class="p-1.5 rounded-lg bg-slate-50 group-hover:bg-white transition-colors">
+                  <Icon :name="link.icon" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
+                </div>
+                <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">{{ link.name }}</span>
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </aside>
@@ -66,42 +162,58 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useDocPopupStore } from '@/stores/useDocPopupStore'
+import type { Doc } from '@/composables/useDocs'
+
 definePageMeta({
   layout: 'admin',
   middleware: ['auth', 'role-check'],
   permission: 'system.app'
-});
+})
 
-const docs = [
-  {
-    id: 1,
-    title: 'Manajemen Batch',
-    items: [
-      { q: 'Bagaimana cara membuka pendaftaran?', a: 'Buka menu Batch > Add Batch, tentukan tanggal mulai dan selesai, lalu set status menjadi "Published".' },
-      { q: 'Bagaimana memantau progres peserta?', a: 'Klik tombol detail (ikon mata) pada daftar Batch untuk melihat statistik peserta secara real-time.' }
-    ]
-  },
-  {
-    id: 2,
-    title: 'Pengaturan Soal (Bank Soal)',
-    items: [
-      { q: 'Format pertanyaan yang didukung?', a: 'Sistem mendukung pilihan ganda (TOEFL/TOAFL Style) dengan integrasi Listening (Audio MP3) dan Reading (Passage).' },
-      { q: 'Mengapa soal tidak muncul di user?', a: 'Pastikan soal sudah masuk ke dalam Group dan Section, serta Batch yang bersangkutan sudah diaktifkan.' }
-    ]
-  },
-  {
-    id: 3,
-    title: 'Sertifikat & Penilaian',
-    items: [
-      { q: 'Kapan sertifikat bisa diunduh?', a: 'Sertifikat akan tersedia otomatis setelah admin memvalidasi hasil ujian user di menu Results.' },
-      { q: 'Bagaimana cara mengubah tabel skoring?', a: 'Masuk ke menu Penilaian > Tabel Skoring untuk menyesuaikan konversi nilai mentah ke skor TOEFL.' }
-    ]
-  }
-];
+const { categories, activeDoc, isLoading, fetchPublishedDocs, fetchDocBySlug } = useDocs()
+const { openDoc } = useDocPopupStore()
+
+const searchQuery = ref('')
+const isLoadingDoc = ref(false)
+
+// Filtered categories based on search
+const filteredCategories = computed(() => {
+  if (!searchQuery.value.trim()) return categories.value
+  const q = searchQuery.value.toLowerCase()
+  return categories.value
+    .map(cat => ({
+      ...cat,
+      articles: cat.articles.filter(a => a.title.toLowerCase().includes(q))
+    }))
+    .filter(cat => cat.articles.length > 0 || cat.category.toLowerCase().includes(q))
+})
+
+
+const openArticle = async (slug: string) => {
+  isLoadingDoc.value = true
+  await fetchDocBySlug(slug)
+  isLoadingDoc.value = false
+}
+
+const openInPopup = (doc: any) => {
+  openDoc(doc)
+}
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '-'
+  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(dateStr))
+}
 
 const shortcuts = [
   { name: 'Tambah Batch Baru', href: '/admin/batch/add', icon: 'lucide:plus-circle' },
   { name: 'Lihat Transaksi', href: '/admin/payments', icon: 'lucide:credit-card' },
-  { name: 'Audit Log System', href: '/admin/audit-logs', icon: 'lucide:shield-check' }
-];
+  { name: 'Audit Log System', href: '/admin/audit-logs', icon: 'lucide:shield-check' },
+  { name: 'Kelola Panduan', href: '/admin/support/docs-manager', icon: 'lucide:pencil-ruler' }
+]
+
+onMounted(async () => {
+  await fetchPublishedDocs()
+})
 </script>

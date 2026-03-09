@@ -19,6 +19,7 @@
     <LoadingPopup/>
     <NotificationPopup />
     <RoleSelectorModal />
+    <AdminSupportGlobalDocPopup />
   </div>
 </template>
 
