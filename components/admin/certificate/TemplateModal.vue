@@ -41,7 +41,7 @@
 
                 <!-- File Selection -->
                 <div class="space-y-2">
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">File Template (.docx)</label>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">File Template Base (.pdf)</label>
                   <div 
                     @click="triggerFileUpload"
                     class="flex items-center gap-4 px-5 py-6 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl hover:border-indigo-400 hover:bg-indigo-50/20 cursor-pointer transition-all group/upload"
@@ -57,7 +57,7 @@
                     <input 
                       id="template-file-upload" 
                       type="file" 
-                      accept=".docx" 
+                      accept=".pdf" 
                       class="hidden" 
                       @change="handleFileChange"
                     />
@@ -81,20 +81,21 @@
                 </div>
 
                 <!-- Info Alert -->
-                <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100 flex gap-4">
-                  <Icon name="lucide:info" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p class="text-[11px] text-amber-800 leading-relaxed font-bold">
-                    Pastikan pemetaan variabel di bawah ini sama persis dengan yang ada di dalam file DOCX (misal: <code class="bg-white px-1.5 py-0.5 rounded-md text-amber-600">\{{nama}}</code> atau <code class="bg-white px-1.5 py-0.5 rounded-md text-amber-600">\{{skor}}</code>).
-                  </p>
-                </div>
+                  <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex gap-4">
+                   <Icon name="lucide:info" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                   <div class="text-[11px] text-blue-800 leading-relaxed font-bold space-y-1">
+                     <p>Upload file PDF sebagai <b>base template</b> sertifikat (background/layout dasar).</p>
+                     <p>Setelah template disimpan, klik <b>"Buka Editor Desain"</b> untuk menentukan posisi dan variabel menggunakan NexaplotEditor.</p>
+                   </div>
+                  </div>
 
                 <!-- Mapping Data Section -->
                 <div class="space-y-4 pt-4 border-t border-gray-100">
                   <div class="flex items-center justify-between">
-                    <div>
-                      <h4 class="text-xs font-black text-gray-900 uppercase tracking-widest">Pemetaan Variabel (Jinja)</h4>
-                      <p class="text-[10px] text-gray-400 font-bold mt-0.5">Hubungkan kode DOCX dengan data sistem</p>
-                    </div>
+                     <div>
+                       <h4 class="text-xs font-black text-gray-900 uppercase tracking-widest">Pemetaan Variabel Nexaplot</h4>
+                       <p class="text-[10px] text-gray-400 font-bold mt-0.5">Hubungkan variabel editor dengan data sistem</p>
+                     </div>
                     <button 
                       @click="addMappingRow" 
                       class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
@@ -104,47 +105,50 @@
                   </div>
 
                   <div class="space-y-3">
-                    <div v-for="(mapping, index) in form.mapping_data" :key="index" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 group">
-                      <div class="flex-grow grid grid-cols-2 gap-3">
+                    <div v-for="(mapping, index) in form.mapping_data" :key="index" class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                      <div class="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- Variable Name -->
                         <div class="relative">
                           <input 
-                            v-model="mapping.jinja" 
+                            v-model="mapping.variable" 
                             type="text" 
                             class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-mono text-gray-700"
-                            placeholder="{{nama_variabel}}"
+                            placeholder="namaVariabel"
                           />
                           <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400">
                             <Icon name="lucide:code-2" class="w-4 h-4" />
                           </div>
                         </div>
+                        <!-- Source -->
                         <div class="relative">
                           <input 
-                            v-model="mapping.db" 
+                            v-model="mapping.source" 
                             type="text" 
-                            class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-bold text-gray-700 disabled:bg-gray-100"
-                            placeholder="namaPeserta"
+                            class="w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-bold text-gray-700"
+                            placeholder="detailuser.namaLengkap"
                             list="db-variables"
                           />
                           <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400">
                             <Icon name="lucide:database" class="w-4 h-4" />
                           </div>
-                          <!-- Datalist for autosuggestion -->
                           <datalist id="db-variables">
-                            <option value="participantName">Nama Peserta</option>
-                            <option value="batchName">Nama Batch</option>
-                            <option value="totalScore">Skor Total</option>
-                            <option value="cefrLevel">Level CEFR</option>
-                            <option value="passed">Status Lulus</option>
-                            <option value="testDate">Tanggal Tes</option>
-                            <option value="listeningScore">Skor Listening</option>
-                            <option value="structureScore">Skor Structure</option>
-                            <option value="readingScore">Skor Reading</option>
+                            <option v-for="src in AVAILABLE_SOURCES" :key="src.value" :value="src.value">{{ src.label }}</option>
                           </datalist>
                         </div>
+                        <!-- Type Selector -->
+                        <select
+                          v-model="mapping.type"
+                          class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-xs font-bold text-gray-700"
+                        >
+                          <option value="text">Text</option>
+                          <option value="image">Image</option>
+                          <option value="table">Table</option>
+                          <option value="qr">QR Code</option>
+                        </select>
                       </div>
                       <button 
                         @click="removeMappingRow(index)" 
-                        class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-50 group-hover:opacity-100"
+                        class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-50 group-hover:opacity-100 mt-0.5"
                         title="Hapus Baris"
                       >
                         <Icon name="lucide:trash-2" class="w-4 h-4" />
@@ -189,7 +193,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Switch } from '@headlessui/vue'
-import type { CertificateTemplate } from '@/composables/useCertificateTemplates'
+import type { CertificateTemplate, MappingItem } from '@/composables/useCertificateTemplates'
+import { useCertificateTemplates, AVAILABLE_SOURCES } from '@/composables/useCertificateTemplates'
 
 const props = defineProps<{
   show: boolean;
@@ -199,7 +204,7 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'save'])
 const { isSaving } = useCertificateTemplates()
 
-const parseMappingData = (raw: any): Array<{ jinja: string, db: string }> => {
+const parseMappingData = (raw: any): MappingItem[] => {
   if (!raw) return []
   if (Array.isArray(raw)) return raw
   if (typeof raw === 'string') {
@@ -220,7 +225,7 @@ const form = reactive({
   mapping_data: parseMappingData(props.initialData?.formats?.[0]?.mapping_data)
 })
 
-const existingFile = ref(props.initialData?.formats?.[0]?.file_docx || '')
+const existingFile = ref(props.initialData?.formats?.[0]?.file_pdf || '')
 const selectedFile = ref<File | null>(null)
 
 const isFormValid = computed(() => {
@@ -232,7 +237,7 @@ const triggerFileUpload = () => {
 }
 
 const addMappingRow = () => {
-  form.mapping_data.push({ jinja: '', db: '' })
+  form.mapping_data.push({ variable: '', source: '', type: 'text', label: '' })
 }
 
 const removeMappingRow = (index: number) => {
@@ -254,19 +259,17 @@ const handleSave = () => {
   formData.append('name', form.name)
   formData.append('status', form.status.toString())
   
-  // Append mapping data as JSON string
   if (form.mapping_data && form.mapping_data.length > 0) {
-    // Clean up empty rows
-    const cleanMapping = form.mapping_data.filter(m => m.jinja && m.jinja.trim() !== '' && m.db && m.db.trim() !== '');
+    const cleanMapping = form.mapping_data.filter((m: MappingItem) => m.variable?.trim() && m.source?.trim())
     formData.append('mapping_data', JSON.stringify(cleanMapping))
   } else {
     formData.append('mapping_data', '[]')
   }
   
   if (selectedFile.value) {
-    formData.append('file_docx', selectedFile.value)
-  } else {
-    formData.append('file_docx', existingFile.value)
+    formData.append('file_pdf', selectedFile.value)
+  } else if (existingFile.value) {
+    formData.append('file_pdf', existingFile.value)
   }
 
   emit('save', formData)

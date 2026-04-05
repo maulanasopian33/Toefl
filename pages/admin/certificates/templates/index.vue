@@ -10,7 +10,7 @@
           Template Sertifikat
         </h1>
         <p class="mt-2 text-sm text-gray-500 font-medium">
-          Kelola template sertifikat dan format file DOCX dengan variabel dinamis.
+          Kelola template sertifikat PDF dan desain layout menggunakan NexaplotEditor.
         </p>
       </div>
 
@@ -71,6 +71,14 @@
               <Icon name="lucide:edit-3" class="w-4 h-4" />
               Kelola
             </button>
+            <NuxtLink
+              :to="`/admin/certificates/templates/designer/${template.id}`"
+              class="inline-flex items-center justify-center h-10 px-3 gap-1.5 rounded-2xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all active:scale-95"
+              title="Buka NexaplotEditor"
+            >
+              <Icon name="lucide:pen-tool" class="w-4 h-4" />
+              Desain
+            </NuxtLink>
             <button
               @click="confirmDeleteAction(template)"
               class="inline-flex items-center justify-center h-10 w-10 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all active:scale-90"

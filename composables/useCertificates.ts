@@ -1,6 +1,11 @@
 import { ref } from 'vue'
 import { useFirebaseToken } from './FirebaseToken'
 import { useLogger } from './useLogger'
+import { useNotification } from './useNotification'
+
+// =============================================================================
+// INTERFACES
+// =============================================================================
 
 export interface Certificate {
   id: string
@@ -13,7 +18,10 @@ export interface Certificate {
   qrToken: string
   verifyUrl: string
   pdfUrl: string
-  externalPdfUrl: string | null
+  externalPdfUrl?: string | null
+  batchId?: string
+  userResultId?: number
+  templateFormatId?: number
   createdAt: string
   updatedAt: string
   user?: {
@@ -22,36 +30,74 @@ export interface Certificate {
   }
 }
 
-export interface GenerateCertificateData {
-  name: string
-  event: string
-  date: string
-  certificate_number: string
-  qr_token: string
-  verify_url: string
-  score: number
-  user_id: string
+export interface GenerateParticipantPayload {
+  userResultId: number
+  templateFormatId?: number
 }
 
-export interface GenerateRequest {
-  data: GenerateCertificateData
-  callback_url: string
+export interface GenerateBatchPayload {
+  batchId: string
+  templateFormatId?: number
 }
+
+export interface BatchGenerateOutcome {
+  userResultId: number
+  userId?: string
+  success: boolean
+  pdfUrl?: string
+  error?: string
+}
+
+export interface BatchGenerateResult {
+  summary: { successCount: number; failCount: number; total: number }
+  results: BatchGenerateOutcome[]
+}
+
+export interface CertificateVerifyResult {
+  valid: boolean
+  data?: {
+    certificateNumber: string
+    name: string
+    event: string
+    date: string
+    score: number
+    verifyUrl: string
+    issuedAt: string
+  }
+}
+
+interface FetchParams {
+  page?: number
+  limit?: number
+  search?: string
+  userId?: string
+  batchId?: string
+  startDate?: string
+  endDate?: string
+}
+
+// =============================================================================
+// COMPOSABLE
+// =============================================================================
 
 export function useCertificates() {
   const config = useRuntimeConfig()
   const API_URL = config.public.API_URL
 
-  const certificates = ref<Certificate[]>([])
-  const isLoading = ref(false)
-  const error = ref<Error | null>(null)
-  const totalItems = ref(0)
-  const totalPages = ref(0)
-  const currentPage = ref(1)
+  const certificates  = ref<Certificate[]>([])
+  const isLoading     = ref(false)
+  const isGenerating  = ref(false)
+  const error         = ref<Error | null>(null)
+  const totalItems    = ref(0)
+  const totalPages    = ref(0)
+  const currentPage   = ref(1)
 
-  const { logToServer } = useLogger()
+  const { logToServer }       = useLogger()
+  const { showNotification }  = useNotification()
 
-  const fetchCertificates = async (page = 1, limit = 10) => {
+  // ── Fetch List (Admin) ─────────────────────────────────────────────────────
+
+  const fetchCertificates = async (page = 1, limit = 10, params: FetchParams = {}) => {
     isLoading.value = true
     error.value = null
     try {
@@ -60,21 +106,20 @@ export function useCertificates() {
 
       const response = await $fetch<{
         status: boolean
-        message: string
         data: Certificate[]
         totalItems: number
         totalPages: number
         currentPage: number
       }>(`${API_URL}/certificates`, {
-        params: { page, limit },
+        params: { page, limit, ...params },
         headers: { Authorization: `Bearer ${token}` }
       })
 
       if (response.status) {
         certificates.value = response.data
-        totalItems.value = response.totalItems
-        totalPages.value = response.totalPages
-        currentPage.value = response.currentPage
+        totalItems.value   = response.totalItems
+        totalPages.value   = response.totalPages
+        currentPage.value  = response.currentPage
       }
     } catch (e: any) {
       error.value = e
@@ -89,8 +134,13 @@ export function useCertificates() {
     }
   }
 
-  const generateCertificates = async (requests: GenerateRequest[]) => {
-    isLoading.value = true
+  // ── Generate: Single Participant ───────────────────────────────────────────
+
+  const generateForParticipant = async (payload: GenerateParticipantPayload): Promise<{
+    certificate: Certificate
+    pdfUrl: string
+  } | null> => {
+    isGenerating.value = true
     error.value = null
     try {
       const token = await useFirebaseToken()
@@ -99,35 +149,193 @@ export function useCertificates() {
       const response = await $fetch<{
         status: boolean
         message: string
-      }>(`${API_URL}/test-generate`, {
+        data: { certificate: Certificate; pdfUrl: string }
+      }>(`${API_URL}/certificates/generate/participant`, {
         method: 'POST',
-        body: requests,
+        body: payload,
         headers: { Authorization: `Bearer ${token}` }
       })
 
-      return response
+      if (response.status) {
+        showNotification(response.message || 'Sertifikat berhasil di-generate!', 'success')
+        return response.data
+      }
+      return null
     } catch (e: any) {
       error.value = e
-      console.error('Failed to generate certificates:', e)
+      const errMsg = e?.data?.message || e.message || 'Generate gagal'
+      showNotification(errMsg, 'error')
       logToServer({
         level: 'error',
-        message: 'Failed to generate certificates',
-        metadata: { requestCount: requests.length, error: e.message }
+        message: 'Failed to generate certificate for participant',
+        metadata: { payload, error: e.message }
       })
       throw e
     } finally {
+      isGenerating.value = false
+    }
+  }
+
+  // ── Generate: Batch (All COMPLETED in a Batch) ────────────────────────────
+
+  const generateForBatch = async (payload: GenerateBatchPayload): Promise<BatchGenerateResult | null> => {
+    isGenerating.value = true
+    error.value = null
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Authentication token not found.')
+
+      const response = await $fetch<{
+        status: boolean
+        message: string
+        data: BatchGenerateResult
+      }>(`${API_URL}/certificates/generate/batch`, {
+        method: 'POST',
+        body: payload,
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (response.status) {
+        const { summary } = response.data
+        showNotification(
+          `Generate selesai. Berhasil: ${summary.successCount}, Gagal: ${summary.failCount}`,
+          summary.failCount === 0 ? 'success' : 'error'
+        )
+        return response.data
+      }
+      return null
+    } catch (e: any) {
+      error.value = e
+      const errMsg = e?.data?.message || e.message || 'Generate batch gagal'
+      showNotification(errMsg, 'error')
+      logToServer({
+        level: 'error',
+        message: 'Failed to generate batch certificates',
+        metadata: { payload, error: e.message }
+      })
+      throw e
+    } finally {
+      isGenerating.value = false
+    }
+  }
+
+  // ── Get Certificate by UserResult (for user's own view) ───────────────────
+
+  const getCertificateByUserResult = async (userResultId: number | string): Promise<Certificate | null> => {
+    isLoading.value = true
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Authentication token not found.')
+
+      const response = await $fetch<{ status: boolean; data: Certificate }>(
+        `${API_URL}/certificates/my/${userResultId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      return response.status ? response.data : null
+    } catch (e: any) {
+      if (e?.statusCode !== 404) {
+        console.error('Failed to get certificate by userResult:', e)
+      }
+      return null
+    } finally {
       isLoading.value = false
+    }
+  }
+
+  // ── Verify Certificate (Public) ───────────────────────────────────────────
+
+  const verifyCertificate = async (qrToken: string): Promise<CertificateVerifyResult> => {
+    isLoading.value = true
+    try {
+      const response = await $fetch<{ status: boolean; valid: boolean; data?: any }>(
+        `${API_URL}/certificates/verify/${qrToken}`
+      )
+      return {
+        valid: response.valid,
+        data: response.data
+      }
+    } catch (e: any) {
+      return { valid: false }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // ── Download Certificate PDF ───────────────────────────────────────────────
+
+  const downloadCertificate = async (id: string, fileName?: string) => {
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Authentication token not found.')
+
+      // Gunakan fetch native untuk streaming download
+      const response = await fetch(`${API_URL}/certificates/download/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = fileName || `sertifikat-${id}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      console.error('Failed to download certificate:', e)
+      showNotification('Gagal mengunduh sertifikat: ' + e.message, 'error')
+    }
+  }
+
+  // ── Delete Certificate (Admin) ─────────────────────────────────────────────
+
+  const deleteCertificate = async (id: string): Promise<boolean> => {
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Authentication token not found.')
+
+      const response = await $fetch<{ status: boolean; message: string }>(
+        `${API_URL}/certificates/${id}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+
+      if (response.status) {
+        showNotification(response.message, 'success')
+        // Update local state
+        certificates.value = certificates.value.filter(c => c.id !== id)
+        totalItems.value = Math.max(0, totalItems.value - 1)
+        return true
+      }
+      return false
+    } catch (e: any) {
+      const errMsg = e?.data?.message || e.message || 'Hapus gagal'
+      showNotification(errMsg, 'error')
+      return false
     }
   }
 
   return {
     certificates,
     isLoading,
+    isGenerating,
     error,
     totalItems,
     totalPages,
     currentPage,
     fetchCertificates,
-    generateCertificates
+    generateForParticipant,
+    generateForBatch,
+    getCertificateByUserResult,
+    verifyCertificate,
+    downloadCertificate,
+    deleteCertificate
   }
 }

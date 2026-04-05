@@ -22,7 +22,9 @@ export default defineNuxtConfig({
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.FIREBASE_APP_ID,
       API_URL: process.env.API_URL,
-      MEDIA_URL: process.env.MEDIA_URL
+      MEDIA_URL: process.env.MEDIA_URL,
+      // Nexaplot PDF Generator
+      NEXAPLOT_LICENSE: process.env.NUXT_PUBLIC_NEXAPLOT_LICENSE || ''
     }
   },
   nitro: {

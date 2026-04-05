@@ -102,8 +102,8 @@ export default [
     </svg>`,
     children: [
       { name: 'Generate Sertifikat', link: '/admin/certificates/generate' },
-      { name: 'Template Sertifikat', link: '/admin/certificates/templates' },
-      { name: 'Riwayat Sertifikat', link: '/admin/certificates/history' },
+      { name: 'Template & Desain',   link: '/admin/certificates/templates' },
+      { name: 'Riwayat Sertifikat',  link: '/admin/certificates/history' },
     ],
   },
   // Penilaian

@@ -532,3 +532,14 @@ avItems.ts), dan pintasan pada halaman Panduan Penggunaan.
      - nuxt-fe/pages/admin/support/docs.vue
 
 Timestamp: 2026-02-28 12:08:14
+
+LATEST UPDATES - 05 April 2026
+==============================
+
+1. UPDATE DEPENDENCY: IMPORT CSS NEXAPLOT
+   - Menambahkan import 'nexaplot/style.css' pada NexaplotDesigner.
+   - Hal ini diperlukan untuk mendukung layouting pada versi terbaru library Nexaplot (v1.1.2+).
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/certificates/templates/designer/[id].vue
+
+Timestamp: 2026-04-05 19:55:00

@@ -141,7 +141,6 @@
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="flex items-center gap-3 w-full xl:w-auto justify-end">
              <transition name="fade">
                 <button
@@ -154,6 +153,19 @@
                 <Icon v-else name="heroicons:bolt" class="w-5 h-5" />
                 Generate Terpilih ({{ selectedCandidates.length }})
                 </button>
+             </transition>
+             <!-- Generate Semua Batch -->
+             <transition name="fade">
+               <button
+                 v-if="selectedBatchId && results.length > 0"
+                 @click="processBatchGenerate"
+                 :disabled="isGenerating"
+                 class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-lg shadow-emerald-200 transition-all transform active:scale-95 text-sm font-semibold disabled:opacity-70 disabled:cursor-not-allowed"
+               >
+                 <Icon v-if="isGenerating" name="heroicons:arrow-path" class="w-5 h-5 animate-spin" />
+                 <Icon v-else name="heroicons:sparkles" class="w-5 h-5" />
+                 Generate Semua Batch
+               </button>
              </transition>
              <button
                 @click="fetchData"
@@ -281,6 +293,14 @@
                        >
                           <Icon name="heroicons:bolt" class="w-5 h-5" />
                        </button>
+                       <a
+                          v-else-if="candidate.certificateId"
+                          :href="`/admin/certificates/history`"
+                          class="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+                          title="Lihat Sertifikat"
+                       >
+                          <Icon name="heroicons:eye" class="w-5 h-5" />
+                       </a>
                        <button
                           v-else
                           class="p-2 text-gray-400 bg-gray-50 rounded-lg cursor-not-allowed border border-gray-200"
@@ -390,10 +410,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { useAdminBatches } from '@/composables/useAdminResults' // Use existing if available, or imports
+import { useAdminBatches } from '@/composables/useAdminResults'
 import { useCandidateResults, type CandidateResult } from '@/composables/useCandidateResults'
-import { useCertificates, type GenerateRequest } from '@/composables/useCertificates'
-
+import { useCertificates } from '@/composables/useCertificates'
 import { useNotificationPopup } from '@/composables/NotificationPopup'
 import { useNotification } from '@/composables/useNotification'
 
@@ -413,10 +432,9 @@ definePageMeta({
   permission: "batch.read"
 })
 
-// Composables
 const { batches } = useAdminBatches()
 const { results, summary, isLoading, fetchCandidateResults, updateCandidateScore } = useCandidateResults()
-const { generateCertificates } = useCertificates()
+const { generateForParticipant, generateForBatch, isGenerating } = useCertificates()
 const { showConfirm } = useNotificationPopup()
 const { showNotification } = useNotification()
 
@@ -428,7 +446,7 @@ const sortBy = ref('name')
 const sortOrder = ref<'asc'|'desc'>('asc')
 
 const selectedCandidates = ref<string[]>([]) // Array of IDs
-const isGenerating = ref(false)
+// isGenerating vient du composable useCertificates
 
 // Edit Modal State
 const isEditModalOpen = ref(false)
@@ -507,7 +525,8 @@ const formatDate = (dateStr: string) => {
    })
 }
 
-// Actions
+// ── Actions ───────────────────────────────────────────────────────────────
+
 const processSingleGenerate = async (candidate: CandidateResult) => {
    const confirmed = await showConfirm(
      `Generate sertifikat untuk ${candidate.name}?`,
@@ -517,29 +536,22 @@ const processSingleGenerate = async (candidate: CandidateResult) => {
        confirmText: 'Ya, Generate'
      }
    )
-   
    if (!confirmed) return
-   
-   const request: GenerateRequest = {
-      data: {
-         name: candidate.name,
-         event: candidate.batch,
-         date: candidate.date,
-         score: candidate.score,
-         certificate_number: `CERT-${candidate.nim}-${Math.floor(Math.random() * 1000)}`, // Logic generator number
-         qr_token: Math.random().toString(36).substring(7),
-         verify_url: 'https://verify.lbaiuqi.com/', 
-         user_id: candidate.userId
-      },
-      callback_url: 'https://api.lbaiuqi.com/callback'
-   }
 
-   await callGenerateAPI([request])
+   try {
+     // candidate.id adalah userResultId (ID dari tabel userresults)
+     await generateForParticipant({ userResultId: parseInt(candidate.id) })
+     // Update status lokal
+     const idx = results.value.findIndex(r => r.id === candidate.id)
+     if (idx !== -1) results.value[idx].certificateStatus = 'generated'
+   } catch (_) {
+     // Error sudah di-handle di composable
+   }
 }
 
 const processBulkGenerate = async () => {
    if (selectedCandidates.value.length === 0) return
-   
+
    const confirmed = await showConfirm(
      `Generate ${selectedCandidates.value.length} sertifikat terpilih?`,
      {
@@ -548,43 +560,53 @@ const processBulkGenerate = async () => {
        confirmText: 'Mulai Generate'
      }
    )
-   
    if (!confirmed) return
 
-   // Map selected IDs to candidate objects
-   const candidates = results.value.filter(c => selectedCandidates.value.includes(c.id))
-   
-   const requests: GenerateRequest[] = candidates.map(c => ({
-      data: {
-         name: c.name,
-         event: c.batch,
-         date: c.date,
-         score: c.score,
-         certificate_number: `CERT-${c.nim}-${Math.floor(Math.random() * 1000)}`,
-         qr_token: Math.random().toString(36).substring(7),
-         verify_url: 'https://verify.lbaiuqi.com/',
-         user_id: c.userId
-      },
-      callback_url: 'https://api.lbaiuqi.com/callback'
-   }))
+   const pendingCandidates = results.value.filter(
+     c => selectedCandidates.value.includes(c.id) && c.certificateStatus === 'pending'
+   )
 
-   await callGenerateAPI(requests)
+   let successCount = 0
+   let failCount = 0
+
+   for (const candidate of pendingCandidates) {
+     try {
+       await generateForParticipant({ userResultId: parseInt(candidate.id) })
+       const idx = results.value.findIndex(r => r.id === candidate.id)
+       if (idx !== -1) results.value[idx].certificateStatus = 'generated'
+       successCount++
+     } catch (_) {
+       failCount++
+     }
+   }
+
+   selectedCandidates.value = []
+   if (failCount === 0) {
+     showNotification(`${successCount} sertifikat berhasil di-generate!`, 'success')
+   } else {
+     showNotification(`Selesai. Berhasil: ${successCount}, Gagal: ${failCount}`, 'error')
+   }
 }
 
-const callGenerateAPI = async (requests: GenerateRequest[]) => {
-   isGenerating.value = true
+const processBatchGenerate = async () => {
+   if (!selectedBatchId.value) return
+
+   const confirmed = await showConfirm(
+     `Generate sertifikat untuk SEMUA peserta COMPLETED di batch ini?`,
+     {
+       title: 'Generate Semua Batch?',
+       type: 'info',
+       confirmText: 'Ya, Generate Semua'
+     }
+   )
+   if (!confirmed) return
+
    try {
-      await generateCertificates(requests)
-      showNotification('Berhasil mengirim permintaan generate sertifikat!', 'success')
-      
-      // Update local state to reflect generated status (Optimistic UI or re-fetch)
-      // For now, let's re-fetch to keep it simple, or update manually if detailed response
-      fetchData() 
-      selectedCandidates.value = []
-   } catch (error: any) {
-      showNotification('Gagal: ' + (error.message || 'Unknown error'), 'error')
-   } finally {
-      isGenerating.value = false
+     await generateForBatch({ batchId: selectedBatchId.value })
+     // Refresh data setelah batch generate
+     fetchData()
+   } catch (_) {
+     // Error sudah di-handle di composable
    }
 }
 
