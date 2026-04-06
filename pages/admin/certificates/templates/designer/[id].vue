@@ -82,7 +82,7 @@
         <NexaplotDesigner
           :license-key="runtimeConfig.public.NEXAPLOT_LICENSE"
           :initial-config="initialConfig"
-          :base-pdf-url="basePdfUrl"
+          :base-pdf="basePdfBuffer"
           @save="handleDesignerSave"
           @change="handleDesignerChange"
         />
@@ -137,9 +137,9 @@ const templateId       = computed(() => route.params.id as string)
 const templateName     = ref('Template Sertifikat')
 const isLoadingTemplate = ref(true)
 const loadError        = ref('')
-const initialConfig    = ref<string | undefined>(undefined)
-const basePdfUrl       = ref<string | undefined>(undefined)
-const lastSavedAt      = ref<Date | null>(null)
+const initialConfig     = ref<string | undefined>(undefined)
+const basePdfBuffer     = ref<Uint8Array | null>(null)
+const lastSavedAt       = ref<Date | null>(null)
 
 // Referensi ke instance editor untuk trigger save dari luar
 const editorRef = ref<any>(null)
@@ -154,12 +154,17 @@ onMounted(async () => {
 
     templateName.value = template.name
 
-    const format = template.formats?.[0]
-    if (format) {
+    if (format && format.file_pdf) {
       initialConfig.value = format.nexaplot_config || undefined
-      basePdfUrl.value    = format.file_pdf
-        ? `${runtimeConfig.public.API_URL?.replace('/api', '')}/storage/${format.file_pdf}`
-        : undefined
+      
+      const pdfUrl = `${runtimeConfig.public.API_URL?.replace('/api', '')}/storage/${format.file_pdf}`
+      
+      // Fetch PDF as buffer
+      const token = await useFirebaseToken()
+      const response = await $fetch<ArrayBuffer>(pdfUrl, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+      basePdfBuffer.value = new Uint8Array(response)
     }
   } catch (err: any) {
     loadError.value = err.message || 'Gagal memuat template.'

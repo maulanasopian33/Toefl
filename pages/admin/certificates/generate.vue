@@ -540,7 +540,7 @@ const processSingleGenerate = async (candidate: CandidateResult) => {
 
    try {
      // candidate.id adalah userResultId (ID dari tabel userresults)
-     await generateForParticipant({ userResultId: parseInt(candidate.id) })
+     await generateForParticipant({ userResultId: parseInt(candidate.id.startsWith("res-") ? candidate.id.substring(4) : candidate.id, 10) })
      // Update status lokal
      const idx = results.value.findIndex(r => r.id === candidate.id)
      if (idx !== -1) results.value[idx].certificateStatus = 'generated'
@@ -571,7 +571,7 @@ const processBulkGenerate = async () => {
 
    for (const candidate of pendingCandidates) {
      try {
-       await generateForParticipant({ userResultId: parseInt(candidate.id) })
+       await generateForParticipant({ userResultId: parseInt(candidate.id.startsWith("res-") ? candidate.id.substring(4) : candidate.id, 10) })
        const idx = results.value.findIndex(r => r.id === candidate.id)
        if (idx !== -1) results.value[idx].certificateStatus = 'generated'
        successCount++
