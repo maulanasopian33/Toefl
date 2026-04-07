@@ -82,7 +82,6 @@
         <NexaplotDesigner
           :license-key="runtimeConfig.public.NEXAPLOT_LICENSE"
           :initial-config="initialConfig"
-          :base-pdf="basePdfBuffer"
           @save="handleDesignerSave"
           @change="handleDesignerChange"
         />
