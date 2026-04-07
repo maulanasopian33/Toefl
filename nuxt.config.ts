@@ -77,6 +77,7 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico,woff,woff2,ttf,eot}'],
+      maximumFileSizeToCacheInBytes: 10485760,
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/.*\/uploads\/.*\.mp3/i,

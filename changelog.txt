@@ -1,7 +1,13 @@
 LATEST UPDATES - 07 April 2026
 ==============================
 
-1. PERBAIKAN BUILD ERROR: CASING IMPOR KOMPONEN ANALYTICS
+1. PERBAIKAN BUILD ERROR: PWA CACHE LIMIT EXCEEDED
+   - Memperbaiki build error "maximumFileSizeToCacheInBytes" pada Vite PWA.
+   - Menghasilkan konfigurasi `workbox.maximumFileSizeToCacheInBytes` sebesar 10MB untuk mendukung caching file JS besar (7.32MB+) yang dihasilkan saat build production.
+   - File yang disentuh:
+     - nuxt-fe/nuxt.config.ts
+
+2. PERBAIKAN BUILD ERROR: CASING IMPOR KOMPONEN ANALYTICS
    - Memperbaiki error `ENOENT` pada saat build di environment case-sensitive (Linux/CI).
    - Mengubah referensi folder `@/components/Analytics/` menjadi `@/components/analytics/` agar sesuai dengan nama direktori di filesystem.
    - File yang disentuh:
