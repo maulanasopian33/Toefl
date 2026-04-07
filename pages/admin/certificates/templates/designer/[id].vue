@@ -82,6 +82,7 @@
         <NexaplotDesigner
           :license-key="runtimeConfig.public.NEXAPLOT_LICENSE"
           :initial-config="initialConfig"
+          :base-pdf-buffer="basePdfBuffer"
           @save="handleDesignerSave"
           @change="handleDesignerChange"
         />
@@ -153,6 +154,7 @@ onMounted(async () => {
 
     templateName.value = template.name
 
+    const format = template.formats?.[0]
     if (format && format.file_pdf) {
       initialConfig.value = format.nexaplot_config || undefined
       

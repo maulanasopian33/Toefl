@@ -1,7 +1,13 @@
 LATEST UPDATES - 07 April 2026
 ==============================
 
-1. PERBAIKAN BUILD ERROR: PWA CACHE LIMIT EXCEEDED
+1. PERBAIKAN BUG: DESIGNER CERTIFICATE (FORMAT UNDEFINED)
+   - Memperbaiki error `format is not defined` pada halaman designer sertifikat.
+   - Sinkronisasi data format yang diambil dari `template.formats[0]` untuk memuat konfigurasi Nexaplot dan file PDF template.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/certificates/templates/designer/[id].vue
+
+2. PERBAIKAN BUILD ERROR: PWA CACHE LIMIT EXCEEDED
    - Memperbaiki build error "maximumFileSizeToCacheInBytes" pada Vite PWA.
    - Menghasilkan konfigurasi `workbox.maximumFileSizeToCacheInBytes` sebesar 10MB untuk mendukung caching file JS besar (7.32MB+) yang dihasilkan saat build production.
    - File yang disentuh:
