@@ -46,13 +46,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import ParticipantResults from '@/components/Analytics/ParticipantResults.vue'
-import AnswerDetails from '@/components/Analytics/AnswerDetails.vue'
-import QuestionQuality from '@/components/Analytics/QuestionQuality.vue'
-import OptionDistribution from '@/components/Analytics/OptionDistribution.vue'
-import ParticipantProgress from '@/components/Analytics/ParticipantProgress.vue'
-import BatchStatistics from '@/components/Analytics/BatchStatistics.vue'
-import DiagnosticReport from '@/components/Analytics/DiagnosticReport.vue'
+import ParticipantResults from '@/components/analytics/ParticipantResults.vue'
+import AnswerDetails from '@/components/analytics/AnswerDetails.vue'
+import QuestionQuality from '@/components/analytics/QuestionQuality.vue'
+import OptionDistribution from '@/components/analytics/OptionDistribution.vue'
+import ParticipantProgress from '@/components/analytics/ParticipantProgress.vue'
+import BatchStatistics from '@/components/analytics/BatchStatistics.vue'
+import DiagnosticReport from '@/components/analytics/DiagnosticReport.vue'
 import { provide } from 'vue'
 
 definePageMeta({

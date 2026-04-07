@@ -1,3 +1,14 @@
+LATEST UPDATES - 07 April 2026
+==============================
+
+1. PERBAIKAN BUILD ERROR: CASING IMPOR KOMPONEN ANALYTICS
+   - Memperbaiki error `ENOENT` pada saat build di environment case-sensitive (Linux/CI).
+   - Mengubah referensi folder `@/components/Analytics/` menjadi `@/components/analytics/` agar sesuai dengan nama direktori di filesystem.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/analytics/index.vue
+
+Timestamp: 2026-04-07 14:25:00
+
 LATEST UPDATES - 05 Maret 2026
 ==============================
 
