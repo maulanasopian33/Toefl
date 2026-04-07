@@ -1,7 +1,17 @@
 LATEST UPDATES - 07 April 2026
 ==============================
 
-1. PERBAIKAN BUG: DESIGNER CERTIFICATE (FORMAT UNDEFINED)
+1. PERBAIKAN BUG: DOWNLOAD SERTIFIKAT (404 NOT FOUND)
+   - Memperbaiki error 404 saat mengunduh sertifikat dari riwayat admin maupun tampilan user.
+   - Migrasi dari native `fetch` ke `$fetch` Nuxt dengan `responseType: 'blob'` untuk download data biner yang lebih stabil.
+   - Optimalisasi penanganan URL API untuk menjamin request mengarah ke endpoint yang benar sesuai konfigurasi backend.
+   - Sinkronisasi metadata sertifikat (nomor sertifikat) untuk penamaan file download otomatis.
+   - File yang disentuh:
+     - nuxt-fe/composables/useCertificates.ts
+     - nuxt-fe/pages/admin/certificates/history.vue
+     - nuxt-fe/pages/history/certificate/[userResultId].vue
+
+2. PERBAIKAN BUG: DESIGNER CERTIFICATE (FORMAT UNDEFINED)
    - Memperbaiki error `format is not defined` pada halaman designer sertifikat.
    - Sinkronisasi data format yang diambil dari `template.formats[0]` untuk memuat konfigurasi Nexaplot dan file PDF template.
    - File yang disentuh:

@@ -263,32 +263,46 @@ export function useCertificates() {
 
   // ── Download Certificate PDF ───────────────────────────────────────────────
 
-  const downloadCertificate = async (id: string, fileName?: string) => {
+  const downloadCertificate = async (certOrId: Certificate | string, fileName?: string) => {
     try {
       const token = await useFirebaseToken()
       if (!token) throw new Error('Authentication token not found.')
 
-      // Gunakan fetch native untuk streaming download
-      const response = await fetch(`${API_URL}/certificates/download/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      let downloadUrl = ''
+      let finalFileName = fileName
 
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`)
+      if (typeof certOrId === 'string') {
+        downloadUrl = `${API_URL}/certificates/download/${certOrId}`
+        if (!finalFileName) finalFileName = `sertifikat-${certOrId}.pdf`
+      } else {
+        // Jika ada pdfUrl dari backend, prioritaskan itu
+        // Namun biasanya kita tetap butuh endpoint download agar bisa kirim Auth header
+        // Jadi kita tetap gunakan /certificates/download/{id} untuk keamanan file
+        downloadUrl = `${API_URL}/certificates/download/${certOrId.id}`
+        if (!finalFileName) {
+          finalFileName = certOrId.certificateNumber 
+            ? `sertifikat-${certOrId.certificateNumber}.pdf`
+            : `sertifikat-${certOrId.id}.pdf`
+        }
       }
 
-      const blob = await response.blob()
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href     = url
-      a.download = fileName || `sertifikat-${id}.pdf`
+      // Gunakan $fetch dengan responseType blob untuk konsistensi dan handling Nuxt
+      const response = await $fetch<Blob>(downloadUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = finalFileName
       document.body.appendChild(a)
       a.click()
       a.remove()
-      URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(url)
     } catch (e: any) {
       console.error('Failed to download certificate:', e)
-      showNotification('Gagal mengunduh sertifikat: ' + e.message, 'error')
+      showNotification('Gagal mengunduh sertifikat: ' + (e.data?.message || e.message), 'error')
     }
   }
 

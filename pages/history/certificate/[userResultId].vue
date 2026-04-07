@@ -68,7 +68,7 @@
                </div>
                
                <button 
-                @click="downloadCertificate(certificate.id, `certificate-${certificate.certificateNumber}.pdf`)"
+                @click="downloadCertificate(certificate)"
                 class="w-full md:w-auto px-8 py-4 bg-white text-indigo-600 font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                >
                  <Icon name="lucide:download-cloud" class="w-5 h-5" />

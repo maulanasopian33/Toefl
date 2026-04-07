@@ -260,7 +260,7 @@ const formatDate = (dateStr: string) => {
 // ── Actions ───────────────────────────────────────────────────────────────────
 
 const handleDownload = (cert: Certificate) => {
-  downloadCertificate(cert.id, `sertifikat-${cert.certificateNumber}.pdf`)
+  downloadCertificate(cert)
 }
 
 const handleDelete = async (cert: Certificate) => {
