@@ -1,7 +1,32 @@
 LATEST UPDATES - 07 April 2026
 ==============================
 
-1. PERBAIKAN BUG: DOWNLOAD SERTIFIKAT (404 NOT FOUND)
+1. FRONTEND: AKTIVASI PAGINASI DI GENERATE SERTIFIKAT
+   - Mengganti mock pagination dengan sistem paginasi aktif yang terhubung ke backend.
+   - Menambah kontrol limit data per halaman (10, 25, 50, 100).
+   - Sinkronisasi state `currentPage`, `totalItems`, dan `totalPages` pada `useCandidateResults` agar navigasi halaman berjalan lancar.
+   - File yang disentuh: nuxt-fe/pages/admin/certificates/generate.vue & nuxt-fe/composables/useCandidateResults.ts
+
+2. BACKEND: PERBAIKAN SKOR BAGIAN (SECTION SCORE) & QR VERIFY URL
+   - Mengoptimalkan `normalizeSectionScores` pada `certificateService` untuk menangani berbagai variasi format data di database (nested vs flat).
+   - Menjamin nilai skor bagian tidak nol dengan mekanisme fallback yang lebih kuat selama proses generate PDF.
+   - Memastikan `verifyUrl` (URL verifikasi sertifikat) terinjeksi dengan benar ke dalam variabel QR code di Nexaplot Designer.
+   - Menambah logging proses pemetaan variabel untuk memudahkan pelacakan jika ada data yang tidak terisi.
+   - File yang disentuh: node-be/services/certificateService.js
+
+3. BACKEND: OPTIMALISASI LIST GENERATE (HIGHEST SCORE ONLY)
+   - Mengubah logika pengambilan data kandidat di `/admin/results/candidates`.
+   - Menggunakan subquery window function (ROW_NUMBER) untuk hanya menampilkan 1 hasil tes dengan skor tertinggi (highest score) per user.
+   - Menghindari duplikasi baris untuk user yang melakukan multiple attempt, memudahkan admin dalam proses generate sertifikat masal.
+   - File yang disentuh: node-be/controllers/resultController.js
+
+2. BACKEND & FRONTEND: DEBUGGING & LOGGING DOWNLOAD SERTIFIKAT
+   - Menambah logging detail pada backend `downloadCertificate` untuk melacak penyebab 404 (apakah record DB hilang, pdfUrl kosong, atau file fisik tidak ada).
+   - Menambah fleksibilitas pencarian ID (primary key UUID vs userResultId) pada proses download.
+   - Optimalisasi respons error pada backend untuk memberikan pesan yang lebih spesifik jika file tidak ditemukan.
+   - File yang disentuh: node-be/controllers/certificateController.js
+
+3. PERBAIKAN BUG: DOWNLOAD SERTIFIKAT (404 NOT FOUND) (FRONTEND)
    - Memperbaiki error 404 saat mengunduh sertifikat dari riwayat admin maupun tampilan user.
    - Migrasi dari native `fetch` ke `$fetch` Nuxt dengan `responseType: 'blob'` untuk download data biner yang lebih stabil.
    - Optimalisasi penanganan URL API untuk menjamin request mengarah ke endpoint yang benar sesuai konfigurasi backend.

@@ -316,12 +316,54 @@
            </table>
         </div>
         
-        <!-- Pagination (Mock) -->
-        <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between text-sm text-gray-500">
-           <span>Menampilkan {{ results.length }} data</span>
-           <div class="flex gap-2">
-              <button disabled class="px-3 py-1 rounded bg-white border border-gray-200 opacity-50 cursor-not-allowed">Previous</button>
-              <button disabled class="px-3 py-1 rounded bg-white border border-gray-200 opacity-50 cursor-not-allowed">Next</button>
+        <!-- Pagination -->
+        <div class="p-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+           <div class="flex items-center gap-4">
+              <span>Menampilkan {{ results.length }} dari {{ totalItems }} data</span>
+              <div class="flex items-center gap-2">
+                 <span class="text-xs">Limit:</span>
+                 <select v-model="limit" @change="updateLimit" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+                    <option :value="10">10</option>
+                    <option :value="25">25</option>
+                    <option :value="50">50</option>
+                    <option :value="100">100</option>
+                 </select>
+              </div>
+           </div>
+           <div class="flex items-center gap-2">
+              <button 
+                @click="handlePageChange(currentPage - 1)" 
+                :disabled="currentPage <= 1 || isLoading"
+                class="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                 <Icon name="heroicons:chevron-left" class="w-4 h-4" />
+                 Previous
+              </button>
+              
+              <div class="flex items-center gap-1">
+                 <button 
+                   v-for="p in totalPages" 
+                   :key="p"
+                   @click="handlePageChange(p)"
+                   :class="[
+                      'w-8 h-8 rounded-lg text-xs font-medium transition-all',
+                      currentPage === p 
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-100' 
+                        : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
+                   ]"
+                 >
+                   {{ p }}
+                 </button>
+              </div>
+
+              <button 
+                @click="handlePageChange(currentPage + 1)" 
+                :disabled="currentPage >= totalPages || isLoading"
+                class="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                 Next
+                 <Icon name="heroicons:chevron-right" class="w-4 h-4" />
+              </button>
            </div>
         </div>
 
@@ -433,7 +475,16 @@ definePageMeta({
 })
 
 const { batches } = useAdminBatches()
-const { results, summary, isLoading, fetchCandidateResults, updateCandidateScore } = useCandidateResults()
+const { 
+  results, 
+  summary, 
+  isLoading, 
+  currentPage, 
+  totalPages, 
+  totalItems, 
+  fetchCandidateResults, 
+  updateCandidateScore 
+} = useCandidateResults()
 const { generateForParticipant, generateForBatch, isGenerating } = useCertificates()
 const { showConfirm } = useNotificationPopup()
 const { showNotification } = useNotification()
@@ -444,6 +495,7 @@ const selectedBatchId = ref('')
 const selectedStatus = ref('')
 const sortBy = ref('name')
 const sortOrder = ref<'asc'|'desc'>('asc')
+const limit = ref(10)
 
 const selectedCandidates = ref<string[]>([]) // Array of IDs
 // isGenerating vient du composable useCertificates
@@ -459,7 +511,7 @@ onMounted(() => {
    fetchData()
 })
 
-const fetchData = () => {
+const fetchData = (page = 1) => {
    // Reset selections on new fetch, or keep them? Resetting is safer to avoid selecting items no longer visible if we implement pagination properly later.
    selectedCandidates.value = []
    fetchCandidateResults({
@@ -467,8 +519,19 @@ const fetchData = () => {
       batchId: selectedBatchId.value,
       status: selectedStatus.value,
       sortBy: sortBy.value,
-      sortOrder: sortOrder.value
+      sortOrder: sortOrder.value,
+      page: page,
+      limit: limit.value
    })
+}
+
+const handlePageChange = (page: number) => {
+   if (page < 1 || page > totalPages.value) return
+   fetchData(page)
+}
+
+const updateLimit = () => {
+   fetchData(1)
 }
 
 // Watch filters using debounce for search

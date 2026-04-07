@@ -44,6 +44,9 @@ export function useCandidateResults() {
      average_score: 0,
      total_candidates: 0
   })
+  const currentPage = ref(1)
+  const totalPages = ref(1)
+  const totalItems = ref(0)
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
   
@@ -123,17 +126,30 @@ export function useCandidateResults() {
       const token = await useFirebaseToken()
       if (!token) throw new Error('Authentication token not found.')
       
-      const response = await $fetch<{ data: CandidateResult[], meta: { summary: CandidateSummary } }>(`${API_URL}/admin/results/candidates`, {
+      const response = await $fetch<{ 
+        data: CandidateResult[], 
+        meta: { 
+          summary: CandidateSummary,
+          total: number,
+          page: number,
+          last_page: number
+        } 
+      }>(`${API_URL}/admin/results/candidates`, {
         params: {
             ...params,
             sort_by: params.sortBy,
             order: params.sortOrder,
-            batch_id: params.batchId
+            batch_id: params.batchId,
+            page: params.page || 1,
+            limit: params.limit || 10
         },
         headers: { Authorization: `Bearer ${token}` }
       })
       results.value = response.data
       summary.value = response.meta.summary
+      totalItems.value = response.meta.total
+      currentPage.value = response.meta.page
+      totalPages.value = response.meta.last_page
       
     } catch (e: any) {
       error.value = e
@@ -188,6 +204,9 @@ export function useCandidateResults() {
     summary,
     isLoading,
     error,
+    currentPage,
+    totalPages,
+    totalItems,
     fetchCandidateResults,
     updateCandidateScore
   }
