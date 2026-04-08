@@ -1,3 +1,29 @@
+LATEST UPDATES - 08 April 2026
+==============================
+
+1. FITUR LOGIN AS USER & SWITCH BACK (UX ADMIN)
+   - Menambahkan tombol "Login Sebagai User" pada tabel daftar peserta untuk mempermudah troubleshooting.
+   - Implementasi Fitur "Switch Back": Admin kini dapat kembali ke akun administrasinya secara instan setelah melakukan penyamaran (impersonation) tanpa perlu login ulang.
+   - Penambahan `SwitchBackBanner.vue` yang muncul secara global di bagian atas layar saat mode "Login Sebagai User" aktif.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/peserta/index.vue
+     - nuxt-fe/components/users/UsersTable.vue
+     - nuxt-fe/components/Admin/SwitchBackBanner.vue
+     - nuxt-fe/app.vue
+
+2. SISTEM DEBUGGING DASHBOARD & FE LOGGING
+   - Membuat dashboard log debugging baru pada `/admin/debug-logs` untuk memantau log sistem secara real-time.
+   - Menambahkan `useDebug.ts` composable yang memungkinkan dev untuk menambahkan log dari bagian mana pun di Frontend ke database backend.
+   - Fitur pencarian, filtering berdasarkan level (INFO/DEBUG/WARN/ERROR), dan source (FE/BE) pada dashboard debug.
+   - Fitur "Copy JSON" untuk context log agar mempermudah debugging data kompleks.
+   - File yang disentuh:
+     - nuxt-fe/pages/admin/debug-logs/index.vue
+     - nuxt-fe/composables/useDebug.ts
+     - nuxt-fe/composables/useAdminDebugLogs.ts
+     - nuxt-fe/data/navItems.ts
+
+Timestamp: 2026-04-08 10:20:00
+
 LATEST UPDATES - 07 April 2026
 ==============================
 

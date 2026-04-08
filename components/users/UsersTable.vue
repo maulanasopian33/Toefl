@@ -169,6 +169,11 @@
                 leave-to-class="opacity-0 translate-y-1"
               >
                 <div v-if="openMenuUid === user.uid" class="absolute right-10 top-8 z-30 w-48 rounded-xl border border-slate-100 bg-white p-1 text-xs shadow-xl ring-1 ring-slate-900/5">
+                  <button type="button" class="flex w-full items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 transition-colors border-b border-emerald-50/50 mb-1" @click="emit('loginAs', user)">
+                    <Icon name="lucide:user-cog" class="w-4 h-4" />
+                    <span class="font-semibold">Login Sebagai User</span>
+                  </button>
+
                   <div class="px-3 py-2 border-b border-slate-50 mb-1">
                      <p class="font-semibold text-gray-900 truncate">{{ user.name }}</p>
                      <p class="text-[10px] text-gray-400">Actions Menu</p>
@@ -224,7 +229,7 @@ defineProps<{
   totalPages: number
 }>()
 
-const emit = defineEmits(['viewDetail', 'resetPassword', 'toggleDisable', 'update:currentPage', 'deleteUser', 'changeRole'])
+const emit = defineEmits(['viewDetail', 'resetPassword', 'toggleDisable', 'update:currentPage', 'deleteUser', 'changeRole', 'loginAs'])
 
 // 3-dot menu state
 const openMenuUid = ref<string | null>(null)

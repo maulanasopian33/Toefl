@@ -140,6 +140,7 @@ export default [
     children: [
       { name: 'Audit DB Log', link: '/admin/audit-logs' },
       { name: 'System File Log', link: '/admin/system-logs' },
+      { name: 'Debug Logs', link: '/admin/debug-logs' },
       { name: 'Cache Monitoring', link: '/admin/cache-monitoring' },
     ],
   },

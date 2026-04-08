@@ -34,7 +34,7 @@
         @toggle-disable="handleToggleDisable"
         @delete-user="handleDeleteUser"
         @change-role="handleChangeRole"
-        
+        @login-as="handleLoginAs"
         @update:currentPage="p => page = p"
       />
 
@@ -57,6 +57,7 @@ import { useNotification } from '@/composables/useNotification'
 import { useNotificationPopup } from '@/composables/NotificationPopup'
 import { useUserDelete } from '@/composables/users/delete'
 import { useUserChangeRole } from '@/composables/users/changeRole'
+import { signInWithCustomToken } from 'firebase/auth'
 
 definePageMeta({
   title: 'Peserta - Admin Panel',
@@ -193,6 +194,43 @@ const handleChangeRole = async (user: User) => {
     await fetchUsers(); // Muat ulang data untuk menampilkan role baru
   } catch (error: any) {
     showNotification(error.message || 'Gagal mengubah role pengguna.', 'error');
+  }
+}
+
+const handleLoginAs = async (user: User) => {
+  const confirmed = await showConfirm(
+    `Anda akan masuk ke aplikasi sebagai "${user.name}". Akun admin Anda akan disimpan sementara untuk fitur "Switch Back". Lanjutkan?`,
+    {
+      title: 'Login Sebagai Pengguna',
+      confirmText: 'Ya, Login Sebagai User',
+    }
+  )
+
+  if (!confirmed) return
+
+  try {
+    const token = await $auth?.currentUser?.getIdToken();
+    const response: any = await $fetch(`${config.public.API_URL}/users/${user.uid}/login-as`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (response.status && response.data) {
+      // 1. Simpan token admin untuk switch back
+      localStorage.setItem('admin_token_backup', response.data.adminCustomToken);
+      
+      // 2. Sign in sebagai user
+      // @ts-ignore
+      await signInWithCustomToken($auth, response.data.customToken);
+      
+      showNotification(`Berhasil login sebagai ${user.name}.`, 'success');
+      
+      // 3. Redirect ke dashboard user
+      window.location.href = '/';
+    }
+  } catch (error: any) {
+    console.error('Gagal login sebagai user:', error);
+    showNotification(error.message || 'Gagal melakukan login sebagai user.', 'error');
   }
 }
 

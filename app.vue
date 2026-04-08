@@ -25,5 +25,6 @@ useHead({
       <NuxtPage/>
     </NuxtLayout>
     <AppPwaNotification />
+    <AdminSwitchBackBanner />
   </div>
 </template>
