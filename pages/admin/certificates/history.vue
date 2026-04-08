@@ -53,14 +53,27 @@
               class="pl-10 pr-4 py-2.5 w-full bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm"
             />
           </div>
-          <!-- Refresh -->
-          <button
-            @click="loadCertificates()"
-            class="flex items-center justify-center w-10 h-10 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-indigo-600 transition-colors"
-            title="Refresh"
-          >
-            <Icon name="heroicons:arrow-path" class="w-5 h-5" :class="{ 'animate-spin': isLoading }" />
-          </button>
+          <!-- Actions -->
+          <div class="flex items-center gap-2">
+            <!-- Download All ZIP -->
+            <button
+              @click="handleDownloadAll"
+              :disabled="isLoading || certificates.length === 0"
+              class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download Hasil Filter (ZIP)"
+            >
+              <Icon name="heroicons:archive-box" class="w-5 h-5" />
+              <span class="hidden sm:inline">Download All (ZIP)</span>
+            </button>
+            <!-- Refresh -->
+            <button
+              @click="loadCertificates()"
+              class="flex items-center justify-center w-10 h-10 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-indigo-600 transition-colors"
+              title="Refresh"
+            >
+              <Icon name="heroicons:arrow-path" class="w-5 h-5" :class="{ 'animate-spin': isLoading }" />
+            </button>
+          </div>
         </div>
 
         <!-- Table -->
@@ -212,6 +225,7 @@ const {
   currentPage,
   fetchCertificates,
   downloadCertificate,
+  downloadCertificatesZip,
   deleteCertificate
 } = useCertificates()
 
@@ -261,6 +275,12 @@ const formatDate = (dateStr: string) => {
 
 const handleDownload = (cert: Certificate) => {
   downloadCertificate(cert)
+}
+
+const handleDownloadAll = () => {
+  downloadCertificatesZip({
+    search: searchQuery.value || undefined
+  })
 }
 
 const handleDelete = async (cert: Certificate) => {

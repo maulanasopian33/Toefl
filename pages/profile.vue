@@ -118,19 +118,18 @@
 
             <!-- Certificates -->
             <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden flex flex-col">
-              <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-                <h3 class="text-lg font-extrabold text-gray-900 tracking-tight">Sertifikat</h3>
-              </div>
               <div class="flex-grow p-6 space-y-4">
                 <div v-if="userData?.list_sertifikat && userData.list_sertifikat.length > 0" class="space-y-4">
-                   <div v-for="(cert, idx) in userData?.list_sertifikat" :key="idx" class="border border-gray-100 rounded-2xl p-5 flex items-start gap-4 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-900/5 transition-all cursor-pointer group bg-gray-50/30 hover:bg-white">
+                   <div v-for="(cert, idx) in userData?.list_sertifikat" :key="idx" 
+                      @click="handleDownloadCertificate(cert)"
+                      class="border border-gray-100 rounded-2xl p-5 flex items-start gap-4 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-900/5 transition-all cursor-pointer group bg-gray-50/30 hover:bg-white">
                       <div class="p-3 bg-white text-emerald-500 rounded-xl shadow-sm border border-gray-50 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 rotate-0 group-hover:-rotate-6">
                         <Icon name="heroicons:academic-cap" class="w-7 h-7" />
                       </div>
                       <div class="space-y-3">
                         <div>
-                          <p class="text-sm font-bold text-gray-900 leading-tight line-clamp-2 group-hover:text-emerald-600 transition-colors">{{ cert.title }}</p>
-                          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 opacity-60">Terbit: {{ cert.date }}</p>
+                          <p class="text-sm font-bold text-gray-900 leading-tight line-clamp-2 group-hover:text-emerald-600 transition-colors">{{ cert.event }}</p>
+                          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 opacity-60">Terbit: {{ formatDate(cert.date) }}</p>
                         </div>
                         <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 group-hover:underline">
                           Unduh PDF <Icon name="heroicons:arrow-down-tray" class="w-3.5 h-3.5" />
@@ -206,6 +205,7 @@ import { ref, onMounted, computed, reactive } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useUserMe } from '@/composables/UserMe';
 import { useNotification } from '@/composables/useNotification';
+import { useCertificates } from '@/composables/useCertificates';
 import BottomNav from '@/components/DashboardUser/BottomNav.vue';
 
 definePageMeta({
@@ -217,6 +217,7 @@ const config = useRuntimeConfig();
 const { showNotification } = useNotification();
 const { user } = useAuth();
 const { data: userDb, refresh } = await useUserMe();
+const { downloadCertificate } = useCertificates();
 
 // Data User
 const userData = computed(() => {
@@ -254,10 +255,10 @@ const dummyTests = ref([
   { name: 'Placement Test', date: '15 Des 2025', score: 510, passed: true },
 ]);
 
-// Dummy Certificates
-const dummyCertificates = ref([
-  { title: 'Sertifikat Kompetensi Bahasa', date: '03 Jan 2026', id: 'CERT-001' }
-]);
+// Real Certificates
+const handleDownloadCertificate = (cert: any) => {
+  downloadCertificate(cert);
+};
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-';

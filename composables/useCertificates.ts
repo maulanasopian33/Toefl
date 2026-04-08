@@ -336,6 +336,41 @@ export function useCertificates() {
     }
   }
 
+  // ── Download Certificates ZIP (Bulk) ───────────────────────────────────────
+
+  const downloadCertificatesZip = async (params: FetchParams = {}) => {
+    isLoading.value = true
+    try {
+      const token = await useFirebaseToken()
+      if (!token) throw new Error('Authentication token not found.')
+
+      const response = await $fetch<Blob>(`${API_URL}/certificates/download-all/zip`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      })
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+      const fileName = `certificates-${timestamp}.zip`
+
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      
+      showNotification('Berhasil mengunduh kumpulan sertifikat.', 'success')
+    } catch (e: any) {
+      console.error('Failed to download certificates ZIP:', e)
+      showNotification('Gagal mengunduh ZIP: ' + (e.data?.message || e.message), 'error')
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     certificates,
     isLoading,
@@ -350,6 +385,7 @@ export function useCertificates() {
     getCertificateByUserResult,
     verifyCertificate,
     downloadCertificate,
+    downloadCertificatesZip,
     deleteCertificate
   }
 }
