@@ -1,4 +1,25 @@
-LATEST UPDATES - 08 April 2026
+LATEST UPDATES - 08 April 2026 13:56:11
+==============================
+
+1. REFAKTORING HALAMAN PESERTA (ADMIN)
+   - Penghapusan tombol "Tambah User Manual" untuk membatasi input data sesuai alur sistem.
+   - Implementasi card statistik (Total, Verified, Aktif) yang terhubung dengan data riil backend.
+   - Perbaikan dan aktivasi fitur filter (Fakultas, Prodi, Role, Status Akun).
+   - Implementasi navigasi pagination (paging) pada tabel peserta.
+   - Sinkronisasi opsi filter (Fakultas & Prodi) secara dinamis dari server.
+
+Timestamp: 2026-04-08 13:56:11
+
+LATEST UPDATES - 08 April 2026 13:48:33
+==============================
+
+1. PERBAIKAN Tampilan & DOWNLOAD SERTIFIKAT
+   - Sinkronisasi list sertifikat admin untuk menghindari duplikasi data per user-batch.
+   - Peningkatan akurasi fitur "Download All (ZIP)" dengan menjamin satu file per peserta.
+
+Timestamp: 2026-04-08 13:48:33
+
+LATEST UPDATES - 08 April 2026 13:30:51
 ==============================
 
 1. FITUR LOGIN AS USER & SWITCH BACK (UX ADMIN)

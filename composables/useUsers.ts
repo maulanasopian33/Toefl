@@ -205,7 +205,7 @@ export function useUsers() {
     faculty,
     program,
     role,
-    email_verified,
+    emailVerified: email_verified,
     accountStatus,
     sortBy,
     sortOrder,
